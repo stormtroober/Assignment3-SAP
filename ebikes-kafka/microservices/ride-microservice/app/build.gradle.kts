@@ -23,6 +23,8 @@ repositories {
 }
 
 dependencies {
+    implementation("org.apache.kafka:kafka-clients:3.7.1")
+
     implementation("io.vertx:vertx-core:4.4.0")
     implementation("io.vertx:vertx-web:4.4.0")
     implementation("io.vertx:vertx-web-client:4.4.0")

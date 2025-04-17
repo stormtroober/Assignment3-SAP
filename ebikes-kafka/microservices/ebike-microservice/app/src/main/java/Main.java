@@ -16,7 +16,7 @@ public class Main {
             System.out.println("Configuration loaded: " + conf.encodePrettily());
             MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
             MongoEBikeRepository repository = new MongoEBikeRepository(mongoClient);
-            MapCommunicationAdapter mapCommunicationAdapter = new MapCommunicationAdapter(vertx);
+            MapCommunicationAdapter mapCommunicationAdapter = new MapCommunicationAdapter();
             EBikeServiceImpl service = new EBikeServiceImpl(repository, mapCommunicationAdapter);
             RESTEBikeAdapter restEBikeAdapter = new RESTEBikeAdapter(service);
             RideCommunicationAdapter rideCommunicationAdapter = new RideCommunicationAdapter(service, vertx); // Port for RideCommunicationAdapter

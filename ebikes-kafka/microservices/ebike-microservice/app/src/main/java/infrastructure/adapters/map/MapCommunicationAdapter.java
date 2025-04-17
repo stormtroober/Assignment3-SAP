@@ -1,13 +1,6 @@
 package infrastructure.adapters.map;
 
 import application.ports.MapCommunicationPort;
-import infrastructure.config.ServiceConfiguration;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -16,22 +9,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.Properties;
 
-public class MapCommunicationAdapter extends AbstractVerticle implements MapCommunicationPort {
-    private final HttpClient httpClient;
-    private final String microserviceUrl;
-    private Vertx vertx;
+public class MapCommunicationAdapter implements MapCommunicationPort {
     private Producer<String, String> producer;
     private final String topicName = "ebike-updates";
 
-    public MapCommunicationAdapter(Vertx vertx) {
-        this.httpClient = vertx.createHttpClient(new HttpClientOptions()
-                .setConnectTimeout(5000)
-                .setIdleTimeout(30)
-        );
-        JsonObject configuration = ServiceConfiguration.getInstance(vertx).getMapAdapterConfig();
-        this.microserviceUrl = "http://"+configuration.getString("name")+":"+configuration.getInteger("port");
-        this.vertx = vertx;
-
+    public MapCommunicationAdapter() {
         // Kafka producer setup
         Properties props = new Properties();
         props.put("bootstrap.servers", "kafka:9092");
@@ -62,19 +44,5 @@ public class MapCommunicationAdapter extends AbstractVerticle implements MapComm
             JsonObject ebike = ebikes.getJsonObject(i);
             producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()));
         }
-    }
-
-    @Override
-    public void start() {
-        System.out.println("MapCommunicationAdapter verticle started (Kafka mode)");
-    }
-
-    public void init() {
-        this.vertx.deployVerticle(this).onSuccess(id -> {
-            System.out.println("MapCommunicationAdapter deployed successfully with ID: " + id);
-
-        }).onFailure(err -> {
-            System.err.println("Failed to deploy MapCommunicationAdapter: " + err.getMessage());
-        });
     }
 }

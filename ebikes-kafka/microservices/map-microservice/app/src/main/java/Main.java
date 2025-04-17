@@ -17,7 +17,7 @@ public class Main {
             EventPublisher eventPublisher = new EventPublisherImpl(vertx);
             RestMapServiceAPI service = new RestMapServiceAPIImpl(eventPublisher);
             MapServiceVerticle mapServiceVerticle = new MapServiceVerticle(service, vertx);
-            BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(service, vertx);
+            BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(service);
             RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(service, vertx);
             mapServiceVerticle.init();
             bikeUpdateAdapter.init();

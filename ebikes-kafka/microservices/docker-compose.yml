@@ -1,0 +1,212 @@
+services:
+  eureka-server:
+    build:
+      context: ./service-discovery
+    ports:
+      - 8761:${EUREKA_INSTANCE_PORT}
+    networks:
+      - eureka-network
+    environment:
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=${EUREKA_CLIENT_REGISTER_WITH_EUREKA}
+      - EUREKA_CLIENT_FETCH_REGISTRY=${EUREKA_CLIENT_FETCH_REGISTRY}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_INSTANCE_HOSTNAME}
+      - EUREKA_INSTANCE_PORT=${EUREKA_INSTANCE_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${EUREKA_INSTANCE_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  map-microservice:
+      build:
+        context: ./map-microservice
+      ports:
+        - 8081:${MAP_INSTANCE_PORT}
+      networks:
+        - eureka-network
+      depends_on:
+        eureka-server:
+          condition: service_healthy
+      environment:
+        - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+        - EUREKA_HOST=${EUREKA_INSTANCE_HOSTNAME}
+        - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
+        - SERVICE_NAME=${MAP_INSTANCE_HOSTNAME}
+        - SERVICE_PORT=${MAP_INSTANCE_PORT}
+        - ADAPTER_RIDE_PORT=${MAP_ADAPTER_RIDE_PORT}
+        - ADAPTER_EBIKE_PORT=${MAP_ADAPTER_EBIKE_PORT}
+      healthcheck:
+        test: ["CMD-SHELL", "curl -f http://localhost:${MAP_INSTANCE_PORT}/health || exit 1", "curl -f http://localhost:${MAP_ADAPTER_EBIKE_PORT}/health || exit 1", "curl -f http://localhost:${MAP_ADAPTER_RIDE_PORT}/health || exit 1"]
+        interval: 10s
+        timeout: 5s
+        retries: 3
+        start_period: 10s
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - 27017:${MONGODB_INSTANCE_PORT}
+    networks:
+      - eureka-network
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
+    volumes:
+      - mongodb_data:/data/db
+    command: --wiredTigerCacheSizeGB 1
+    ulimits:
+      memlock: -1
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    healthcheck:
+      test: mongosh --eval 'db.runCommand("ping").ok' localhost:${MONGODB_INSTANCE_PORT}/test --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  ebike-microservice:
+    build:
+      context: ./ebike-microservice
+    ports:
+      - 8082:${EBIKE_INSTANCE_PORT}
+    networks:
+      - eureka-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      map-microservice:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_HOST=${EUREKA_INSTANCE_HOSTNAME}
+      - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
+      - SERVICE_NAME=${EBIKE_INSTANCE_HOSTNAME}
+      - SERVICE_PORT=${EBIKE_INSTANCE_PORT}
+      - ADAPTER_RIDE_PORT=${EBIKE_ADAPTER_RIDE_PORT}
+      - MAP_HOST=${MAP_INSTANCE_HOSTNAME}
+      - MAP_PORT=${MAP_ADAPTER_EBIKE_PORT}
+      - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
+      - MONGO_DATABSE=${EBIKE_MONGODB_DATABASE}
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:${EBIKE_INSTANCE_PORT}/health", "curl -f http://localhost:${EBIKE_ADAPTER_RIDE_PORT}/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  ride-microservice:
+    build:
+      context: ./ride-microservice
+    ports:
+      - 8083:${RIDE_INSTANCE_PORT}
+    networks:
+      - eureka-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      ebike-microservice:
+        condition: service_healthy
+      user-microservice:
+        condition: service_healthy
+      map-microservice:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_HOST=${EUREKA_INSTANCE_HOSTNAME}
+      - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
+      - SERVICE_NAME=${RIDE_INSTANCE_HOSTNAME}
+      - SERVICE_PORT=${RIDE_INSTANCE_PORT}
+      - MAP_HOST=${MAP_INSTANCE_HOSTNAME}
+      - MAP_PORT=${MAP_ADAPTER_RIDE_PORT}
+      - EBIKE_HOST=${EBIKE_INSTANCE_HOSTNAME}
+      - EBIKE_PORT=${EBIKE_ADAPTER_RIDE_PORT}
+      - USER_HOST=${USER_INSTANCE_HOSTNAME}
+      - USER_PORT=${USER_ADAPTER_RIDE_PORT}
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${RIDE_INSTANCE_PORT}/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  user-microservice:
+    build:
+      context: ./user-microservice
+    ports:
+      - 8084:${USER_INSTANCE_PORT}
+    networks:
+      - eureka-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_HOST=${EUREKA_INSTANCE_HOSTNAME}
+      - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
+      - SERVICE_NAME=${USER_INSTANCE_HOSTNAME}
+      - SERVICE_PORT=${USER_INSTANCE_PORT}
+      - ADAPTER_RIDE_PORT=${USER_ADAPTER_RIDE_PORT}
+      - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
+      - MONGO_DATABSE=${USER_MONGODB_DATABASE}
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:${USER_INSTANCE_PORT}/health", "curl -f http://localhost:${USER_ADAPTER_RIDE_PORT}/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    ports:
+      - 8080:${API_GATEWAY_EUREKA_INSTANCE_PORT}
+    networks:
+      - eureka-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      ebike-microservice:
+        condition: service_healthy
+      user-microservice:
+        condition: service_healthy
+      map-microservice:
+        condition: service_healthy
+      ride-microservice:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - API_GATEWAY_EUREKA_INSTANCE_HOSTNAME=${API_GATEWAY_EUREKA_INSTANCE_HOSTNAME}
+      - API_GATEWAY_EUREKA_INSTANCE_PORT=${API_GATEWAY_EUREKA_INSTANCE_PORT}
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${API_GATEWAY_EUREKA_INSTANCE_PORT}/actuator/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - 9090:${PROMETHEUS_INSTANCE_PORT}
+    networks:
+      - eureka-network
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Mount Prometheus configuration file
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+
+
+networks:
+  eureka-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

@@ -10,11 +10,18 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+
+import java.util.Properties;
 
 public class MapCommunicationAdapter extends AbstractVerticle implements MapCommunicationPort {
     private final HttpClient httpClient;
     private final String microserviceUrl;
     private Vertx vertx;
+    private Producer<String, String> producer;
+    private final String topicName = "ebike-updates";
 
     public MapCommunicationAdapter(Vertx vertx) {
         this.httpClient = vertx.createHttpClient(new HttpClientOptions()
@@ -24,56 +31,42 @@ public class MapCommunicationAdapter extends AbstractVerticle implements MapComm
         JsonObject configuration = ServiceConfiguration.getInstance(vertx).getMapAdapterConfig();
         this.microserviceUrl = "http://"+configuration.getString("name")+":"+configuration.getInteger("port");
         this.vertx = vertx;
+
+        // Kafka producer setup
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "kafka:9092");
+        props.put("acks", "all");
+        props.put("retries", 5);  // Increase from 0
+        props.put("reconnect.backoff.ms", 1000);
+        props.put("reconnect.backoff.max.ms", 5000);
+        props.put("retry.backoff.ms", 500);
+        props.put("batch.size", 16384);
+        props.put("linger.ms", 1);
+        props.put("buffer.memory", 33554432);
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        this.producer = new KafkaProducer<>(props);
     }
 
     @Override
     public void sendUpdate(JsonObject ebike) {
-        System.out.println("Sending EBike update to Map microservice");
+        System.out.println("Sending EBike update to Kafka topic: " + topicName);
         System.out.println(ebike.encodePrettily());
-        System.out.println("to -> " + microserviceUrl);
-
-        String[] urlParts = microserviceUrl.replace("http://", "").split(":");
-        String host = urlParts[0];
-        int port = Integer.parseInt(urlParts[1].split("/")[0]);
-
-        httpClient.request(HttpMethod.PUT, port, host, "/updateEBike")
-                .compose(req -> req
-                        .putHeader("content-type", "application/json")
-                        .send(Buffer.buffer(ebike.encode())))
-                .onSuccess(response -> {
-                    System.out.println("EBike update sent successfully with status code: " + response.statusCode());
-                })
-                .onFailure(err -> {
-                    System.err.println("Failed to send EBike update: " + err.getMessage());
-                    err.printStackTrace();
-                });
+        producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()));
     }
 
     public void sendAllUpdates(JsonArray ebikes) {
-        System.out.println("Sending all EBike updates to Map microservice");
+        System.out.println("Sending all EBike updates to Kafka topic: " + topicName);
         System.out.println(ebikes.encodePrettily());
-        System.out.println("to -> " + microserviceUrl);
-
-        String[] urlParts = microserviceUrl.replace("http://", "").split(":");
-        String host = urlParts[0];
-        int port = Integer.parseInt(urlParts[1].split("/")[0]);
-
-        httpClient.request(HttpMethod.PUT, port, host, "/updateEBikes")
-                .compose(req -> req
-                        .putHeader("content-type", "application/json")
-                        .send(Buffer.buffer(ebikes.encode())))
-                .onSuccess(response -> {
-                    System.out.println("All EBike updates sent successfully with status code: " + response.statusCode());
-                })
-                .onFailure(err -> {
-                    System.err.println("Failed to send all EBike updates: " + err.getMessage());
-                    err.printStackTrace();
-                });
+        for (int i = 0; i < ebikes.size(); i++) {
+            JsonObject ebike = ebikes.getJsonObject(i);
+            producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()));
+        }
     }
 
     @Override
     public void start() {
-        System.out.println("MapCommunicationAdapter verticle started");
+        System.out.println("MapCommunicationAdapter verticle started (Kafka mode)");
     }
 
     public void init() {

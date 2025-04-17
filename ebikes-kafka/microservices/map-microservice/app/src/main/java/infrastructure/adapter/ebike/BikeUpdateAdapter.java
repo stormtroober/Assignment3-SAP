@@ -8,14 +8,12 @@ import infrastructure.utils.MetricsManager;
 import infrastructure.config.ServiceConfiguration;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Properties;
 
 public class BikeUpdateAdapter extends AbstractVerticle {
 
@@ -41,79 +39,42 @@ public class BikeUpdateAdapter extends AbstractVerticle {
 
     @Override
     public void start() {
-        HttpServer server = vertx.createHttpServer();
-        Router router = Router.router(vertx);
+        // Kafka consumer setup
+        new Thread(() -> {
+            Properties props = new Properties();
+            props.put("bootstrap.servers", "kafka:9092");
+            props.put("group.id", "ebike-map-group");
+            props.put("enable.auto.commit", "true");
+            props.put("auto.commit.interval.ms", "1000");
+            props.put("session.timeout.ms", "30000");
+            props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
-        router.route().handler(BodyHandler.create());
+            try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
+                consumer.subscribe(java.util.List.of("ebike-updates"));
+                System.out.println("Subscribed to Kafka topic: ebike-updates");
 
-        router.get("/health").handler(ctx -> ctx.response().setStatusCode(200).end("OK"));
-
-        router.get("/metrics").handler(ctx -> ctx.response()
-                .putHeader("Content-Type", "text/plain")
-                .end(metricsManager.getMetrics()));
-
-        router.put("/updateEBike").handler(ctx -> {
-            metricsManager.incrementMethodCounter("updateEBike");
-            var timer = metricsManager.startTimer();
-
-            JsonObject body = ctx.body().asJsonObject();
-            try {
-                EBike bike = createEBikeFromJson(body);
-                mapService.updateEBike(bike)
-                        .thenAccept(v -> {
-                                    ctx.response().setStatusCode(200).end("EBike updated successfully");
-                                    metricsManager.recordTimer(timer, "updateEBike");
-                                }
-                        )
-                        .exceptionally(ex -> {
-                            ctx.response().setStatusCode(500).end("Failed to update EBike: " + ex.getMessage());
-                            metricsManager.recordError(timer, "updateEBike", ex);
-                            return null;
-                        });
-            } catch (Exception e) {
-                System.err.println("Invalid input data: " + e.getMessage());
-                ctx.response().setStatusCode(400).end("Invalid input data: " + e.getMessage());
-                metricsManager.recordError(timer, "updateEBike", e);
+                while (true) {
+                    ConsumerRecords<String, String> records = consumer.poll(java.time.Duration.ofMillis(1000));
+                    for (ConsumerRecord<String, String> record : records) {
+                        try {
+                            JsonObject body = new JsonObject(record.value());
+                            EBike bike = createEBikeFromJson(body);
+                            mapService.updateEBike(bike)
+                                    .thenAccept(v -> {
+                                        System.out.printf("EBike %s updated successfully from Kafka message\n", bike.getId());
+                                    })
+                                    .exceptionally(ex -> {
+                                        System.err.printf("Failed to update EBike %s: %s\n", bike.getId(), ex.getMessage());
+                                        return null;
+                                    });
+                        } catch (Exception e) {
+                            System.err.println("Invalid EBike data from Kafka: " + e.getMessage());
+                        }
+                    }
+                }
             }
-        });
-
-        router.put("/updateEBikes").handler(ctx -> {
-            metricsManager.incrementMethodCounter("updateEBikes");
-            var timer = metricsManager.startTimer();
-
-            JsonArray body = ctx.body().asJsonArray();
-            System.out.println("Received update request for " + body.size() + " EBikes");
-            System.out.println(body.encodePrettily());
-            try {
-                List<EBike> bikes = body.stream()
-                        .map(obj -> (JsonObject) obj)
-                        .map(this::createEBikeFromJson)
-                        .collect(Collectors.toList());
-
-                mapService.updateEBikes(bikes)
-                        .thenAccept(v -> {
-                            ctx.response().setStatusCode(200).end("EBikes updated successfully");
-                            metricsManager.recordTimer(timer, "updateEBikes");
-                        })
-                        .exceptionally(ex -> {
-                            ctx.response().setStatusCode(500).end("Failed to update EBikes: " + ex.getMessage());
-                            metricsManager.recordError(timer, "updateEBikes", ex);
-                            return null;
-                        });
-            } catch (Exception e) {
-                System.err.println("Invalid input data: " + e.getMessage());
-                ctx.response().setStatusCode(400).end("Invalid input data: " + e.getMessage());
-                metricsManager.recordError(timer, "updateEBikes", e);
-            }
-        });
-
-        server.requestHandler(router).listen(port, result -> {
-            if (result.succeeded()) {
-                System.out.println("BikeUpdateAdapter is running on port " + port);
-            } else {
-                System.err.println("Failed to start BikeUpdateAdapter: " + result.cause().getMessage());
-            }
-        });
+        }).start();
     }
 
     private EBike createEBikeFromJson(JsonObject body) {

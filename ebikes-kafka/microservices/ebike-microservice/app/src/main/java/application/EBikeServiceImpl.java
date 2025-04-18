@@ -9,6 +9,9 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EBikeServiceImpl implements EBikeServiceAPI {
 
@@ -58,6 +61,7 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
 
     @Override
     public CompletableFuture<JsonObject> updateEBike(JsonObject ebike) {
+
         if (ebike.containsKey("batteryLevel")) {
             int newBattery = ebike.getInteger("batteryLevel");
             int currentBattery = ebike.getInteger("batteryLevel");
@@ -76,7 +80,8 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
         }
         return repository.update(ebike).thenCompose(v ->
                 repository.findById(ebike.getString("id")).thenApply(updatedEbike -> {
-                    mapCommunicationAdapter.sendUpdate(updatedEbike.orElse(ebike));
+                    //TODO: remove it when ride will send data also to map via kafka
+                    //mapCommunicationAdapter.sendUpdate(updatedEbike.orElse(ebike));
                     return ebike;
                 })
         );

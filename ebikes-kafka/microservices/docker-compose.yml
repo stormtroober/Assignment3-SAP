@@ -75,10 +75,10 @@ services:
         - ADAPTER_EBIKE_PORT=${MAP_ADAPTER_EBIKE_PORT}
       healthcheck:
         test: ["CMD-SHELL", "curl -f http://localhost:${MAP_INSTANCE_PORT}/health || exit 1", "curl -f http://localhost:${MAP_ADAPTER_EBIKE_PORT}/health || exit 1", "curl -f http://localhost:${MAP_ADAPTER_RIDE_PORT}/health || exit 1"]
-        interval: 10s
+        interval: 5s
         timeout: 5s
         retries: 3
-        start_period: 10s
+        start_period: 5s
 
   mongodb:
     image: mongo:latest
@@ -228,7 +228,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 6s
 
   prometheus:
     image: prom/prometheus:latest

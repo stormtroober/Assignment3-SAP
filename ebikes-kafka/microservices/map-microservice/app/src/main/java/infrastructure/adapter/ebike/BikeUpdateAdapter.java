@@ -4,6 +4,8 @@ import application.ports.RestMapServiceAPI;
 import domain.model.EBike;
 import domain.model.EBikeFactory;
 import domain.model.EBikeState;
+import infrastructure.adapter.kafkatopic.Topics;
+import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonObject;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -18,7 +20,6 @@ import java.util.concurrent.Executors;
 public class BikeUpdateAdapter {
 
     private final RestMapServiceAPI mapService;
-    private ExecutorService executorService;
     private boolean running = false;
 
     public BikeUpdateAdapter(RestMapServiceAPI mapService) {
@@ -27,18 +28,17 @@ public class BikeUpdateAdapter {
 
     public void init() {
         System.out.println("Initializing BikeUpdateAdapter");
-        executorService = Executors.newSingleThreadExecutor();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.submit(this::runKafkaConsumer);
         running = true;
     }
 
     private void runKafkaConsumer() {
-        Properties props = getProps();
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
 
         try (consumer) {
-            consumer.subscribe(List.of("ebike-updates"));
-            System.out.println("Subscribed to Kafka topic: ebike-updates");
+            consumer.subscribe(List.of(Topics.EBIKE_UPDATES.getTopicName()));
+            System.out.println("Subscribed to Kafka topic: " + Topics.EBIKE_UPDATES.getTopicName());
             while (running) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
                 for (ConsumerRecord<String, String> record : records) {
@@ -58,17 +58,6 @@ public class BikeUpdateAdapter {
                 consumer.commitSync();
             }
         }
-    }
-
-    private static Properties getProps() {
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "kafka:9092");
-        props.put("group.id", "ebike-map-group");
-        props.put("enable.auto.commit", "false"); // Changed to manual commit
-        props.put("session.timeout.ms", "30000");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        return props;
     }
 
     private EBike createEBikeFromJson(JsonObject body) {

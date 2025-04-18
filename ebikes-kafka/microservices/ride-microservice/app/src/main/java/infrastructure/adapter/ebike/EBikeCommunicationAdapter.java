@@ -2,19 +2,26 @@ package infrastructure.adapter.ebike;
 
 import application.ports.EbikeCommunicationPort;
 import application.ports.EventPublisher;
+import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.config.ServiceConfiguration;
+import infrastructure.utils.KafkaProperties;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.concurrent.CompletableFuture;
 
+//TODO: I would change name, because now sends updates also to map
 public class EBikeCommunicationAdapter extends AbstractVerticle implements EbikeCommunicationPort {
     private final WebClient webClient;
     private final String ebikeServiceUrl;
     private final Vertx vertx;
+    private Producer<String, String> producer;
 
     public EBikeCommunicationAdapter(Vertx vertx) {
         this.webClient = WebClient.create(vertx);
@@ -22,6 +29,7 @@ public class EBikeCommunicationAdapter extends AbstractVerticle implements Ebike
         JsonObject ebikeConfig = config.getEBikeAdapterAddress();
         this.ebikeServiceUrl = "http://" + ebikeConfig.getString("name") + ":" + ebikeConfig.getInteger("port");
         this.vertx = vertx;
+        producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
     }
 
     @Override
@@ -48,14 +56,15 @@ public class EBikeCommunicationAdapter extends AbstractVerticle implements Ebike
 
     @Override
     public void sendUpdate(JsonObject ebike) {
-        webClient.putAbs(ebikeServiceUrl + "/api/ebikes/" + ebike.getString("id") + "/update")
-                .sendJsonObject(ebike, ar -> {
-                    if (ar.succeeded()) {
-                        System.out.println("EBike update sent successfully");
-                    } else {
-                        System.err.println("Failed to send EBike update: " + ar.cause().getMessage());
-                    }
-                });
+        String topicName = Topics.EBIKE_RIDE_UPDATE.getTopicName();
+        System.out.println("Sending EBike update to Kafka topic: " + topicName);
+        producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()), (metadata, exception) -> {
+            if (exception == null) {
+                System.out.println("EBike update sent successfully");
+            } else {
+                System.err.println("Failed to send EBike update: " + exception.getMessage());
+            }
+        });
     }
 
     @Override

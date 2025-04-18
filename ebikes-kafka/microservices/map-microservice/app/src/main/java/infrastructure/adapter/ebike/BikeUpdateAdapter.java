@@ -37,8 +37,8 @@ public class BikeUpdateAdapter {
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
 
         try (consumer) {
-            consumer.subscribe(List.of(Topics.EBIKE_UPDATES.getTopicName()));
-            System.out.println("Subscribed to Kafka topic: " + Topics.EBIKE_UPDATES.getTopicName());
+            consumer.subscribe(List.of(Topics.EBIKE_UPDATES.getTopicName(), Topics.EBIKE_RIDE_UPDATE.getTopicName()));
+            System.out.println("Subscribed to Kafka topic: " + Topics.EBIKE_UPDATES.getTopicName() + " and " + Topics.EBIKE_RIDE_UPDATE.getTopicName());
             while (running) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
                 for (ConsumerRecord<String, String> record : records) {

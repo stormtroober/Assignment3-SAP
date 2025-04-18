@@ -1,6 +1,8 @@
 package infrastructure.adapters.ride;
 
 import application.ports.EBikeServiceAPI;
+import infrastructure.adapters.kafkatopic.Topics;
+import infrastructure.utils.KafkaProperties;
 import infrastructure.utils.MetricsManager;
 import infrastructure.config.ServiceConfiguration;
 import io.vertx.core.AbstractVerticle;
@@ -10,8 +12,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.util.Collections;
 
 public class RideCommunicationAdapter extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(RideCommunicationAdapter.class);
@@ -19,12 +26,14 @@ public class RideCommunicationAdapter extends AbstractVerticle {
     private final int port;
     private final Vertx vertx;
     private final MetricsManager metricsManager;
+    private KafkaConsumer<String, String> consumer;
 
     public RideCommunicationAdapter(EBikeServiceAPI ebikeService, Vertx vertx) {
         this.ebikeService = ebikeService;
         this.port = ServiceConfiguration.getInstance(vertx).getRideAdapterConfig().getInteger("port");
         this.vertx = vertx;
         this.metricsManager = MetricsManager.getInstance();
+        consumer = new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
     }
 
     @Override
@@ -42,6 +51,28 @@ public class RideCommunicationAdapter extends AbstractVerticle {
 
         router.get("/api/ebikes/:id").handler(this::getEBike);
         router.put("/api/ebikes/:id/update").handler(this::updateEBike);
+
+        consumer.subscribe(Collections.singleton(Topics.EBIKE_RIDE_UPDATE.getTopicName()));
+
+        vertx.setPeriodic(1000, timerId -> {
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+            records.forEach(record -> {
+                logger.info("Received update from Kafka topic {}: {}", record.topic(), record.value());
+                try {
+                    JsonObject updateJson = new JsonObject(record.value());
+                    // Call the service to update the EBike using the received JsonObject.
+                    ebikeService.updateEBike(updateJson)
+                            .thenAccept(updated -> logger.info("EBike {} updated successfully via Kafka consumer", updateJson.getString("id")))
+                            .exceptionally(e -> {
+                                logger.error("Failed to update EBike {}: {}", updateJson.getString("id"), e.getMessage());
+                                return null;
+                            });
+                } catch (Exception e) {
+                    logger.error("Error parsing Kafka message to Json: {}", e.getMessage());
+                }
+            });
+        });
+
         router.get("/health").handler(ctx -> ctx.response().setStatusCode(200).end("OK"));
 
         vertx.createHttpServer()

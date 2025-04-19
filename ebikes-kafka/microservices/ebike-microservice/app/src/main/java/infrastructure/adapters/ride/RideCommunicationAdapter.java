@@ -12,6 +12,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
@@ -19,6 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RideCommunicationAdapter extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(RideCommunicationAdapter.class);
@@ -26,21 +31,20 @@ public class RideCommunicationAdapter extends AbstractVerticle {
     private final int port;
     private final Vertx vertx;
     private final MetricsManager metricsManager;
-    private KafkaConsumer<String, String> consumer;
+    private ExecutorService consumerExecutor;
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     public RideCommunicationAdapter(EBikeServiceAPI ebikeService, Vertx vertx) {
         this.ebikeService = ebikeService;
         this.port = ServiceConfiguration.getInstance(vertx).getRideAdapterConfig().getInteger("port");
         this.vertx = vertx;
         this.metricsManager = MetricsManager.getInstance();
-        consumer = new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
     }
 
     @Override
     public void start(Promise<Void> startPromise) {
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
-
 
         router.get("/health").handler(ctx -> ctx.response().setStatusCode(200).end("OK"));
         router.get("/metrics").handler(ctx -> {
@@ -50,29 +54,6 @@ public class RideCommunicationAdapter extends AbstractVerticle {
         });
 
         router.get("/api/ebikes/:id").handler(this::getEBike);
-        router.put("/api/ebikes/:id/update").handler(this::updateEBike);
-
-        consumer.subscribe(Collections.singleton(Topics.EBIKE_RIDE_UPDATE.getTopicName()));
-
-        vertx.setPeriodic(1000, timerId -> {
-            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-            records.forEach(record -> {
-                logger.info("Received update from Kafka topic {}: {}", record.topic(), record.value());
-                try {
-                    JsonObject updateJson = new JsonObject(record.value());
-                    // Call the service to update the EBike using the received JsonObject.
-                    ebikeService.updateEBike(updateJson)
-                            .thenAccept(updated -> logger.info("EBike {} updated successfully via Kafka consumer", updateJson.getString("id")))
-                            .exceptionally(e -> {
-                                logger.error("Failed to update EBike {}: {}", updateJson.getString("id"), e.getMessage());
-                                return null;
-                            });
-                } catch (Exception e) {
-                    logger.error("Error parsing Kafka message to Json: {}", e.getMessage());
-                }
-            });
-        });
-
         router.get("/health").handler(ctx -> ctx.response().setStatusCode(200).end("OK"));
 
         vertx.createHttpServer()
@@ -83,6 +64,60 @@ public class RideCommunicationAdapter extends AbstractVerticle {
                     startPromise.complete();
                 })
                 .onFailure(startPromise::fail);
+        initKafkaConsumer();
+
+    }
+
+    private void initKafkaConsumer() {
+        logger.info("Initializing Kafka consumer for EBike updates");
+        consumerExecutor = Executors.newSingleThreadExecutor();
+        running.set(true);
+        consumerExecutor.submit(this::runKafkaConsumer);
+    }
+
+    private void runKafkaConsumer() {
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        try (consumer) {
+            consumer.subscribe(List.of(Topics.EBIKE_RIDE_UPDATE.getTopicName()));
+            logger.info("Subscribed to Kafka topic: {}", Topics.EBIKE_RIDE_UPDATE.getTopicName());
+
+            while (running.get()) {
+                try {
+                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                    for (ConsumerRecord<String, String> record : records) {
+                        try {
+                            JsonObject updateJson = new JsonObject(record.value());
+                            ebikeService.updateEBike(updateJson)
+                                    .thenAccept(updated -> logger.info("EBike {} updated successfully via Kafka consumer", updateJson.getString("id")))
+                                    .exceptionally(e -> {
+                                        logger.error("Failed to update EBike {}: {}", updateJson.getString("id"), e.getMessage());
+                                        return null;
+                                    });
+                        } catch (Exception e) {
+                            logger.error("Invalid EBike data from Kafka: {}", e.getMessage());
+                        }
+                    }
+                    consumer.commitAsync((offsets, exception) -> {
+                        if (exception != null) {
+                            logger.error("Failed to commit offsets: {}", exception.getMessage());
+                        }
+                    });
+                } catch (Exception e) {
+                    logger.error("Error during Kafka polling: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error setting up Kafka consumer: {}", e.getMessage());
+        }
+    }
+
+    @Override
+    public void stop() {
+        running.set(false);
+        if (consumerExecutor != null) {
+            consumerExecutor.shutdownNow();
+        }
+        logger.info("RideCommunicationAdapter stopped and Kafka consumer executor shut down.");
     }
 
     public void init() {

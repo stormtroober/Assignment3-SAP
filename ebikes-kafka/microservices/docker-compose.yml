@@ -33,6 +33,17 @@ services:
       retries: 5
       start_period: 45s
 
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:latest
+    ports:
+      - "8087:8080"
+    networks:
+      - eureka-network
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+    depends_on:
+      kafka:
+        condition: service_healthy
 
   eureka-server:
     build:

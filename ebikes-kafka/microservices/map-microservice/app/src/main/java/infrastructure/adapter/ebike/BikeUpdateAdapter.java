@@ -41,11 +41,8 @@ public class BikeUpdateAdapter {
 
     try (consumer) {
       consumer.subscribe(
-          List.of(Topics.EBIKE_UPDATES.getTopicName(), Topics.EBIKE_RIDE_UPDATE.getTopicName()));
-      logger.info(
-          "Subscribed to Kafka topics: {} and {}",
-          Topics.EBIKE_UPDATES.getTopicName(),
-          Topics.EBIKE_RIDE_UPDATE.getTopicName());
+          List.of(Topics.EBIKE_UPDATES.getTopicName()
+          ));
 
       while (running.get()) {
         try {

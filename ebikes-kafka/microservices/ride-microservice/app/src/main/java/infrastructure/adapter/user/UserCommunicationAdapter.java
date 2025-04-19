@@ -67,7 +67,7 @@ public class UserCommunicationAdapter extends AbstractVerticle implements UserCo
     String topicName = Topics.RIDE_USER_UPDATE.getTopicName();
     System.out.println("Sending User update to Kafka topic: " + topicName);
     producer.send(
-        new ProducerRecord<>(topicName, user.getString("id"), user.encode()),
+        new ProducerRecord<>(topicName, user.getString("username"), user.encode()),
         (metadata, exception) -> {
           if (exception == null) {
             System.out.println("User update sent successfully");

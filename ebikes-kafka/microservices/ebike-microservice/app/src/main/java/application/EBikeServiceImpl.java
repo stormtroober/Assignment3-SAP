@@ -79,11 +79,7 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
             ebike.put("location", ebike.getJsonObject("location"));
         }
         return repository.update(ebike).thenCompose(v ->
-                repository.findById(ebike.getString("id")).thenApply(updatedEbike -> {
-                    //TODO: remove it when ride will send data also to map via kafka
-                    //mapCommunicationAdapter.sendUpdate(updatedEbike.orElse(ebike));
-                    return ebike;
-                })
+                repository.findById(ebike.getString("id")).thenApply(updatedEbike -> ebike)
         );
     }
 

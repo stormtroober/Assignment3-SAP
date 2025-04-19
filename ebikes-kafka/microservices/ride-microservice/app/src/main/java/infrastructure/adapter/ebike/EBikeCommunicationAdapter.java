@@ -29,7 +29,6 @@ public class EBikeCommunicationAdapter extends AbstractVerticle implements Ebike
     this.ebikeServiceUrl =
         "http://" + ebikeConfig.getString("name") + ":" + ebikeConfig.getInteger("port");
     this.vertx = vertx;
-    producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
   }
 
   @Override
@@ -61,6 +60,7 @@ public class EBikeCommunicationAdapter extends AbstractVerticle implements Ebike
             err -> {
               System.err.println("Failed to deploy EBikeCommunicationAdapter: " + err.getMessage());
             });
+    producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
   }
 
   @Override

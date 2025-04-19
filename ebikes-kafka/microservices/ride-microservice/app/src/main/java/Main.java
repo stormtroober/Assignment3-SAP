@@ -19,7 +19,7 @@ public class Main {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
               EbikeCommunicationPort ebikeCommunicationAdapter =
                   new EBikeCommunicationAdapter(vertx);
-              MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter(vertx);
+              MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
               UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
               RestRideServiceAPI service =
                   new RestRideServiceAPIImpl(

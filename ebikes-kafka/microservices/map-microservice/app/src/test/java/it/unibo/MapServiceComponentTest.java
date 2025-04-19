@@ -1,28 +1,28 @@
-//package it.unibo;
+// package it.unibo;
 //
-//import application.RestMapServiceAPIImpl;
-//import application.ports.EventPublisher;
-//import application.ports.RestMapServiceAPI;
-//import infrastructure.adapter.ebike.BikeUpdateAdapter;
-//import infrastructure.utils.EventPublisherImpl;
-//import infrastructure.adapter.web.MapServiceVerticle;
-//import infrastructure.config.ServiceConfiguration;
-//import io.vertx.core.Vertx;
-//import io.vertx.core.http.HttpClient;
-//import io.vertx.core.json.JsonArray;
-//import io.vertx.core.json.JsonObject;
-//import io.vertx.ext.web.client.WebClient;
-//import io.vertx.junit5.VertxExtension;
-//import io.vertx.junit5.VertxTestContext;
-//import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
+// import application.RestMapServiceAPIImpl;
+// import application.ports.EventPublisher;
+// import application.ports.RestMapServiceAPI;
+// import infrastructure.adapter.ebike.BikeUpdateAdapter;
+// import infrastructure.utils.EventPublisherImpl;
+// import infrastructure.adapter.web.MapServiceVerticle;
+// import infrastructure.config.ServiceConfiguration;
+// import io.vertx.core.Vertx;
+// import io.vertx.core.http.HttpClient;
+// import io.vertx.core.json.JsonArray;
+// import io.vertx.core.json.JsonObject;
+// import io.vertx.ext.web.client.WebClient;
+// import io.vertx.junit5.VertxExtension;
+// import io.vertx.junit5.VertxTestContext;
+// import org.junit.jupiter.api.AfterEach;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
 //
-//import static org.junit.jupiter.api.Assertions.assertEquals;
+// import static org.junit.jupiter.api.Assertions.assertEquals;
 //
-//@ExtendWith(VertxExtension.class)
-//public class MapServiceComponentTest {
+// @ExtendWith(VertxExtension.class)
+// public class MapServiceComponentTest {
 //
 //    private Vertx vertx;
 //    private HttpClient client;
@@ -95,4 +95,4 @@
 //                    });
 //                })));
 //    }
-//}
+// }

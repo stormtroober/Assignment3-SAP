@@ -1,5 +1,3 @@
 package ddd;
 
-public interface ValueObject {
-
-}
+public interface ValueObject {}

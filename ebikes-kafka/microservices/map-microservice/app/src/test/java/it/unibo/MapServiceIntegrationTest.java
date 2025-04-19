@@ -1,28 +1,28 @@
-//package it.unibo;
+// package it.unibo;
 //
 //
-//import application.RestMapServiceAPIImpl;
-//import application.ports.EventPublisher;
-//import application.ports.RestMapServiceAPI;
-//import domain.model.EBike;
-//import infrastructure.config.ServiceConfiguration;
-//import io.vertx.core.Vertx;
-//import io.vertx.core.json.JsonObject;
-//import io.vertx.ext.web.client.WebClient;
-//import io.vertx.junit5.VertxExtension;
-//import io.vertx.junit5.VertxTestContext;
-//import infrastructure.adapter.ebike.BikeUpdateAdapter;
-//import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
+// import application.RestMapServiceAPIImpl;
+// import application.ports.EventPublisher;
+// import application.ports.RestMapServiceAPI;
+// import domain.model.EBike;
+// import infrastructure.config.ServiceConfiguration;
+// import io.vertx.core.Vertx;
+// import io.vertx.core.json.JsonObject;
+// import io.vertx.ext.web.client.WebClient;
+// import io.vertx.junit5.VertxExtension;
+// import io.vertx.junit5.VertxTestContext;
+// import infrastructure.adapter.ebike.BikeUpdateAdapter;
+// import org.junit.jupiter.api.AfterEach;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
 //
-//import java.util.List;
+// import java.util.List;
 //
-//import static org.junit.jupiter.api.Assertions.assertEquals;
+// import static org.junit.jupiter.api.Assertions.assertEquals;
 //
-//@ExtendWith(VertxExtension.class)
-//public class MapServiceIntegrationTest {
+// @ExtendWith(VertxExtension.class)
+// public class MapServiceIntegrationTest {
 //
 //    private Vertx vertx;
 //    private WebClient client;
@@ -40,7 +40,8 @@
 //        mapService = new RestMapServiceAPIImpl(eventPublisher);
 //
 //        ServiceConfiguration config = ServiceConfiguration.getInstance(vertx);
-//        config.load().onSuccess(conf -> vertx.deployVerticle(new BikeUpdateAdapter(mapService, vertx))
+//        config.load().onSuccess(conf -> vertx.deployVerticle(new BikeUpdateAdapter(mapService,
+// vertx))
 //                .onComplete(ar -> {
 //                    if (ar.succeeded()) {
 //                        vertx.setTimer(1000, id -> testContext.completeNow());
@@ -71,7 +72,8 @@
 //                    assertEquals(200, response.statusCode());
 //
 //                    // Verify the published bikes
-//                    List<EBike> publishedBikes = ((TestEventPublisher) eventPublisher).getPublishedBikes();
+//                    List<EBike> publishedBikes = ((TestEventPublisher)
+// eventPublisher).getPublishedBikes();
 //                    assertEquals(1, publishedBikes.size());
 //                    EBike bike = publishedBikes.getFirst();
 //                    assertEquals("bike1", bike.getBikeName());
@@ -106,4 +108,4 @@
 //            return publishedBikes;
 //        }
 //    }
-//}
+// }

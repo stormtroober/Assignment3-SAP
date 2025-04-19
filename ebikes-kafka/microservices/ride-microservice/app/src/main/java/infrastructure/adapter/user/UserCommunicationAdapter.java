@@ -2,18 +2,24 @@ package infrastructure.adapter.user;
 
 import application.ports.EventPublisher;
 import application.ports.UserCommunicationPort;
+import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.config.ServiceConfiguration;
+import infrastructure.utils.KafkaProperties;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import java.util.concurrent.CompletableFuture;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 public class UserCommunicationAdapter extends AbstractVerticle implements UserCommunicationPort {
   private final WebClient webClient;
   private final String userServiceUrl;
   private final Vertx vertx;
+  private Producer<String, String> producer;
 
   public UserCommunicationAdapter(Vertx vertx) {
     this.webClient = WebClient.create(vertx);
@@ -53,21 +59,22 @@ public class UserCommunicationAdapter extends AbstractVerticle implements UserCo
             err -> {
               System.err.println("Failed to deploy UserCommunicationAdapter: " + err.getMessage());
             });
+    producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
   }
 
   @Override
   public void sendUpdate(JsonObject user) {
-    webClient
-        .putAbs(userServiceUrl + "/api/users/" + user.getString("id") + "/update")
-        .sendJsonObject(
-            user,
-            ar -> {
-              if (ar.succeeded()) {
-                System.out.println("User update sent successfully");
-              } else {
-                System.err.println("Failed to send User update: " + ar.cause().getMessage());
-              }
-            });
+    String topicName = Topics.RIDE_USER_UPDATE.getTopicName();
+    System.out.println("Sending User update to Kafka topic: " + topicName);
+    producer.send(
+        new ProducerRecord<>(topicName, user.getString("id"), user.encode()),
+        (metadata, exception) -> {
+          if (exception == null) {
+            System.out.println("User update sent successfully");
+          } else {
+            System.err.println("Failed to send User update: " + exception.getMessage());
+          }
+        });
   }
 
   @Override

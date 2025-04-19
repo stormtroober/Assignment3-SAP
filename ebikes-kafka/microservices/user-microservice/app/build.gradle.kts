@@ -2,6 +2,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     java
     application
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 java{
@@ -64,4 +65,11 @@ tasks.jar {
     // Include dependencies
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+spotless {
+    java {
+        googleJavaFormat() // or eclipse().configFile("...")
+        target("src/**/*.java")
+    }
 }

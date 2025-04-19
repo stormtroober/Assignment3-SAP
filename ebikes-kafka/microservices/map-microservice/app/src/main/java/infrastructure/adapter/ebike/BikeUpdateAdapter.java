@@ -11,24 +11,28 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BikeUpdateAdapter {
 
+  private static final Logger logger = LoggerFactory.getLogger(BikeUpdateAdapter.class);
   private final RestMapServiceAPI mapService;
-  private boolean running = false;
+  private ExecutorService consumerExecutor;
+  private final AtomicBoolean running = new AtomicBoolean(false);
 
   public BikeUpdateAdapter(RestMapServiceAPI mapService) {
     this.mapService = mapService;
   }
 
   public void init() {
-    System.out.println("Initializing BikeUpdateAdapter");
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
-    executorService.submit(this::runKafkaConsumer);
-    running = true;
+    consumerExecutor = Executors.newSingleThreadExecutor();
+    running.set(true);
+    consumerExecutor.submit(this::runKafkaConsumer);
   }
 
   private void runKafkaConsumer() {
@@ -38,32 +42,43 @@ public class BikeUpdateAdapter {
     try (consumer) {
       consumer.subscribe(
           List.of(Topics.EBIKE_UPDATES.getTopicName(), Topics.EBIKE_RIDE_UPDATE.getTopicName()));
-      System.out.println(
-          "Subscribed to Kafka topic: "
-              + Topics.EBIKE_UPDATES.getTopicName()
-              + " and "
-              + Topics.EBIKE_RIDE_UPDATE.getTopicName());
-      while (running) {
-        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
-        for (ConsumerRecord<String, String> record : records) {
-          try {
-            JsonObject body = new JsonObject(record.value());
-            EBike bike = createEBikeFromJson(body);
-            mapService
-                .updateEBike(bike)
-                .thenAccept(v -> System.out.printf("EBike %s updated successfully\n", bike.getId()))
-                .exceptionally(
-                    ex -> {
-                      System.err.printf(
-                          "Failed to update EBike %s: %s\n", bike.getId(), ex.getMessage());
-                      return null;
-                    });
-          } catch (Exception e) {
-            System.err.println("Invalid EBike data from Kafka: " + e.getMessage());
+      logger.info(
+          "Subscribed to Kafka topics: {} and {}",
+          Topics.EBIKE_UPDATES.getTopicName(),
+          Topics.EBIKE_RIDE_UPDATE.getTopicName());
+
+      while (running.get()) {
+        try {
+          ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+          for (ConsumerRecord<String, String> record : records) {
+            try {
+              JsonObject body = new JsonObject(record.value());
+              EBike bike = createEBikeFromJson(body);
+              mapService
+                  .updateEBike(bike)
+                  .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
+                  .exceptionally(
+                      ex -> {
+                        logger.error(
+                            "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
+                        return null;
+                      });
+            } catch (Exception e) {
+              logger.error("Invalid EBike data from Kafka: {}", e.getMessage());
+            }
           }
+          consumer.commitAsync(
+              (offsets, exception) -> {
+                if (exception != null) {
+                  logger.error("Failed to commit offsets: {}", exception.getMessage());
+                }
+              });
+        } catch (Exception e) {
+          logger.error("Error during Kafka polling: {}", e.getMessage());
         }
-        consumer.commitSync();
       }
+    } catch (Exception e) {
+      logger.error("Error setting up Kafka consumer: {}", e.getMessage());
     }
   }
 
@@ -77,5 +92,13 @@ public class BikeUpdateAdapter {
 
     EBikeFactory factory = EBikeFactory.getInstance();
     return factory.createEBike(bikeName, (float) x, (float) y, state, batteryLevel);
+  }
+
+  public void stop() {
+    running.set(false);
+    if (consumerExecutor != null) {
+      consumerExecutor.shutdownNow();
+    }
+    logger.info("BikeUpdateAdapter stopped and Kafka consumer executor shut down.");
   }
 }

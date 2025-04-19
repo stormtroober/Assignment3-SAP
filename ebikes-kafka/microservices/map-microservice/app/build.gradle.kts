@@ -22,8 +22,10 @@ repositories {
 
 dependencies {
     implementation("org.apache.kafka:kafka-clients:3.7.1")
+    implementation("org.slf4j:slf4j-api:2.0.9")
+    implementation("ch.qos.logback:logback-classic:1.4.12")
 
-    implementation("io.vertx:vertx-core:4.4.0")
+    implementation("io.vertx:vertx-core:4.5.3")
     implementation("io.vertx:vertx-web:4.4.0")
     implementation("io.vertx:vertx-web-client:4.4.0")
     implementation("io.vertx:vertx-config:4.4.0")

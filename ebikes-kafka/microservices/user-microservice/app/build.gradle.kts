@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.apache.kafka:kafka-clients:3.7.1")
     // Vertx
     implementation(platform("io.vertx:vertx-stack-depchain:4.4.0"))
     implementation("io.vertx:vertx-core")

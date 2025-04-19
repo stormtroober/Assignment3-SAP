@@ -1,9 +1,8 @@
 package infrastructure.utils;
 
+import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-
-import java.util.Properties;
 
 public class KafkaProperties {
 

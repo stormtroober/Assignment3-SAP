@@ -1,9 +1,11 @@
 package infrastructure.adapters.ride;
 
+import static infrastructure.adapters.kafkatopic.Topics.RIDE_USER_UPDATE;
+
 import application.ports.UserServiceAPI;
 import infrastructure.config.ServiceConfiguration;
-import infrastructure.utils.MetricsManager;
 import infrastructure.utils.KafkaProperties;
+import infrastructure.utils.MetricsManager;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -11,19 +13,16 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static infrastructure.adapters.kafkatopic.Topics.RIDE_USER_UPDATE;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RideCommunicationAdapter extends AbstractVerticle {
   private static final Logger logger = LoggerFactory.getLogger(RideCommunicationAdapter.class);
@@ -52,37 +51,37 @@ public class RideCommunicationAdapter extends AbstractVerticle {
     router.get("/health").handler(ctx -> ctx.response().setStatusCode(200).end("OK"));
 
     vertx
-            .createHttpServer()
-            .requestHandler(router)
-            .listen(port)
-            .onSuccess(
-                    server -> {
-                      logger.info("RideCommunicationAdapter HTTP server started on port {}", port);
-                      startPromise.complete();
-                    })
-            .onFailure(startPromise::fail);
+        .createHttpServer()
+        .requestHandler(router)
+        .listen(port)
+        .onSuccess(
+            server -> {
+              logger.info("RideCommunicationAdapter HTTP server started on port {}", port);
+              startPromise.complete();
+            })
+        .onFailure(startPromise::fail);
   }
 
   private void metrics(RoutingContext routingContext) {
     routingContext
-            .response()
-            .putHeader("Content-Type", "text/plain")
-            .end(metricsManager.getMetrics());
+        .response()
+        .putHeader("Content-Type", "text/plain")
+        .end(metricsManager.getMetrics());
   }
 
   public void init() {
     startKafkaConsumer();
 
     vertx
-            .deployVerticle(this)
-            .onSuccess(
-                    id -> {
-                      logger.info("RideCommunicationAdapter deployed successfully with ID: " + id);
-                    })
-            .onFailure(
-                    err -> {
-                      logger.error("Failed to deploy RideCommunicationAdapter", err);
-                    });
+        .deployVerticle(this)
+        .onSuccess(
+            id -> {
+              logger.info("RideCommunicationAdapter deployed successfully with ID: " + id);
+            })
+        .onFailure(
+            err -> {
+              logger.error("Failed to deploy RideCommunicationAdapter", err);
+            });
   }
 
   private void startKafkaConsumer() {
@@ -92,7 +91,8 @@ public class RideCommunicationAdapter extends AbstractVerticle {
   }
 
   private void runKafkaConsumer() {
-    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+    KafkaConsumer<String, String> consumer =
+        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
 
     try (consumer) {
       // Subscribe to the ride-user-update topic
@@ -114,11 +114,11 @@ public class RideCommunicationAdapter extends AbstractVerticle {
             }
           }
           consumer.commitAsync(
-                  (offsets, exception) -> {
-                    if (exception != null) {
-                      logger.error("Failed to commit offsets: {}", exception.getMessage());
-                    }
-                  });
+              (offsets, exception) -> {
+                if (exception != null) {
+                  logger.error("Failed to commit offsets: {}", exception.getMessage());
+                }
+              });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage());
         }
@@ -134,24 +134,24 @@ public class RideCommunicationAdapter extends AbstractVerticle {
 
     try {
       userService
-              .updateUser(user)
-              .thenAccept(
-                      updatedUser -> {
-                        if (updatedUser != null) {
-                          logger.info("User updated via Kafka: {}", updatedUser);
-                          metricsManager.recordTimer(timer, "updateUser");
-                        } else {
-                          logger.error("User not found via Kafka update: {}", user.getString("username"));
-                          metricsManager.recordError(
-                                  timer, "updateUser", new RuntimeException("User not found"));
-                        }
-                      })
-              .exceptionally(
-                      e -> {
-                        logger.error("Error processing user update from Kafka", e);
-                        metricsManager.recordError(timer, "updateUser", e);
-                        return null;
-                      });
+          .updateUser(user)
+          .thenAccept(
+              updatedUser -> {
+                if (updatedUser != null) {
+                  logger.info("User updated via Kafka: {}", updatedUser);
+                  metricsManager.recordTimer(timer, "updateUser");
+                } else {
+                  logger.error("User not found via Kafka update: {}", user.getString("username"));
+                  metricsManager.recordError(
+                      timer, "updateUser", new RuntimeException("User not found"));
+                }
+              })
+          .exceptionally(
+              e -> {
+                logger.error("Error processing user update from Kafka", e);
+                metricsManager.recordError(timer, "updateUser", e);
+                return null;
+              });
     } catch (Exception e) {
       logger.error("Invalid JSON format in Kafka message", e);
       metricsManager.recordError(timer, "updateUser", e);
@@ -177,27 +177,27 @@ public class RideCommunicationAdapter extends AbstractVerticle {
         return;
       }
       userService
-              .getUserByUsername(username)
-              .thenAccept(
-                      optionalUser -> {
-                        if (optionalUser.isPresent()) {
-                          logger.info("User found with username: " + username);
-                          logger.info("Sending response to rides-microservice -> " + optionalUser.get());
-                          sendResponse(ctx, 200, optionalUser.get());
-                          metricsManager.recordTimer(timer, "getUser");
-                        } else {
-                          logger.error("User not found with username: " + username);
-                          ctx.response().setStatusCode(404).end();
-                          metricsManager.recordError(
-                                  timer, "getUser", new RuntimeException("User not found"));
-                        }
-                      })
-              .exceptionally(
-                      e -> {
-                        handleError(ctx, e);
-                        metricsManager.recordError(timer, "getUser", e);
-                        return null;
-                      });
+          .getUserByUsername(username)
+          .thenAccept(
+              optionalUser -> {
+                if (optionalUser.isPresent()) {
+                  logger.info("User found with username: " + username);
+                  logger.info("Sending response to rides-microservice -> " + optionalUser.get());
+                  sendResponse(ctx, 200, optionalUser.get());
+                  metricsManager.recordTimer(timer, "getUser");
+                } else {
+                  logger.error("User not found with username: " + username);
+                  ctx.response().setStatusCode(404).end();
+                  metricsManager.recordError(
+                      timer, "getUser", new RuntimeException("User not found"));
+                }
+              })
+          .exceptionally(
+              e -> {
+                handleError(ctx, e);
+                metricsManager.recordError(timer, "getUser", e);
+                return null;
+              });
     } catch (Exception e) {
       handleError(ctx, new RuntimeException("Invalid JSON format"));
       metricsManager.recordError(timer, "getUser", e);
@@ -206,24 +206,24 @@ public class RideCommunicationAdapter extends AbstractVerticle {
 
   private void sendResponse(RoutingContext ctx, int statusCode, Object result) {
     ctx.response()
-            .setStatusCode(statusCode)
-            .putHeader("content-type", "application/json")
-            .end(result instanceof String ? (String) result : result.toString());
+        .setStatusCode(statusCode)
+        .putHeader("content-type", "application/json")
+        .end(result instanceof String ? (String) result : result.toString());
   }
 
   private void sendError(RoutingContext ctx, int statusCode, String message) {
     JsonObject error = new JsonObject().put("error", message);
     ctx.response()
-            .setStatusCode(statusCode)
-            .putHeader("content-type", "application/json")
-            .end(error.encode());
+        .setStatusCode(statusCode)
+        .putHeader("content-type", "application/json")
+        .end(error.encode());
   }
 
   private void handleError(RoutingContext ctx, Throwable e) {
     logger.error("Error processing request", e);
     ctx.response()
-            .setStatusCode(500)
-            .putHeader("content-type", "application/json")
-            .end(new JsonObject().put("error", e.getMessage()).encode());
+        .setStatusCode(500)
+        .putHeader("content-type", "application/json")
+        .end(new JsonObject().put("error", e.getMessage()).encode());
   }
 }

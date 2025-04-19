@@ -25,15 +25,15 @@ import org.slf4j.LoggerFactory;
 
 public class RideCommunicationAdapter extends AbstractVerticle {
   private static final Logger logger = LoggerFactory.getLogger(RideCommunicationAdapter.class);
-  private final EBikeServiceAPI ebikeService;
+  private final EBikeServiceAPI eBikeService;
   private final int port;
   private final Vertx vertx;
   private final MetricsManager metricsManager;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
 
-  public RideCommunicationAdapter(EBikeServiceAPI ebikeService, Vertx vertx) {
-    this.ebikeService = ebikeService;
+  public RideCommunicationAdapter(EBikeServiceAPI eBikeService, Vertx vertx) {
+    this.eBikeService = eBikeService;
     this.port = ServiceConfiguration.getInstance(vertx).getRideAdapterConfig().getInteger("port");
     this.vertx = vertx;
     this.metricsManager = MetricsManager.getInstance();
@@ -90,7 +90,7 @@ public class RideCommunicationAdapter extends AbstractVerticle {
           for (ConsumerRecord<String, String> record : records) {
             try {
               JsonObject updateJson = new JsonObject(record.value());
-              ebikeService
+              eBikeService
                   .updateEBike(updateJson)
                   .thenAccept(
                       updated ->
@@ -153,11 +153,11 @@ public class RideCommunicationAdapter extends AbstractVerticle {
     String id = ctx.pathParam("id");
     System.out.println("Receive request from rides-microservice -> getEBike(" + id + ")");
     if (id == null || id.trim().isEmpty()) {
-      sendError(ctx, 400, "Invalid id");
+      sendError(ctx);
       return;
     }
 
-    ebikeService
+    eBikeService
         .getEBike(id)
         .thenAccept(
             optionalEBike -> {
@@ -165,7 +165,7 @@ public class RideCommunicationAdapter extends AbstractVerticle {
                 System.out.println("EBike found with id: " + id);
                 System.out.println(
                     "Sending response to rides-microservice -> " + optionalEBike.get());
-                sendResponse(ctx, 200, optionalEBike.get());
+                sendResponse(ctx, optionalEBike.get());
               } else {
                 System.out.println("EBike not found with id: " + id);
                 ctx.response().setStatusCode(404).end();
@@ -182,50 +182,17 @@ public class RideCommunicationAdapter extends AbstractVerticle {
             });
   }
 
-  private void updateEBike(RoutingContext ctx) {
-    try {
-      metricsManager.incrementMethodCounter("updateEBike");
-      var timer = metricsManager.startTimer();
-
-      JsonObject body = ctx.body().asJsonObject();
-      String id = ctx.pathParam("id");
-      body.put("id", id);
-
-      ebikeService
-          .updateEBike(body)
-          .thenAccept(
-              result -> {
-                if (result != null) {
-                  sendResponse(ctx, 200, result);
-                } else {
-                  ctx.response().setStatusCode(404).end();
-                }
-              })
-          .whenComplete(
-              (result, throwable) -> {
-                metricsManager.recordTimer(timer, "updateEBike");
-              })
-          .exceptionally(
-              e -> {
-                handleError(ctx, e);
-                return null;
-              });
-    } catch (Exception e) {
-      handleError(ctx, new RuntimeException("Invalid JSON format"));
-    }
-  }
-
-  private void sendResponse(RoutingContext ctx, int statusCode, Object result) {
+  private void sendResponse(RoutingContext ctx, Object result) {
     ctx.response()
-        .setStatusCode(statusCode)
+        .setStatusCode(200)
         .putHeader("content-type", "application/json")
         .end(result instanceof String ? (String) result : result.toString());
   }
 
-  private void sendError(RoutingContext ctx, int statusCode, String message) {
-    JsonObject error = new JsonObject().put("error", message);
+  private void sendError(RoutingContext ctx) {
+    JsonObject error = new JsonObject().put("error", "Invalid id");
     ctx.response()
-        .setStatusCode(statusCode)
+        .setStatusCode(400)
         .putHeader("content-type", "application/json")
         .end(error.encode());
   }

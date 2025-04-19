@@ -1,5 +1,3 @@
 package ddd;
 
-public interface Factory {
-
-}
+public interface Factory {}

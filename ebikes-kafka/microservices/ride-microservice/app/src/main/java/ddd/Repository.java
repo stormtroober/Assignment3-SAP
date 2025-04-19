@@ -1,5 +1,3 @@
 package ddd;
 
-public interface Repository {
-
-}
+public interface Repository {}

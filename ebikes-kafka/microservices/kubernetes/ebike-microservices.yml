@@ -22,7 +22,7 @@ spec:
           command: ['sh', '-c', 'until nc -z mongodb 27017; do echo waiting for mongodb; sleep 2; done;']
         - name: wait-for-kafka
           image: busybox
-          command: ['sh', '-c', 'until nc -z kafka 9092; do echo waiting for kafka; sleep 2; done;']
+          command: ['sh', '-c', 'until nc -z kafka-broker 9092; do echo waiting for kafka-broker; sleep 2; done;']
         # - name: wait-for-map
         #   image: busybox
         #   command: ['sh', '-c', 'until nc -z map-microservice 8082; do echo waiting for map-microservice; sleep 2; done;']

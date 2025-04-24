@@ -48,12 +48,12 @@ spec:
               value: "PLAINTEXT"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
-            - name: KAFKA_LOG4J_ROOT_LOGLEVEL
-              value: "DEBUG"
-            - name: KAFKA_TOOLS_LOG4J_LOGLEVEL
-              value: "DEBUG"
-            - name: KAFKA_OPTS
-              value: "-Djava.net.preferIPv4Stack=true -Dlog4j.debug=true"
+#            - name: KAFKA_LOG4J_ROOT_LOGLEVEL
+#              value: "DEBUG"
+#            - name: KAFKA_TOOLS_LOG4J_LOGLEVEL
+#              value: "DEBUG"
+#            - name: KAFKA_OPTS
+#              value: "-Djava.net.preferIPv4Stack=true -Dlog4j.debug=true"
           volumeMounts:
             - name: kafka-data
               mountPath: /var/lib/kafka/data

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ebike-microservice
+  namespace: ebikes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ebike-microservice
+  template:
+    metadata:
+      labels:
+        app: ebike-microservice
+    spec:
+      initContainers:
+        - name: wait-for-eureka
+          image: busybox
+          command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka; sleep 2; done;']
+        - name: wait-for-mongodb
+          image: busybox
+          command: ['sh', '-c', 'until nc -z mongodb 27017; do echo waiting for mongodb; sleep 2; done;']
+        - name: wait-for-kafka
+          image: busybox
+          command: ['sh', '-c', 'until nc -z kafka 9092; do echo waiting for kafka; sleep 2; done;']
+        # - name: wait-for-map
+        #   image: busybox
+        #   command: ['sh', '-c', 'until nc -z map-microservice 8082; do echo waiting for map-microservice; sleep 2; done;']
+      containers:
+        - name: ebike-microservice
+          image: microservices-ebike-microservice:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+            - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: ebikes-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ebike-microservice
+  namespace: ebikes
+spec:
+  selector:
+    app: ebike-microservice
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: management
+      port: 8081
+      targetPort: 8081

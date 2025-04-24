@@ -1,28 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: map-microservice
+  name: user-microservice
   namespace: ebikes
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: map-microservice
+      app: user-microservice
   template:
     metadata:
       labels:
-        app: map-microservice
+        app: user-microservice
     spec:
       initContainers:
         - name: wait-for-eureka
           image: busybox
           command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka; sleep 2; done;']
+        - name: wait-for-mongodb
+          image: busybox
+          command: ['sh', '-c', 'until nc -z mongodb 27017; do echo waiting for mongodb; sleep 2; done;']
       containers:
-        - name: map-microservice
-          image: microservices-map-microservice:latest
+        - name: user-microservice
+          image: microservices-user-microservice:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
+            - containerPort: 8081
           envFrom:
             - configMapRef:
                 name: ebikes-config
@@ -30,12 +34,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: map-microservice
+  name: user-microservice
   namespace: ebikes
 spec:
   selector:
-    app: map-microservice
+    app: user-microservice
   ports:
     - name: http
       port: 8080
       targetPort: 8080
+    - name: management
+      port: 8081
+      targetPort: 8081

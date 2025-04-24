@@ -24,7 +24,7 @@ spec:
         - name: KAFKA_CLUSTERS_0_NAME
           value: "local"
         - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
-          value: "kafka-broker-1:29092,kafka-broker-2:29093,kafka-broker-3:29094"
+          value: "kafka-broker:29092"
         - name: KAFKA_CLUSTERS_0_ZOOKEEPER
           value: "zookeeper-1:2181"
         - name: AUTH_TYPE

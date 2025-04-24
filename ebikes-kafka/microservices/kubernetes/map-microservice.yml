@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: map-microservice
+  namespace: ebikes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: map-microservice
+  template:
+    metadata:
+      labels:
+        app: map-microservice
+    spec:
+      initContainers:
+        - name: wait-for-eureka
+          image: busybox
+          command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka; sleep 2; done;']
+      containers:
+        - name: map-microservice
+          image: microservices-map-microservice:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+            - containerPort: 8081
+            - containerPort: 8082
+          envFrom:
+            - configMapRef:
+                name: ebikes-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: map-microservice
+  namespace: ebikes
+spec:
+  selector:
+    app: map-microservice
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: adapter-ride
+      port: 8081
+      targetPort: 8081
+    - name: adapter-ebike
+      port: 8082
+      targetPort: 8082

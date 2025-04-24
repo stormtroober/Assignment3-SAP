@@ -1,40 +1,40 @@
-#apiVersion: apps/v1
-#kind: Deployment
-#metadata:
-#  name: eureka-server
-#  namespace: ebikes
-#spec:
-#  replicas: 1
-#  selector:
-#    matchLabels:
-#      app: eureka-server
-#  template:
-#    metadata:
-#      labels:
-#        app: eureka-server
-#    spec:
-#      initContainers:
-#        - name: wait-for-kafka
-#          image: busybox
-#          command: ['sh', '-c', 'until nc -z kafka 9092; do echo waiting for kafka; sleep 2; done;']
-#      containers:
-#        - name: eureka-server
-#          image: eureka-server:latest
-#          imagePullPolicy: IfNotPresent
-#          ports:
-#            - containerPort: 8761
-#          envFrom:
-#            - configMapRef:
-#                name: ebikes-config
-#---
-#apiVersion: v1
-#kind: Service
-#metadata:
-#  name: eureka-server
-#  namespace: ebikes
-#spec:
-#  selector:
-#    app: eureka-server
-#  ports:
-#    - port: 8761
-#      targetPort: 8761
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: eureka-server
+ namespace: ebikes
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: eureka-server
+ template:
+   metadata:
+     labels:
+       app: eureka-server
+   spec:
+     initContainers:
+       - name: wait-for-kafka
+         image: busybox
+         command: ['sh', '-c', 'until nc -z kafka 9092; do echo waiting for kafka; sleep 2; done;']
+     containers:
+       - name: eureka-server
+         image: microservices-eureka-server:latest
+         imagePullPolicy: Never
+         ports:
+           - containerPort: 8761
+         envFrom:
+           - configMapRef:
+               name: ebikes-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: eureka-server
+ namespace: ebikes
+spec:
+ selector:
+   app: eureka-server
+ ports:
+   - port: 8761
+     targetPort: 8761

@@ -15,13 +15,14 @@ spec:
     spec:
       initContainers:
         - name: wait-for-zookeeper
-          image: busybox
+          image: alpine:3.19
           command:
             - sh
             - -c
             - |
-              echo "Waiting for DNS resolution and port availability..."
-              until nslookup zookeeper.ebikes.svc.cluster.local && nc -z zookeeper.ebikes.svc.cluster.local 2181; do
+              apk add --no-cache bind-tools netcat-openbsd
+              echo "Waiting for Zookeeper DNS and port..."
+              until nslookup zookeeper && nc -z zookeeper 2181; do
                 echo "Zookeeper not ready yet..."
                 sleep 2
               done
@@ -61,3 +62,16 @@ spec:
       volumes:
         - name: kafka-data
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: ebikes
+spec:
+  selector:
+    app: kafka
+  ports:
+    - name: kafka
+      port: 9092
+      targetPort: 9092

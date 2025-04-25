@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: ebikes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      initContainers:
+        - name: wait-for-eureka
+          image: busybox
+          command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka; sleep 2; done;']
+        - name: wait-for-ebike
+          image: busybox
+          command: ['sh', '-c', 'until nc -z ebike-microservice 8080; do echo waiting for ebike-microservice; sleep 2; done;']
+        - name: wait-for-user
+          image: busybox
+          command: ['sh', '-c', 'until nc -z user-microservice 8080; do echo waiting for user-microservice; sleep 2; done;']
+        - name: wait-for-map
+          image: busybox
+          command: ['sh', '-c', 'until nc -z map-microservice 8080; do echo waiting for map-microservice; sleep 2; done;']
+        - name: wait-for-ride
+          image: busybox
+          command: ['sh', '-c', 'until nc -z ride-microservice 8080; do echo waiting for ride-microservice; sleep 2; done;']
+      containers:
+        - name: api-gateway
+          image: microservices-api-gateway:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: ebikes-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: ebikes
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: LoadBalancer

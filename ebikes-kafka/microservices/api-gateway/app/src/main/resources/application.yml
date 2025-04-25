@@ -1,9 +1,9 @@
 server:
-  port: ${API_GATEWAY_EUREKA_INSTANCE_PORT}  # Gateway will run on port 8081
+  port: 8080  # Gateway will run on port 8081
 
 spring:
   application:
-    name: ${API_GATEWAY_EUREKA_INSTANCE_HOSTNAME}  # Gateway name for Eureka registration
+    name: api-gateway  # Gateway name for Eureka registration
 
   cloud:
     gateway:
@@ -14,7 +14,7 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}  # Use service name for Docker network resolution
+      defaultZone: http://eureka-server:8761/eureka/  # Use service name for Docker network resolution
     registerWithEureka: true  # Gateway registers with Eureka
     fetchRegistry: true       # Gateway fetches Eureka registry
 

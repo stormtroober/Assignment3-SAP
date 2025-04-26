@@ -149,6 +149,40 @@ services:
       retries: 3
       start_period: 5s
 
+  abike-microservice:
+    build:
+      context: ./abike-microservice
+    ports:
+      - 8085:${ABIKE_INSTANCE_PORT}
+    networks:
+      - eureka-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      map-microservice:
+        condition: service_healthy
+      kafka-broker:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_HOST=${EUREKA_INSTANCE_HOSTNAME}
+      - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
+      - SERVICE_NAME=${ABIKE_EUREKA_SERVICE_NAME}
+      - SERVICE_PORT=${ABIKE_INSTANCE_PORT}
+      - ADAPTER_RIDE_PORT=${EBIKE_ADAPTER_RIDE_PORT}
+      - MAP_HOST=${MAP_INSTANCE_HOSTNAME}
+      - MAP_PORT=${MAP_ADAPTER_EBIKE_PORT}
+      - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
+      - MONGO_DATABSE=${EBIKE_MONGODB_DATABASE}
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:${ABIKE_INSTANCE_PORT}/health", "curl -f http://localhost:${EBIKE_ADAPTER_RIDE_PORT}/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
   ride-microservice:
     build:
       context: ./ride-microservice

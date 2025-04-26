@@ -76,7 +76,7 @@ public class ServiceConfiguration {
 
   public JsonObject getServiceConfig() {
     return new JsonObject()
-        .put("name", config.getString("SERVICE_NAME", "ebike-microservice"))
+        .put("name", config.getString("SERVICE_NAME", "abike-microservice"))
         .put("port", config.getInteger("SERVICE_PORT", 8080));
   }
 

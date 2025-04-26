@@ -21,7 +21,6 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
     }
 
     public void init() {
-        // Initialize Kafka producer
         producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
     }
 

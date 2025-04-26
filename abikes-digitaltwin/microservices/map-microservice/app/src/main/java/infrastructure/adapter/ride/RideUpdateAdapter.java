@@ -55,8 +55,6 @@ public class RideUpdateAdapter {
                         try {
                             JsonObject rideUpdate = new JsonObject(record.value());
                             logger.info("Received ride update from Kafka: {}", rideUpdate);
-
-                            // Process the ride update
                             processRideUpdate(rideUpdate);
                         } catch (Exception e) {
                             logger.error("Invalid ride update data from Kafka: {}", e.getMessage());

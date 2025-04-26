@@ -73,12 +73,17 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
     if (ebike.containsKey("location")) {
       ebike.put("location", ebike.getJsonObject("location"));
     }
-    return repository.update(ebike).thenCompose(v ->
-            repository.findById(ebike.getString("id")).thenApply(updatedEbike -> {
-              mapCommunicationAdapter.sendUpdate(updatedEbike.orElse(ebike));
-              return ebike;
-            })
-    );
+    return repository
+        .update(ebike)
+        .thenCompose(
+            v ->
+                repository
+                    .findById(ebike.getString("id"))
+                    .thenApply(
+                        updatedEbike -> {
+                          mapCommunicationAdapter.sendUpdate(updatedEbike.orElse(ebike));
+                          return ebike;
+                        }));
   }
 
   @Override

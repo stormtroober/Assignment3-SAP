@@ -24,6 +24,8 @@ public class RegisterDialog extends AbstractDialog {
         userTypeComboBox = new JComboBox<>(new String[]{"USER", "ADMIN"});
         addField("Username:", userNameField);
         addField("Type:", userTypeComboBox);
+
+        userNameField.addActionListener(e -> confirmButton.doClick());
     }
 
     @Override

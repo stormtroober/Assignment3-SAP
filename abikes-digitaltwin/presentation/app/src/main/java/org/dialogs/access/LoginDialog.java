@@ -24,6 +24,8 @@ public class LoginDialog extends AbstractDialog {
     private void setupDialog() {
         userNameField = new JTextField();
         addField("Username:", userNameField);
+
+        userNameField.addActionListener(e -> confirmButton.doClick());
     }
 
     @Override

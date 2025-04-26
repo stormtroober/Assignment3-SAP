@@ -6,7 +6,7 @@ import infrastructure.adapters.map.MapCommunicationAdapter;
 import infrastructure.adapters.web.ABikeVerticle;
 import infrastructure.adapters.web.RESTABikeAdapter;
 import infrastructure.config.ServiceConfiguration;
-import infrastructure.persistence.MongoEBikeRepository;
+import infrastructure.persistence.MongoABikeRepository;
 import infrastructure.persistence.MongoStationRepository;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
@@ -22,7 +22,7 @@ public class Main {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
               MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
               // Repository
-              MongoEBikeRepository repository = new MongoEBikeRepository(mongoClient);
+              MongoABikeRepository repository = new MongoABikeRepository(mongoClient);
               MongoStationRepository repositoryStation = new MongoStationRepository(mongoClient);
 
               MapCommunicationAdapter mapCommunicationAdapter = new MapCommunicationAdapter();

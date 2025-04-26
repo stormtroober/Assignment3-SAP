@@ -1,17 +1,17 @@
 package infrastructure.persistence;
 
-import application.ports.EBikeRepository;
+import application.ports.ABikeRepository;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class MongoEBikeRepository implements EBikeRepository {
+public class MongoABikeRepository implements ABikeRepository {
   private final MongoClient mongoClient;
   private static final String COLLECTION = "ebikes";
 
-  public MongoEBikeRepository(MongoClient mongoClient) {
+  public MongoABikeRepository(MongoClient mongoClient) {
     this.mongoClient = mongoClient;
   }
 

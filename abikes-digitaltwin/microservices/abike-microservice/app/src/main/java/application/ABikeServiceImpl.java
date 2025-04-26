@@ -1,7 +1,7 @@
 package application;
 
+import application.ports.ABikeRepository;
 import application.ports.ABikeServiceAPI;
-import application.ports.EBikeRepository;
 import application.ports.MapCommunicationPort;
 import application.ports.StationServiceAPI;
 import io.vertx.core.json.JsonArray;
@@ -14,14 +14,14 @@ import org.slf4j.LoggerFactory;
 
 public class ABikeServiceImpl implements ABikeServiceAPI {
 
-  private final EBikeRepository repository;
+  private final ABikeRepository repository;
   private final MapCommunicationPort mapCommunicationAdapter;
   private final StationServiceAPI stationService;
   private final Random random = new Random();
   private static final Logger logger = LoggerFactory.getLogger(ABikeServiceImpl.class);
 
   public ABikeServiceImpl(
-      EBikeRepository repository,
+      ABikeRepository repository,
       MapCommunicationPort mapCommunicationAdapter,
       StationServiceAPI stationService) {
     this.repository = repository;

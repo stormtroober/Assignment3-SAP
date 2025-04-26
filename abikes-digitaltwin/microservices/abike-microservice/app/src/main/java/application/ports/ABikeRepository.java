@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /** Port for the EBike Repository. Provides methods to perform CRUD operations on eBikes. */
-public interface EBikeRepository {
+public interface ABikeRepository {
 
   /**
    * Saves a new eBike.

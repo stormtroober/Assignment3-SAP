@@ -1,6 +1,6 @@
 package infrastructure.adapters.web;
 
-import application.ports.EBikeServiceAPI;
+import application.ports.ABikeServiceAPI;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -8,20 +8,20 @@ import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RESTEBikeAdapter {
-  private static final Logger logger = LoggerFactory.getLogger(RESTEBikeAdapter.class);
-  private final EBikeServiceAPI ebikeService;
+public class RESTABikeAdapter {
+  private static final Logger logger = LoggerFactory.getLogger(RESTABikeAdapter.class);
+  private final ABikeServiceAPI abikeService;
   private final MetricsManager metricsManager;
 
-  public RESTEBikeAdapter(EBikeServiceAPI ebikeService) {
-    this.ebikeService = ebikeService;
+  public RESTABikeAdapter(ABikeServiceAPI abikeService) {
+    this.abikeService = abikeService;
     this.metricsManager = MetricsManager.getInstance();
   }
 
   public void configureRoutes(Router router) {
-    router.post("/api/ebikes/create").handler(this::createEBike);
-    router.put("/api/ebikes/:id/recharge").handler(this::rechargeEBike);
-    router.get("/api/ebikes").handler(this::getAllEBikes);
+    router.post("/api/abikes/create").handler(this::createABike);
+    router.put("/api/abikes/:id/recharge").handler(this::rechargeABike);
+    router.get("/api/abikes").handler(this::getAllABikes);
     router.get("/health").handler(this::healthCheck);
     router.get("/metrics").handler(this::metrics);
   }
@@ -33,32 +33,30 @@ public class RESTEBikeAdapter {
         .end(metricsManager.getMetrics());
   }
 
-  private void createEBike(RoutingContext ctx) {
-    metricsManager.incrementMethodCounter("createEBike");
+  private void createABike(RoutingContext ctx) {
+    metricsManager.incrementMethodCounter("createABike");
     var timer = metricsManager.startTimer();
 
     try {
       JsonObject body = ctx.body().asJsonObject();
       String id = body.getString("id");
-      float x = body.getFloat("x", 0.0f);
-      float y = body.getFloat("y", 0.0f);
 
       if (id == null || id.trim().isEmpty()) {
-        metricsManager.recordError(timer, "createEBike", new RuntimeException("Invalid id"));
+        metricsManager.recordError(timer, "createABike", new RuntimeException("Invalid id"));
         sendError(ctx, 400, "Invalid id");
         return;
       }
 
-      ebikeService
-          .createEBike(id, x, y)
+      abikeService
+          .createABike(id)
           .thenAccept(
               result -> {
                 sendResponse(ctx, 201, result);
-                metricsManager.recordTimer(timer, "createEBike");
+                metricsManager.recordTimer(timer, "createABike");
               })
           .exceptionally(
               e -> {
-                metricsManager.recordError(timer, "createEBike", e);
+                metricsManager.recordError(timer, "createABike", e);
                 handleError(ctx, e);
                 return null;
               });
@@ -67,51 +65,51 @@ public class RESTEBikeAdapter {
     }
   }
 
-  private void rechargeEBike(RoutingContext ctx) {
-    metricsManager.incrementMethodCounter("rechargeEBike");
+  private void rechargeABike(RoutingContext ctx) {
+    metricsManager.incrementMethodCounter("rechargeABike");
     var timer = metricsManager.startTimer();
 
     String id = ctx.pathParam("id");
     if (id == null || id.trim().isEmpty()) {
-      metricsManager.recordError(timer, "rechargeEBike", new RuntimeException("Invalid id"));
+      metricsManager.recordError(timer, "rechargeABike", new RuntimeException("Invalid id"));
       sendError(ctx, 400, "Invalid id");
       return;
     }
 
-    ebikeService
-        .rechargeEBike(id)
+    abikeService
+        .rechargeABike(id)
         .thenAccept(
             result -> {
               if (result != null) {
                 sendResponse(ctx, 200, result);
-                metricsManager.recordTimer(timer, "rechargeEBike");
+                metricsManager.recordTimer(timer, "rechargeABike");
               } else {
                 ctx.response().setStatusCode(404).end();
                 metricsManager.recordError(
-                    timer, "rechargeEBike", new RuntimeException("EBike not found"));
+                    timer, "rechargeABike", new RuntimeException("ABike not found"));
               }
             })
         .exceptionally(
             e -> {
-              metricsManager.recordError(timer, "rechargeEBike", e);
+              metricsManager.recordError(timer, "rechargeABike", e);
               handleError(ctx, e);
               return null;
             });
   }
 
-  private void getAllEBikes(RoutingContext ctx) {
-    metricsManager.incrementMethodCounter("getAllEBikes");
+  private void getAllABikes(RoutingContext ctx) {
+    metricsManager.incrementMethodCounter("getAllABikes");
     var timer = metricsManager.startTimer();
-    ebikeService
-        .getAllEBikes()
+    abikeService
+        .getAllABikes()
         .thenAccept(
             result -> {
               sendResponse(ctx, 200, result);
-              metricsManager.recordTimer(timer, "getAllEBikes");
+              metricsManager.recordTimer(timer, "getAllABikes");
             })
         .exceptionally(
             e -> {
-              metricsManager.recordError(timer, "getAllEBikes", e);
+              metricsManager.recordError(timer, "getAllABikes", e);
               handleError(ctx, e);
               return null;
             });

@@ -70,6 +70,20 @@ public class AdminVerticle extends AbstractVerticle {
                     }
                 });
         });
+
+        vertx.eventBus().consumer("admin.abike.create", message -> {
+            JsonObject bikeDetails = (JsonObject) message.body();
+            webClient.post(PORT, ADDRESS, "/ABIKE-MICROSERVICE/api/abikes/create")
+                    .sendJsonObject(bikeDetails, ar -> {
+                        if (ar.succeeded() && ar.result().statusCode() == 201) {
+                            message.reply(ar.result().bodyAsJsonObject());
+                        } else {
+                            message.fail(500, "Failed to create bike: " +
+                                    (ar.cause() != null ? ar.cause().getMessage() : "Unknown error"));
+                        }
+                    });
+        });
+
         vertx.eventBus().consumer("admin.bike.recharge", message -> {
             JsonObject rechargeDetails = (JsonObject) message.body();
             String bikeId = rechargeDetails.getString("bikeId");

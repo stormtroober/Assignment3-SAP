@@ -11,7 +11,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 public class MapCommunicationAdapter implements MapCommunicationPort {
   private final Producer<String, String> producer;
-  private final String topicName = Topics.EBIKE_UPDATES.getTopicName();
+  private final String topicName = Topics.ABIKE_UPDATES.getTopicName();
 
   public MapCommunicationAdapter() {
     this.producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());

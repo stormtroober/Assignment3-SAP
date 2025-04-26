@@ -3,6 +3,7 @@ package org.views;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.dialogs.admin.AddABikeDialog;
 import org.dialogs.admin.AddEBikeDialog;
 import org.dialogs.admin.RechargeBikeDialog;
 import org.models.EBikeViewModel;
@@ -33,6 +34,13 @@ public class AdminView extends AbstractView {
 
     private void setupView() {
         topPanel.setLayout(new FlowLayout());
+
+        JButton addABikeButton = new JButton("Add A-Bike");
+        addABikeButton.addActionListener(e -> {
+            AddABikeDialog addABikeDialog = new AddABikeDialog(AdminView.this, vertx);
+            addABikeDialog.setVisible(true);
+        });
+        topPanel.add(addABikeButton);
 
         JButton addBikeButton = new JButton("Add Bike");
         addBikeButton.addActionListener(e -> {

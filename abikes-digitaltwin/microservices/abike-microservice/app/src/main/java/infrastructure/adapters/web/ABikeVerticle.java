@@ -14,10 +14,10 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EBikeVerticle extends AbstractVerticle {
-  private static final Logger logger = LoggerFactory.getLogger(EBikeVerticle.class);
+public class ABikeVerticle extends AbstractVerticle {
+  private static final Logger logger = LoggerFactory.getLogger(ABikeVerticle.class);
 
-  private final RESTEBikeAdapter controller;
+  private final RESTABikeAdapter controller;
   private final String eurekaApplicationName;
   private final int port;
   private final String eurekaInstanceId;
@@ -26,7 +26,7 @@ public class EBikeVerticle extends AbstractVerticle {
   private final int eurekaPort;
   private final WebClient client;
 
-  public EBikeVerticle(RESTEBikeAdapter controller, Vertx vertx) {
+  public ABikeVerticle(RESTABikeAdapter controller, Vertx vertx) {
     this.controller = controller;
     ServiceConfiguration config = ServiceConfiguration.getInstance(vertx);
     JsonObject eurekaConfig = config.getEurekaConfig();
@@ -66,11 +66,11 @@ public class EBikeVerticle extends AbstractVerticle {
         .deployVerticle(this)
         .onSuccess(
             id -> {
-              logger.info("EBikeVerticle deployed successfully with ID: " + id);
+              logger.info("ABikeVerticle deployed successfully with ID: " + id);
             })
         .onFailure(
             err -> {
-              logger.error("Failed to deploy EBikeVerticle: " + err.getMessage());
+              logger.error("Failed to deploy ABikeVerticle: " + err.getMessage());
             });
   }
 

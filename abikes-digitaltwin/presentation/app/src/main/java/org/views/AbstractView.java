@@ -89,7 +89,9 @@ public abstract class AbstractView extends JFrame {
             g2.fillOval(x, y, 20, 20);
             g2.setColor(Color.BLACK);
             g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
-            g2.drawString("(x: " + bike.x() + ", y: " + bike.y() + ")", x, y + 50);
+            g2.drawString(
+                String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50
+            );
             g2.drawString("STATUS: " + bike.state(), x, y + 65);
         }
     }
@@ -106,7 +108,9 @@ public abstract class AbstractView extends JFrame {
             g2.setColor(Color.BLACK);
             g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
             g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), 10, dy + 35);
-            g2.drawString("(x: " + bike.x() + ", y: " + bike.y() + ")", x, y + 50);
+            g2.drawString(
+                String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50
+            );
             dy += 15;
         }
         String credit = "Credit: " + actualUser.credit();

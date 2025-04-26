@@ -1,5 +1,6 @@
 package infrastructure.persistence;
 
+import application.StationServiceImpl;
 import application.ports.StationRepository;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -27,7 +28,9 @@ public class MongoStationRepository implements StationRepository {
     JsonObject document =
         new JsonObject()
             .put("_id", station.getString("id"))
-            .put("location", station.getJsonObject("location"));
+            .put("location", station.getJsonObject("location"))
+            .put("slots", station.getJsonArray("slots", new JsonArray()))
+            .put("maxSlots", station.getInteger("maxSlots", StationServiceImpl.MAX_SLOTS));
 
     mongoClient
         .insert(COLLECTION, document)
@@ -91,7 +94,11 @@ public class MongoStationRepository implements StationRepository {
                 JsonObject station =
                     new JsonObject()
                         .put("id", result.getString("_id"))
-                        .put("location", result.getJsonObject("location"));
+                        .put("location", result.getJsonObject("location"))
+                        .put("slots", result.getJsonArray("slots", new JsonArray()))
+                        .put(
+                            "maxSlots",
+                            result.getInteger("maxSlots", StationServiceImpl.MAX_SLOTS));
                 future.complete(Optional.of(station));
               } else {
                 future.complete(Optional.empty());
@@ -120,7 +127,11 @@ public class MongoStationRepository implements StationRepository {
                     JsonObject station =
                         new JsonObject()
                             .put("id", result.getString("_id"))
-                            .put("location", result.getJsonObject("location"));
+                            .put("location", result.getJsonObject("location"))
+                            .put("slots", result.getJsonArray("slots", new JsonArray()))
+                            .put(
+                                "maxSlots",
+                                result.getInteger("maxSlots", StationServiceImpl.MAX_SLOTS));
                     stations.add(station);
                   });
               future.complete(stations);

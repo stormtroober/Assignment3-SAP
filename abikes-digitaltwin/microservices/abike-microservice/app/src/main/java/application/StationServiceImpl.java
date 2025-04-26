@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 public class StationServiceImpl implements StationServiceAPI {
 
   private final StationRepository repository;
+  public static final int MAX_SLOTS = 4;
 
   public StationServiceImpl(StationRepository repository) {
     this.repository = repository;
@@ -18,7 +19,11 @@ public class StationServiceImpl implements StationServiceAPI {
   @Override
   public CompletableFuture<JsonObject> createStation(String id, float x, float y) {
     JsonObject station =
-        new JsonObject().put("id", id).put("location", new JsonObject().put("x", x).put("y", y));
+        new JsonObject()
+            .put("id", id)
+            .put("location", new JsonObject().put("x", x).put("y", y))
+            .put("slots", new JsonArray()) // initialize empty slots
+            .put("maxSlots", MAX_SLOTS); // set max slots to 4
     return repository.save(station).thenApply(v -> station);
   }
 

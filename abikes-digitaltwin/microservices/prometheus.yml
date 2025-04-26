@@ -1,0 +1,54 @@
+global:
+  scrape_interval: 15s  # Scrape targets every 15 seconds
+
+scrape_configs:
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['api-gateway:8080']
+
+  - job_name: 'service-discovery'
+    static_configs:
+      - targets: ['eureka-server:8761']
+    metrics_path: '/actuator/prometheus'
+
+  # Map microservice
+  - job_name: 'map-microservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['map-microservice:8080']
+
+  - job_name: 'map-bikeadapter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['map-microservice:8082']
+
+  - job_name: 'map-rideadapter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ 'map-microservice:8081' ]
+
+  - job_name: 'ebike-microservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ 'ebike-microservice:8080' ]
+
+  - job_name: 'ebike-rideadapter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ 'ebike-microservice:8081' ]
+
+  - job_name: 'ride-microservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ 'ride-microservice:8080' ]
+
+  - job_name: 'user-microservice'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ 'user-microservice:8080' ]
+
+  - job_name: 'user-rideadapter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ 'user-microservice:8081' ]

@@ -1,0 +1,38 @@
+server:
+  port: ${API_GATEWAY_EUREKA_INSTANCE_PORT}
+
+spring:
+  application:
+    name: ${API_GATEWAY_EUREKA_INSTANCE_HOSTNAME}
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true  # Enable dynamic routing based on Eureka services
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}  # Use service name for Docker network resolution
+    registerWithEureka: true  # Gateway registers with Eureka
+    fetchRegistry: true       # Gateway fetches Eureka registry
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus  # Expose only health and Prometheus metrics
+  health:
+    livenessstate:
+      enabled: true  # Enable liveness and readiness probes
+    readinessstate:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG  # Optional: Debug logging for the gateway

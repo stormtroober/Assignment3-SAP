@@ -1,8 +1,11 @@
-import application.RestMapServiceAPIImpl;
+import application.BikeMapServiceAPIImpl;
+import application.StationMapServiceAPIImpl;
 import application.ports.EventPublisher;
-import application.ports.RestMapServiceAPI;
+import application.ports.BikeMapServiceAPI;
+import application.ports.StationMapServiceAPI;
 import infrastructure.adapter.ebike.BikeUpdateAdapter;
 import infrastructure.adapter.ride.RideUpdateAdapter;
+import infrastructure.adapter.station.StationUpdateAdapter;
 import infrastructure.adapter.web.MapServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.EventPublisherImpl;
@@ -18,12 +21,17 @@ public class Main {
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
-              RestMapServiceAPI service = new RestMapServiceAPIImpl(eventPublisher);
-              MapServiceVerticle mapServiceVerticle = new MapServiceVerticle(service, vertx);
-              BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(service);
-              RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(service);
+              //Services
+              BikeMapServiceAPI bikeService = new BikeMapServiceAPIImpl(eventPublisher);
+              StationMapServiceAPI stationMapService = new StationMapServiceAPIImpl(eventPublisher);
+
+              MapServiceVerticle mapServiceVerticle = new MapServiceVerticle(bikeService, vertx);
+              BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(bikeService);
+              StationUpdateAdapter stationUpdateAdapter = new StationUpdateAdapter(stationMapService);
+              RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(bikeService);
               mapServiceVerticle.init();
               bikeUpdateAdapter.init();
+              stationUpdateAdapter.init();
               rideUpdateAdapter.init();
             });
   }

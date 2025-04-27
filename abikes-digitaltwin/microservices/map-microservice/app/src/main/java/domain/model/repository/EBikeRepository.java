@@ -1,4 +1,6 @@
-package domain.model;
+package domain.model.repository;
+
+import domain.model.EBike;
 
 import java.util.List;
 import java.util.Map;

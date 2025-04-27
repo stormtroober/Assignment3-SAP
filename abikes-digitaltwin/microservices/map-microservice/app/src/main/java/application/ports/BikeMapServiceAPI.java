@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /** Port representing the REST API for the map service Application. */
-public interface RestMapServiceAPI {
+public interface BikeMapServiceAPI {
 
   /**
    * Updates the information of a single e-bike.

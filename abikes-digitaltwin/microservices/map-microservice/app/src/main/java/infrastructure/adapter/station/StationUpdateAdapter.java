@@ -1,9 +1,9 @@
-package infrastructure.adapter.ebike;
+package infrastructure.adapter.station;
 
 import application.ports.BikeMapServiceAPI;
-import domain.model.EBike;
-import domain.model.EBikeFactory;
-import domain.model.EBikeState;
+import application.ports.StationMapServiceAPI;
+import domain.model.Station;
+import domain.model.StationFactory;
 import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonObject;
@@ -18,14 +18,14 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BikeUpdateAdapter {
+public class StationUpdateAdapter {
 
-  private static final Logger logger = LoggerFactory.getLogger(BikeUpdateAdapter.class);
-  private final BikeMapServiceAPI mapService;
+  private static final Logger logger = LoggerFactory.getLogger(StationUpdateAdapter.class);
+  private final StationMapServiceAPI mapService;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
 
-  public BikeUpdateAdapter(BikeMapServiceAPI mapService) {
+  public StationUpdateAdapter(StationMapServiceAPI mapService) {
     this.mapService = mapService;
   }
 
@@ -40,34 +40,26 @@ public class BikeUpdateAdapter {
         new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
 
     try (consumer) {
-      consumer.subscribe(
-          List.of(Topics.EBIKE_UPDATES.getTopicName(),
-                Topics.ABIKE_UPDATES.getTopicName()
-          ));
+      consumer.subscribe(List.of(Topics.STATION_UPDATES.getTopicName()));
 
-      /*
-       * TODO
-       * At the moment the two type of bikes are updated with the same handling. in the future i don't think it will be like that.
-       * It works because they're not differentied yet in the map-microservice service and it will be necessary
-       */
       while (running.get()) {
         try {
           ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
           for (ConsumerRecord<String, String> record : records) {
             try {
               JsonObject body = new JsonObject(record.value());
-              EBike bike = createEBikeFromJson(body);
+              Station station = createStationFromJson(body);
               mapService
-                  .updateEBike(bike)
-                  .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
+                  .updateStation(station)
+                  .thenAccept(v -> logger.info("Station {} updated successfully", station.getId()))
                   .exceptionally(
                       ex -> {
                         logger.error(
-                            "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
+                            "Failed to update Station {}: {}", station.getId(), ex.getMessage());
                         return null;
                       });
             } catch (Exception e) {
-              logger.error("Invalid EBike data from Kafka: {}", e.getMessage());
+              logger.error("Invalid Station data from Kafka: {}", e.getMessage());
             }
           }
           consumer.commitAsync(
@@ -85,16 +77,14 @@ public class BikeUpdateAdapter {
     }
   }
 
-  private EBike createEBikeFromJson(JsonObject body) {
-    String bikeName = body.getString("id");
+  private Station createStationFromJson(JsonObject body) {
+    String stationId = body.getString("id");
     JsonObject location = body.getJsonObject("location");
     double x = location.getDouble("x");
     double y = location.getDouble("y");
-    EBikeState state = EBikeState.valueOf(body.getString("state"));
-    int batteryLevel = body.getInteger("batteryLevel");
 
-    EBikeFactory factory = EBikeFactory.getInstance();
-    return factory.createEBike(bikeName, (float) x, (float) y, state, batteryLevel);
+    StationFactory factory = StationFactory.getInstance();
+    return factory.createStation(stationId, (float) x, (float) y);
   }
 
   public void stop() {
@@ -102,6 +92,6 @@ public class BikeUpdateAdapter {
     if (consumerExecutor != null) {
       consumerExecutor.shutdownNow();
     }
-    logger.info("BikeUpdateAdapter stopped and Kafka consumer executor shut down.");
+    logger.info("StationUpdateAdapter stopped and Kafka consumer executor shut down.");
   }
 }

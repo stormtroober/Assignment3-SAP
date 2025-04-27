@@ -1,7 +1,7 @@
 package infrastructure.adapter.ride;
 import static infrastructure.adapter.kafkatopic.Topics.RIDE_MAP_UPDATE;
 
-import application.ports.RestMapServiceAPI;
+import application.ports.BikeMapServiceAPI;
 import infrastructure.utils.KafkaProperties;
 import infrastructure.utils.MetricsManager;
 import java.time.Duration;
@@ -18,12 +18,12 @@ import org.slf4j.LoggerFactory;
 
 public class RideUpdateAdapter {
     private static final Logger logger = LoggerFactory.getLogger(RideUpdateAdapter.class);
-    private final RestMapServiceAPI mapService;
+    private final BikeMapServiceAPI mapService;
     private final MetricsManager metricsManager;
     private ExecutorService consumerExecutor;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public RideUpdateAdapter(RestMapServiceAPI mapService) {
+    public RideUpdateAdapter(BikeMapServiceAPI mapService) {
         this.mapService = mapService;
         this.metricsManager = MetricsManager.getInstance();
     }

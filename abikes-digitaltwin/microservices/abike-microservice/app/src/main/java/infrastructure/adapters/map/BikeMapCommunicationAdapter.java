@@ -9,11 +9,11 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-public class MapCommunicationAdapter implements MapCommunicationPort {
+public class BikeMapCommunicationAdapter implements MapCommunicationPort {
   private final Producer<String, String> producer;
   private final String topicName = Topics.ABIKE_UPDATES.getTopicName();
 
-  public MapCommunicationAdapter() {
+  public BikeMapCommunicationAdapter() {
     this.producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
   }
 

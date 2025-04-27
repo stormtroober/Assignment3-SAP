@@ -1,6 +1,6 @@
 package infrastructure.adapter.web;
 
-import application.ports.RestMapServiceAPI;
+import application.ports.BikeMapServiceAPI;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.AbstractVerticle;
@@ -21,11 +21,11 @@ public class MapServiceVerticle extends AbstractVerticle {
   private final int eurekaPort;
   private final String eurekaHost;
   private WebClient client;
-  private final RestMapServiceAPI mapService;
+  private final BikeMapServiceAPI mapService;
   private final MetricsManager metricsManager;
   private final Vertx vertx;
 
-  public MapServiceVerticle(RestMapServiceAPI mapService, Vertx vertx) {
+  public MapServiceVerticle(BikeMapServiceAPI mapService, Vertx vertx) {
     this.vertx = vertx;
     ServiceConfiguration config = ServiceConfiguration.getInstance(vertx);
     JsonObject eurekaConfig = config.getEurekaConfig();

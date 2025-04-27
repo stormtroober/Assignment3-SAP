@@ -1,0 +1,33 @@
+package infrastructure.adapters.map;
+
+import application.ports.MapCommunicationPort;
+import infrastructure.adapters.kafkatopic.Topics;
+import infrastructure.utils.KafkaProperties;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+
+public class StationMapCommunicationAdapter implements MapCommunicationPort {
+  private final Producer<String, String> producer;
+  private final String topicName = Topics.STATION_UPDATES.getTopicName();
+
+  public StationMapCommunicationAdapter() {
+    this.producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+  }
+
+  @Override
+  public void sendUpdate(JsonObject station) {
+    System.out.println("Sending Station update to Kafka topic: " + topicName);
+    producer.send(new ProducerRecord<>(topicName, station.getString("id"), station.encode()));
+  }
+
+  public void sendAllUpdates(JsonArray stations) {
+    System.out.println("Sending all Station updates to Kafka topic: " + topicName);
+    for (int i = 0; i < stations.size(); i++) {
+      JsonObject station = stations.getJsonObject(i);
+      producer.send(new ProducerRecord<>(topicName, station.getString("id"), station.encode()));
+    }
+  }
+}

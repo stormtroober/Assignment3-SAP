@@ -1,21 +1,21 @@
 package application;
 
 import application.ports.EventPublisher;
-import application.ports.RestMapServiceAPI;
+import application.ports.BikeMapServiceAPI;
 import domain.model.EBike;
-import domain.model.EBikeRepository;
-import domain.model.EBikeRepositoryImpl;
+import domain.model.repository.EBikeRepository;
+import domain.model.repository.EBikeRepositoryImpl;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class RestMapServiceAPIImpl implements RestMapServiceAPI {
+public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
 
   private final EBikeRepository bikeRepository;
   private final EventPublisher eventPublisher;
   private final List<String> registeredUsers = new CopyOnWriteArrayList<>();
 
-  public RestMapServiceAPIImpl(EventPublisher eventPublisher) {
+  public BikeMapServiceAPIImpl(EventPublisher eventPublisher) {
     this.bikeRepository = new EBikeRepositoryImpl();
     this.eventPublisher = eventPublisher;
   }

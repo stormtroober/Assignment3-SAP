@@ -2,7 +2,7 @@ import application.ABikeServiceImpl;
 import application.StationServiceImpl;
 import application.ports.ABikeServiceAPI;
 import application.ports.StationServiceAPI;
-import infrastructure.adapters.map.MapCommunicationAdapter;
+import infrastructure.adapters.map.BikeMapCommunicationAdapter;
 import infrastructure.adapters.web.ABikeVerticle;
 import infrastructure.adapters.web.RESTABikeAdapter;
 import infrastructure.config.ServiceConfiguration;
@@ -25,11 +25,11 @@ public class Main {
               MongoABikeRepository repository = new MongoABikeRepository(mongoClient);
               MongoStationRepository repositoryStation = new MongoStationRepository(mongoClient);
 
-              MapCommunicationAdapter mapCommunicationAdapter = new MapCommunicationAdapter();
+              BikeMapCommunicationAdapter bikeMapCommunicationAdapter = new BikeMapCommunicationAdapter();
               // Services
               StationServiceAPI stationService = new StationServiceImpl(repositoryStation);
               ABikeServiceAPI aBikeService =
-                  new ABikeServiceImpl(repository, mapCommunicationAdapter, stationService);
+                  new ABikeServiceImpl(repository, bikeMapCommunicationAdapter, stationService);
 
               stationService
                   .createStation("station1", 10.0f, 10.0f)

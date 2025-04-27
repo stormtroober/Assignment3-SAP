@@ -2,7 +2,9 @@ package infrastructure.adapter.kafkatopic;
 
 public enum Topics {
   EBIKE_UPDATES("ebike-update"),
+  ABIKE_UPDATES("abike-update"),
   EBIKE_RIDE_UPDATE("ebike-ride-update"),
+  STATION_UPDATES("station-update"),
   RIDE_MAP_UPDATE("ride-map-update");
 
   private final String topicName;

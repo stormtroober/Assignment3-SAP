@@ -3,7 +3,7 @@ package it.unibo;
 import static org.junit.jupiter.api.Assertions.*;
 
 import domain.model.EBike;
-import domain.model.EBikeRepositoryImpl;
+import domain.model.repository.EBikeRepositoryImpl;
 import domain.model.EBikeState;
 import domain.model.P2d;
 import java.util.List;

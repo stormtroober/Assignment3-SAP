@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 import org.dialogs.user.RechargeCreditDialog;
 import org.dialogs.user.StartRideDialog;
 import org.models.EBikeViewModel;
+import org.models.StationViewModel;
 import org.models.UserViewModel;
 import org.verticles.UserVerticle;
 
@@ -29,8 +30,8 @@ public class UserView extends AbstractView {
         observeAvailableBikes();
         observeUser();
         observeRideUpdate();
+        observeStations();
         refreshView();
-
     }
 
     private void setupView() {
@@ -125,6 +126,28 @@ public class UserView extends AbstractView {
                     eBikes.add(bikeModel);
                 } else {
                     log("Invalid bike data: " + element);
+                }
+            }
+            refreshView();
+        });
+    }
+
+    private void observeStations() {
+        vertx.eventBus().consumer("stations.update", message -> {
+            System.out.println("Received stations update: " + message.body());
+            JsonArray update = (JsonArray) message.body();
+            stations.clear();
+            for (int i = 0; i < update.size(); i++) {
+                Object element = update.getValue(i);
+                if (element instanceof String) {
+                    JsonObject stationObj = new JsonObject((String) element);
+                    String id = stationObj.getString("id");
+                    JsonObject position = stationObj.getJsonObject("position");
+                    double x = position.getDouble("x");
+                    double y = position.getDouble("y");
+                    stations.add(new StationViewModel(id, x, y));
+                } else {
+                    log("Invalid station data: " + element);
                 }
             }
             refreshView();

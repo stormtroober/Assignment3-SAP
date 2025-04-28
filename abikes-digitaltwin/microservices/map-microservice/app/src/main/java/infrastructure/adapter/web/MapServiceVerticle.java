@@ -1,6 +1,7 @@
 package infrastructure.adapter.web;
 
 import application.ports.BikeMapServiceAPI;
+import application.ports.StationMapServiceAPI;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.AbstractVerticle;
@@ -21,16 +22,18 @@ public class MapServiceVerticle extends AbstractVerticle {
   private final int eurekaPort;
   private final String eurekaHost;
   private WebClient client;
-  private final BikeMapServiceAPI mapService;
+  private final BikeMapServiceAPI bikeMapService;
+  private final StationMapServiceAPI stationMapService;
   private final MetricsManager metricsManager;
   private final Vertx vertx;
 
-  public MapServiceVerticle(BikeMapServiceAPI mapService, Vertx vertx) {
+  public MapServiceVerticle(BikeMapServiceAPI bikeMapService, StationMapServiceAPI stationMapService, Vertx vertx) {
     this.vertx = vertx;
     ServiceConfiguration config = ServiceConfiguration.getInstance(vertx);
     JsonObject eurekaConfig = config.getEurekaConfig();
     JsonObject serviceConfig = config.getServiceConfig();
-    this.mapService = mapService;
+    this.bikeMapService = bikeMapService;
+    this.stationMapService = stationMapService;
     this.eurekaApplicationName = serviceConfig.getString("name");
     this.eurekaInstanceId = UUID.randomUUID().toString().substring(0, 5);
     this.port = serviceConfig.getInteger("port");
@@ -99,7 +102,7 @@ public class MapServiceVerticle extends AbstractVerticle {
                                             "observeAllBikes_message_sent");
                                       });
 
-                          mapService.getAllBikes();
+                          bikeMapService.getAllBikes();
 
                           webSocket.closeHandler(
                               v -> {
@@ -178,8 +181,8 @@ public class MapServiceVerticle extends AbstractVerticle {
                                         metricsManager.incrementMethodCounter(
                                             "observeUserBikes_message_sent");
                                       });
-                          mapService.registerUser(username);
-                          mapService.getAllBikes(username);
+                          bikeMapService.registerUser(username);
+                          bikeMapService.getAllBikes(username);
 
                           webSocket.closeHandler(
                               v -> {
@@ -189,7 +192,7 @@ public class MapServiceVerticle extends AbstractVerticle {
 
                                 metricsManager.incrementMethodCounter(
                                     "observeUserBikes_connection_closed");
-                                mapService.deregisterUser(username);
+                                bikeMapService.deregisterUser(username);
                                 globalConsumer.unregister();
                                 userConsumer.unregister();
                               });
@@ -200,7 +203,7 @@ public class MapServiceVerticle extends AbstractVerticle {
 
                                 metricsManager.incrementMethodCounter(
                                     "observeUserBikes_connection_error");
-                                mapService.deregisterUser(username);
+                                bikeMapService.deregisterUser(username);
                                 globalConsumer.unregister();
                                 userConsumer.unregister();
                               });
@@ -212,7 +215,31 @@ public class MapServiceVerticle extends AbstractVerticle {
                         }
                       });
             });
+      router
+              .route("/observeStations")
+              .handler(
+                      ctx -> {
+                          ctx.request()
+                                  .toWebSocket()
+                                  .onComplete(webSocketAsyncResult -> {
+                                      if (webSocketAsyncResult.succeeded()) {
+                                          var webSocket = webSocketAsyncResult.result();
 
+                                          var consumer = vertx
+                                                  .eventBus()
+                                                  .consumer(
+                                                          "stations.update",
+                                                          message -> webSocket.writeTextMessage(message.body().toString())
+                                                  );
+
+                                          stationMapService.getAllStations();
+                                          webSocket.closeHandler(v -> consumer.unregister());
+                                          webSocket.exceptionHandler(err -> consumer.unregister());
+                                      } else {
+                                          ctx.response().setStatusCode(500).end("WebSocket Upgrade Failed");
+                                      }
+                                  });
+                      });
     server
         .requestHandler(router)
         .listen(

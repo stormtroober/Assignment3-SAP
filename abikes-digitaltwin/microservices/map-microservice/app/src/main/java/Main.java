@@ -25,7 +25,7 @@ public class Main {
               BikeMapServiceAPI bikeService = new BikeMapServiceAPIImpl(eventPublisher);
               StationMapServiceAPI stationMapService = new StationMapServiceAPIImpl(eventPublisher);
 
-              MapServiceVerticle mapServiceVerticle = new MapServiceVerticle(bikeService, vertx);
+              MapServiceVerticle mapServiceVerticle = new MapServiceVerticle(bikeService, stationMapService, vertx);
               BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(bikeService);
               StationUpdateAdapter stationUpdateAdapter = new StationUpdateAdapter(stationMapService);
               RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(bikeService);

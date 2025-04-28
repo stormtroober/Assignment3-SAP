@@ -2,6 +2,7 @@ package org.views;
 
 
 import org.models.EBikeViewModel;
+import org.models.StationViewModel;
 import org.models.UserViewModel;
 
 import javax.swing.*;
@@ -19,6 +20,7 @@ public abstract class AbstractView extends JFrame {
     protected JPanel buttonPanel;
 
     protected List<EBikeViewModel> eBikes;
+    protected List<StationViewModel> stations;
     protected UserViewModel actualUser;
 
 
@@ -54,6 +56,7 @@ public abstract class AbstractView extends JFrame {
 
         this.actualUser = actualUser;
         this.eBikes = new CopyOnWriteArrayList<>();
+        this.stations = new CopyOnWriteArrayList<>();
     }
 
     protected void addTopPanelButton(String text, ActionListener actionListener) {

@@ -4,7 +4,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /** Port for sending updates to the map microservice adapter. */
-public interface MapCommunicationPort {
+public interface CommunicationPort {
 
   /**
    * Sends an update for a single e-bike to the map service.

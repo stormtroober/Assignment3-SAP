@@ -1,6 +1,6 @@
 package infrastructure.adapters.map;
 
-import application.ports.MapCommunicationPort;
+import application.ports.CommunicationPort;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonArray;
@@ -9,7 +9,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-public class StationMapCommunicationAdapter implements MapCommunicationPort {
+public class StationMapCommunicationAdapter implements CommunicationPort {
   private final Producer<String, String> producer;
   private final String topicName = Topics.STATION_UPDATES.getTopicName();
 

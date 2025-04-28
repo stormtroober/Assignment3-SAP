@@ -1,8 +1,11 @@
 import application.ABikeServiceImpl;
 import application.StationServiceImpl;
 import application.ports.ABikeServiceAPI;
+import application.ports.CommunicationPort;
+import application.ports.StationRepository;
 import application.ports.StationServiceAPI;
 import infrastructure.adapters.map.BikeMapCommunicationAdapter;
+import infrastructure.adapters.map.StationMapCommunicationAdapter;
 import infrastructure.adapters.web.ABikeVerticle;
 import infrastructure.adapters.web.RESTABikeAdapter;
 import infrastructure.config.ServiceConfiguration;
@@ -23,11 +26,12 @@ public class Main {
               MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
               // Repository
               MongoABikeRepository repository = new MongoABikeRepository(mongoClient);
-              MongoStationRepository repositoryStation = new MongoStationRepository(mongoClient);
+              StationRepository repositoryStation = new MongoStationRepository(mongoClient);
 
-              BikeMapCommunicationAdapter bikeMapCommunicationAdapter = new BikeMapCommunicationAdapter();
+              CommunicationPort bikeMapCommunicationAdapter = new BikeMapCommunicationAdapter();
+              CommunicationPort stationMapCommunicationAdapter = new StationMapCommunicationAdapter();
               // Services
-              StationServiceAPI stationService = new StationServiceImpl(repositoryStation);
+              StationServiceAPI stationService = new StationServiceImpl(repositoryStation, stationMapCommunicationAdapter);
               ABikeServiceAPI aBikeService =
                   new ABikeServiceImpl(repository, bikeMapCommunicationAdapter, stationService);
 

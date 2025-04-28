@@ -1,15 +1,22 @@
 package domain.model;
 
-public class StationFactory {
-  private static final StationFactory INSTANCE = new StationFactory();
+    import java.util.Collections;
+    import java.util.List;
 
-  private StationFactory() {}
+    public class StationFactory {
+      private static final StationFactory INSTANCE = new StationFactory();
 
-  public static StationFactory getInstance() {
-    return INSTANCE;
-  }
+      private StationFactory() {}
 
-  public Station createStation(String id, float x, float y) {
-    return new Station(id, new P2d(x, y));
-  }
-}
+      public static StationFactory getInstance() {
+        return INSTANCE;
+      }
+
+      public Station createStation(String id, float x, float y, List<String> slots, int maxSlots) {
+        return new Station(id, new P2d(x, y), slots != null ? slots : Collections.emptyList(), maxSlots);
+      }
+
+      public Station createStation(String id, float x, float y, List<String> slots) {
+        return new Station(id, new P2d(x, y), slots != null ? slots : Collections.emptyList(), 0);
+      }
+    }

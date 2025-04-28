@@ -23,11 +23,11 @@ public class StationServiceImpl implements StationServiceAPI {
   @Override
   public CompletableFuture<JsonObject> createStation(String id, float x, float y) {
     JsonObject station =
-            new JsonObject()
-                    .put("id", id)
-                    .put("location", new JsonObject().put("x", x).put("y", y))
-                    .put("slots", new JsonArray())
-                    .put("maxSlots", MAX_SLOTS);
+        new JsonObject()
+            .put("id", id)
+            .put("location", new JsonObject().put("x", x).put("y", y))
+            .put("slots", new JsonArray())
+            .put("maxSlots", MAX_SLOTS);
     communicationPort.sendUpdate(station);
     return repository.save(station).thenApply(v -> station);
   }
@@ -41,12 +41,12 @@ public class StationServiceImpl implements StationServiceAPI {
   public CompletableFuture<JsonObject> updateStation(JsonObject station) {
     communicationPort.sendUpdate(station);
     return repository
-            .update(station)
-            .thenCompose(
-                    v ->
-                            repository
-                                    .findById(station.getString("id"))
-                                    .thenApply(updatedStation -> updatedStation.orElse(station)));
+        .update(station)
+        .thenCompose(
+            v ->
+                repository
+                    .findById(station.getString("id"))
+                    .thenApply(updatedStation -> updatedStation.orElse(station)));
   }
 
   @Override

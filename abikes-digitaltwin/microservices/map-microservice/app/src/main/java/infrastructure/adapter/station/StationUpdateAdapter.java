@@ -83,8 +83,15 @@ public class StationUpdateAdapter {
     double x = location.getDouble("x");
     double y = location.getDouble("y");
 
+    List<String> slots = body.getJsonArray("slots", new io.vertx.core.json.JsonArray())
+            .stream()
+            .map(Object::toString)
+            .toList();
+
+    int maxSlots = body.getInteger("maxSlots", 0);
+
     StationFactory factory = StationFactory.getInstance();
-    return factory.createStation(stationId, (float) x, (float) y);
+    return factory.createStation(stationId, (float) x, (float) y, slots, maxSlots);
   }
 
   public void stop() {

@@ -116,6 +116,33 @@ public abstract class AbstractView extends JFrame {
             );
             dy += 15;
         }
+
+        // Draw stations as squares with slots around them
+        int stationSize = 20;
+        int slotSize = 8;
+        int slotRadius = 18;
+        for (StationViewModel station : stations) {
+            int sx = centerX + (int) station.getX();
+            int sy = centerY - (int) station.getY();
+
+            // Draw station as a square
+            g2.setColor(Color.BLUE);
+            g2.fillRect(sx - stationSize / 2, sy - stationSize / 2, stationSize, stationSize);
+
+            // Draw slots as small squares around the station
+            int slotCount = station.getMaxSlots();
+            for (int i = 0; i < slotCount; i++) {
+                double angle = 2 * Math.PI * i / slotCount;
+                int slotX = sx + (int) (slotRadius * Math.cos(angle)) - slotSize / 2;
+                int slotY = sy + (int) (slotRadius * Math.sin(angle)) - slotSize / 2;
+                // Filled slots are light gray, empty are white
+                g2.setColor(i < station.getSlots().size() ? Color.LIGHT_GRAY : Color.WHITE);
+                g2.fillRect(slotX, slotY, slotSize, slotSize);
+                g2.setColor(Color.DARK_GRAY);
+                g2.drawRect(slotX, slotY, slotSize, slotSize);
+            }
+        }
+
         String credit = "Credit: " + actualUser.credit();
         g2.drawString(credit, 10, 20);
         g2.drawString("AVAILABLE EBIKES: ", 10, 35);

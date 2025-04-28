@@ -29,9 +29,11 @@ public class Main {
               StationRepository repositoryStation = new MongoStationRepository(mongoClient);
 
               CommunicationPort bikeMapCommunicationAdapter = new BikeMapCommunicationAdapter();
-              CommunicationPort stationMapCommunicationAdapter = new StationMapCommunicationAdapter();
+              CommunicationPort stationMapCommunicationAdapter =
+                  new StationMapCommunicationAdapter();
               // Services
-              StationServiceAPI stationService = new StationServiceImpl(repositoryStation, stationMapCommunicationAdapter);
+              StationServiceAPI stationService =
+                  new StationServiceImpl(repositoryStation, stationMapCommunicationAdapter);
               ABikeServiceAPI aBikeService =
                   new ABikeServiceImpl(repository, bikeMapCommunicationAdapter, stationService);
 

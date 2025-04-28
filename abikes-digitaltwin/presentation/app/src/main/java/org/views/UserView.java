@@ -12,6 +12,8 @@ import org.verticles.UserVerticle;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserView extends AbstractView {
 
@@ -142,10 +144,16 @@ public class UserView extends AbstractView {
                 if (element instanceof String) {
                     JsonObject stationObj = new JsonObject((String) element);
                     String id = stationObj.getString("id");
-                    JsonObject position = stationObj.getJsonObject("position");
-                    double x = position.getDouble("x");
-                    double y = position.getDouble("y");
-                    stations.add(new StationViewModel(id, x, y));
+                    JsonObject location = stationObj.getJsonObject("location");
+                    double x = location.getDouble("x");
+                    double y = location.getDouble("y");
+                    // Parse slots as a list of strings
+                    List<String> slots = stationObj.getJsonArray("slots")
+                            .stream()
+                            .map(Object::toString)
+                            .collect(Collectors.toList());
+                    int maxSlots = stationObj.getInteger("maxSlots", 0);
+                    stations.add(new StationViewModel(id, x, y, slots, maxSlots));
                 } else {
                     log("Invalid station data: " + element);
                 }

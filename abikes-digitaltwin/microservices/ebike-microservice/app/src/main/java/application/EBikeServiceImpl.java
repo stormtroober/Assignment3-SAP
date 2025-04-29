@@ -3,6 +3,7 @@ package application;
 import application.ports.EBikeRepository;
 import application.ports.EBikeServiceAPI;
 import application.ports.MapCommunicationPort;
+import domain.model.*;
 import infrastructure.adapters.map.MapCommunicationAdapter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -23,14 +24,18 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
 
   @Override
   public CompletableFuture<JsonObject> createEBike(String id, float x, float y) {
-    JsonObject ebike =
+    EBike ebike =
+        EBikeFactory.getInstance()
+            .create(id, new P2d(x, y), EBikeState.AVAILABLE, 100, BikeType.NORMAL);
+    JsonObject ebikeJson =
         new JsonObject()
-            .put("id", id)
-            .put("state", "AVAILABLE")
-            .put("batteryLevel", 100)
-            .put("location", new JsonObject().put("x", x).put("y", y));
-    mapCommunicationAdapter.sendUpdate(ebike);
-    return repository.save(ebike).thenApply(v -> ebike);
+            .put("id", ebike.getId())
+            .put("state", ebike.getState().name())
+            .put("batteryLevel", ebike.getBatteryLevel())
+            .put("location", new JsonObject().put("x", x).put("y", y))
+            .put("type", ebike.getType().name());
+    mapCommunicationAdapter.sendUpdate(ebikeJson);
+    return repository.save(ebikeJson).thenApply(v -> ebikeJson);
   }
 
   @Override

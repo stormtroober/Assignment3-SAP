@@ -48,17 +48,6 @@ public class Main {
                         return null;
                       });
 
-              stationService
-                  .createStation("station2", 100.0f, 100.0f)
-                  .thenAccept(
-                      station ->
-                          System.out.println("Station2 created: " + station.encodePrettily()))
-                  .exceptionally(
-                      ex -> {
-                        System.err.println("Failed to create station2: " + ex.getMessage());
-                        return null;
-                      });
-
               RESTABikeAdapter restABikeAdapter = new RESTABikeAdapter(aBikeService);
               // RideCommunicationAdapter rideCommunicationAdapter =
               // new RideCommunicationAdapter(eBikeService, vertx); // Port for

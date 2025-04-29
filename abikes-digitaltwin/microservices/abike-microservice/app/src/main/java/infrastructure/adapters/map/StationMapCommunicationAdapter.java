@@ -20,7 +20,7 @@ public class StationMapCommunicationAdapter implements CommunicationPort {
   @Override
   public void sendUpdate(JsonObject station) {
     System.out.println("Sending Station update to Kafka topic: " + topicName);
-    //System.out.println("Station: " + station);
+    // System.out.println("Station: " + station);
     producer.send(new ProducerRecord<>(topicName, station.getString("id"), station.encode()));
   }
 

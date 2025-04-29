@@ -4,6 +4,10 @@ import application.ports.ABikeRepository;
 import application.ports.ABikeServiceAPI;
 import application.ports.CommunicationPort;
 import application.ports.StationServiceAPI;
+import domain.model.ABike;
+import domain.model.ABikeFactory;
+import domain.model.ABikeState;
+import domain.model.P2d;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
@@ -30,9 +34,9 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
     repository.findAll().thenAccept(mapCommunicationAdapter::sendAllUpdates);
   }
 
+  // Get all stations and pick a random one for the bike's location
   @Override
   public CompletableFuture<JsonObject> createABike(String id) {
-    // Get all stations and pick a random one for the bike's location
     return stationService
         .getAllStations()
         .thenCompose(
@@ -44,20 +48,28 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
               }
               int idx = random.nextInt(stations.size());
               JsonObject station = stations.getJsonObject(idx);
-              JsonObject location = station.getJsonObject("location");
-              JsonObject abike =
+              JsonObject locationJson = station.getJsonObject("location");
+              // Use the singleton factory to create an ABike domain object
+              ABike abike =
+                  ABikeFactory.getInstance()
+                      .create(
+                          id,
+                          new P2d(locationJson.getDouble("x"), locationJson.getDouble("y")),
+                          ABikeState.AVAILABLE,
+                          100);
+              JsonObject abikeJson =
                   new JsonObject()
-                      .put("id", id)
-                      .put("state", "AVAILABLE")
-                      .put("batteryLevel", 100)
-                      .put("location", location);
-              mapCommunicationAdapter.sendUpdate(abike);
+                      .put("id", abike.getId())
+                      .put("state", abike.getABikeState().name())
+                      .put("batteryLevel", abike.getBatteryLevel())
+                      .put("location", locationJson);
+              mapCommunicationAdapter.sendUpdate(abikeJson);
               return repository
-                  .save(abike)
+                  .save(abikeJson)
                   .thenApply(
                       v -> {
-                        logger.info("Saved bike successfully: {}", abike.encode());
-                        return abike;
+                        logger.info("Saved bike successfully: {}", abikeJson.encode());
+                        return abikeJson;
                       });
             });
   }

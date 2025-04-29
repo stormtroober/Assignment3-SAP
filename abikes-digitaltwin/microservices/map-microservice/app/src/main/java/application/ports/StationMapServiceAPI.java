@@ -6,9 +6,9 @@ import java.util.concurrent.CompletableFuture;
 
 public interface StationMapServiceAPI {
 
-    CompletableFuture<Void> updateStation(Station station);
+  CompletableFuture<Void> updateStation(Station station);
 
-    CompletableFuture<Void> updateStations(List<Station> stations);
+  CompletableFuture<Void> updateStations(List<Station> stations);
 
-    void getAllStations();
+  void getAllStations();
 }

@@ -1,6 +1,7 @@
 package infrastructure.adapter.ebike;
 
 import application.ports.BikeMapServiceAPI;
+import domain.model.BikeType;
 import domain.model.EBike;
 import domain.model.EBikeFactory;
 import domain.model.EBikeState;
@@ -41,15 +42,8 @@ public class BikeUpdateAdapter {
 
     try (consumer) {
       consumer.subscribe(
-          List.of(Topics.EBIKE_UPDATES.getTopicName(),
-                Topics.ABIKE_UPDATES.getTopicName()
-          ));
+          List.of(Topics.EBIKE_UPDATES.getTopicName(), Topics.ABIKE_UPDATES.getTopicName()));
 
-      /*
-       * TODO
-       * At the moment the two type of bikes are updated with the same handling. in the future i don't think it will be like that.
-       * It works because they're not differentied yet in the map-microservice service and it will be necessary
-       */
       while (running.get()) {
         try {
           ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
@@ -92,9 +86,15 @@ public class BikeUpdateAdapter {
     double y = location.getDouble("y");
     EBikeState state = EBikeState.valueOf(body.getString("state"));
     int batteryLevel = body.getInteger("batteryLevel");
+    // Extract type, default to NORMAL if missing
+    BikeType type = BikeType.NORMAL;
+    if (body.containsKey("type")) {
+      type = BikeType.valueOf(body.getString("type"));
+    }
 
     EBikeFactory factory = EBikeFactory.getInstance();
-    return factory.createEBike(bikeName, (float) x, (float) y, state, batteryLevel);
+    return factory.create(
+        bikeName, new domain.model.P2d((float) x, (float) y), state, batteryLevel, type);
   }
 
   public void stop() {

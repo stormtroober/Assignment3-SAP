@@ -1,6 +1,5 @@
 package infrastructure.adapter.station;
 
-import application.ports.BikeMapServiceAPI;
 import application.ports.StationMapServiceAPI;
 import domain.model.Station;
 import domain.model.StationFactory;
@@ -83,8 +82,8 @@ public class StationUpdateAdapter {
     double x = location.getDouble("x");
     double y = location.getDouble("y");
 
-    List<String> slots = body.getJsonArray("slots", new io.vertx.core.json.JsonArray())
-            .stream()
+    List<String> slots =
+        body.getJsonArray("slots", new io.vertx.core.json.JsonArray()).stream()
             .map(Object::toString)
             .toList();
 

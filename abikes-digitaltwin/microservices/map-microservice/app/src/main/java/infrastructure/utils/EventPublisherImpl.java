@@ -52,24 +52,24 @@ public class EventPublisherImpl implements EventPublisher {
 
   private String convertBikeToJson(EBike bike) {
     JsonObject json = new JsonObject();
-    json.put("bikeName", bike.getBikeName());
+    json.put("bikeName", bike.getId());
     json.put(
         "position",
         new JsonObject().put("x", bike.getPosition().x()).put("y", bike.getPosition().y()));
     json.put("state", bike.getState().toString());
-    json.put("batteryLevel", bike.getBatteryLevel()); // Add this line
+    json.put("batteryLevel", bike.getBatteryLevel());
+    json.put("type", bike.getType().toString());
     return json.encode();
   }
 
   private String convertStationToJson(Station station) {
-      JsonObject json = new JsonObject();
-      json.put("id", station.getId());
-      json.put(
-          "location",
-          new JsonObject().put("x", station.getLocation().x()).put("y", station.getLocation().y())
-      );
-      json.put("slots", station.getSlots());
-      json.put("maxSlots", station.getMaxSlots());
-      return json.encode();
+    JsonObject json = new JsonObject();
+    json.put("id", station.getId());
+    json.put(
+        "location",
+        new JsonObject().put("x", station.getLocation().x()).put("y", station.getLocation().y()));
+    json.put("slots", station.getSlots());
+    json.put("maxSlots", station.getMaxSlots());
+    return json.encode();
   }
 }

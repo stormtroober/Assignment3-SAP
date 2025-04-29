@@ -5,24 +5,22 @@ import java.io.Serializable;
 
 public class EBike implements Aggregate<String>, Serializable {
 
-  private final String bikeName;
-  private P2d position;
-  private EBikeState state;
-  private int batteryLevel;
+  private final String id;
+  private final EBikeState state;
+  private final P2d location;
+  private final int batteryLevel; // 0..100
+  private final BikeType type;
 
-  public EBike(String bikeName, P2d position, EBikeState state, int batteryLevel) {
-    this.bikeName = bikeName;
-    this.position = position;
+  public EBike(String id, P2d location, EBikeState state, int battery, BikeType type) {
+    this.id = id;
     this.state = state;
-    this.batteryLevel = batteryLevel;
+    this.location = location;
+    this.batteryLevel = battery;
+    this.type = type;
   }
 
-  public String getBikeName() {
-    return bikeName;
-  }
-
-  public P2d getPosition() {
-    return position;
+  public String getId() {
+    return id;
   }
 
   public EBikeState getState() {
@@ -33,23 +31,16 @@ public class EBike implements Aggregate<String>, Serializable {
     return batteryLevel;
   }
 
-  @Override
-  public String toString() {
-    return "EBike{"
-        + "bikeName='"
-        + bikeName
-        + '\''
-        + ", position="
-        + position
-        + ", state="
-        + state
-        + ", batteryLevel="
-        + batteryLevel
-        + '}';
+  public P2d getPosition() {return location;}
+
+  public BikeType getType() {
+    return type;
   }
 
   @Override
-  public String getId() {
-    return bikeName;
+  public String toString() {
+    return String.format(
+        "EBike{id='%s', location=%s, batteryLevel=%d%%, state='%s', type='%s'}",
+        id, location, batteryLevel, state, type);
   }
 }

@@ -3,7 +3,6 @@ package domain.model.repository;
 import ddd.Repository;
 import domain.model.EBike;
 import domain.model.EBikeState;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,7 @@ public class EBikeRepositoryImpl implements EBikeRepository, Repository {
 
   @Override
   public CompletableFuture<Void> saveBike(EBike bike) {
-    bikes.put(bike.getBikeName(), bike);
+    bikes.put(bike.getId(), bike);
     return CompletableFuture.completedFuture(null);
   }
 
@@ -46,7 +45,7 @@ public class EBikeRepositoryImpl implements EBikeRepository, Repository {
                       entry -> {
                         List<EBike> userBikes =
                             bikes.values().stream()
-                                .filter(bike -> bike.getBikeName().equals(entry.getValue()))
+                                .filter(bike -> bike.getId().equals(entry.getValue()))
                                 .collect(Collectors.toList());
 
                         userBikes.addAll(availableBikes);
@@ -69,7 +68,7 @@ public class EBikeRepositoryImpl implements EBikeRepository, Repository {
                     bike -> {
                       String assignedBikeName = bikeAssignments.get(username);
                       return assignedBikeName != null
-                          && assignedBikeName.equals(bike.getBikeName());
+                          && assignedBikeName.equals(bike.getId());
                     })
                 .collect(Collectors.toList()));
   }
@@ -78,15 +77,15 @@ public class EBikeRepositoryImpl implements EBikeRepository, Repository {
   public CompletableFuture<Void> assignBikeToUser(String username, EBike bike) {
     return CompletableFuture.runAsync(
         () -> {
-          if (!bikes.containsKey(bike.getBikeName())) {
+          if (!bikes.containsKey(bike.getId())) {
             throw new IllegalArgumentException("Bike not found in repository");
           }
 
-          if (bikeAssignments.containsValue(bike.getBikeName())) {
+          if (bikeAssignments.containsValue(bike.getId())) {
             throw new IllegalStateException("Bike is already assigned to another user");
           }
 
-          bikeAssignments.put(username, bike.getBikeName());
+          bikeAssignments.put(username, bike.getId());
         });
   }
 
@@ -98,7 +97,7 @@ public class EBikeRepositoryImpl implements EBikeRepository, Repository {
             throw new IllegalArgumentException("User does not have any bike assigned");
           }
 
-          if (!bikeAssignments.get(username).equals(bike.getBikeName())) {
+          if (!bikeAssignments.get(username).equals(bike.getId())) {
             throw new IllegalArgumentException("Bike is not assigned to the user");
           }
 
@@ -120,7 +119,7 @@ public class EBikeRepositoryImpl implements EBikeRepository, Repository {
     return CompletableFuture.supplyAsync(
         () -> {
           for (Map.Entry<String, String> entry : bikeAssignments.entrySet()) {
-            if (entry.getValue().equals(bike.getBikeName())) {
+            if (entry.getValue().equals(bike.getId())) {
               return entry.getKey();
             }
           }

@@ -35,6 +35,7 @@ public class Station implements Aggregate<String> {
 
   @Override
   public String toString() {
-    return String.format("Station{id='%s', location=%s, slots=%s, maxSlots=%d}", id, location, slots, maxSlots);
+    return String.format(
+        "Station{id='%s', location=%s, slots=%s, maxSlots=%d}", id, location, slots, maxSlots);
   }
 }

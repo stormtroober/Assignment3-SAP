@@ -1,7 +1,7 @@
 import application.BikeMapServiceAPIImpl;
 import application.StationMapServiceAPIImpl;
-import application.ports.EventPublisher;
 import application.ports.BikeMapServiceAPI;
+import application.ports.EventPublisher;
 import application.ports.StationMapServiceAPI;
 import infrastructure.adapter.ebike.BikeUpdateAdapter;
 import infrastructure.adapter.ride.RideUpdateAdapter;
@@ -21,13 +21,15 @@ public class Main {
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
-              //Services
+              // Services
               BikeMapServiceAPI bikeService = new BikeMapServiceAPIImpl(eventPublisher);
               StationMapServiceAPI stationMapService = new StationMapServiceAPIImpl(eventPublisher);
 
-              MapServiceVerticle mapServiceVerticle = new MapServiceVerticle(bikeService, stationMapService, vertx);
+              MapServiceVerticle mapServiceVerticle =
+                  new MapServiceVerticle(bikeService, stationMapService, vertx);
               BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(bikeService);
-              StationUpdateAdapter stationUpdateAdapter = new StationUpdateAdapter(stationMapService);
+              StationUpdateAdapter stationUpdateAdapter =
+                  new StationUpdateAdapter(stationMapService);
               RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(bikeService);
               mapServiceVerticle.init();
               bikeUpdateAdapter.init();

@@ -1,7 +1,7 @@
 package application;
 
-import application.ports.EventPublisher;
 import application.ports.BikeMapServiceAPI;
+import application.ports.EventPublisher;
 import domain.model.EBike;
 import domain.model.repository.EBikeRepository;
 import domain.model.repository.EBikeRepositoryImpl;

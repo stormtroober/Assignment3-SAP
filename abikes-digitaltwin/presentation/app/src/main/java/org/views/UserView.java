@@ -108,8 +108,7 @@ public class UserView extends AbstractView {
     }
 
     private void observeAvailableBikes() {
-
-        vertx.eventBus().consumer("user.bike.update."+ actualUser.username(), message -> {
+        vertx.eventBus().consumer("user.bike.update." + actualUser.username(), message -> {
             JsonArray update = (JsonArray) message.body();
             eBikes.clear();
             for (int i = 0; i < update.size(); i++) {
@@ -119,12 +118,14 @@ public class UserView extends AbstractView {
                     String id = bikeObj.getString("bikeName");
                     Integer batteryLevel = bikeObj.getInteger("batteryLevel");
                     String stateStr = bikeObj.getString("state");
+                    String typeStr = bikeObj.getString("type"); // <-- Read type
                     JsonObject location = bikeObj.getJsonObject("position");
                     Double x = location.getDouble("x");
                     Double y = location.getDouble("y");
                     EBikeViewModel.EBikeState state = EBikeViewModel.EBikeState.valueOf(stateStr);
+                    EBikeViewModel.BikeType type = EBikeViewModel.BikeType.valueOf(typeStr);
 
-                    EBikeViewModel bikeModel = new EBikeViewModel(id, x, y, batteryLevel, state);
+                    EBikeViewModel bikeModel = new EBikeViewModel(id, x, y, batteryLevel, state, type);
                     eBikes.add(bikeModel);
                 } else {
                     log("Invalid bike data: " + element);

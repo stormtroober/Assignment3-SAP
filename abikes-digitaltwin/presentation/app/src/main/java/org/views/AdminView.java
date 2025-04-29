@@ -7,6 +7,7 @@ import org.dialogs.admin.AddABikeDialog;
 import org.dialogs.admin.AddEBikeDialog;
 import org.dialogs.admin.RechargeBikeDialog;
 import org.models.EBikeViewModel;
+import org.models.StationViewModel;
 import org.models.UserViewModel;
 import org.verticles.AdminVerticle;
 
@@ -14,6 +15,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class AdminView extends AbstractView {
 
@@ -29,6 +31,7 @@ public class AdminView extends AbstractView {
         setupView();
         observeAllBikes();
         observeAllUsers();
+        observeStations();
         refreshView();
     }
 
@@ -69,12 +72,14 @@ public class AdminView extends AbstractView {
                     String id = bikeObj.getString("bikeName");
                     Integer batteryLevel = bikeObj.getInteger("batteryLevel");
                     String stateStr = bikeObj.getString("state");
+                    String typeStr = bikeObj.getString("type");
                     JsonObject location = bikeObj.getJsonObject("position");
                     Double x = location.getDouble("x");
                     Double y = location.getDouble("y");
                     EBikeViewModel.EBikeState state = EBikeViewModel.EBikeState.valueOf(stateStr);
+                    EBikeViewModel.BikeType type = EBikeViewModel.BikeType.valueOf(typeStr);
 
-                    EBikeViewModel bikeModel = new EBikeViewModel(id, x, y, batteryLevel, state);
+                    EBikeViewModel bikeModel = new EBikeViewModel(id, x, y, batteryLevel, state, type);
                     eBikes.add(bikeModel);
                 } else {
                     log("Invalid bike data: " + element);
@@ -84,6 +89,33 @@ public class AdminView extends AbstractView {
         });
     }
 
+    private void observeStations() {
+        vertx.eventBus().consumer("stations.update", message -> {
+            System.out.println("Received stations update: " + message.body());
+            JsonArray update = (JsonArray) message.body();
+            stations.clear();
+            for (int i = 0; i < update.size(); i++) {
+                Object element = update.getValue(i);
+                if (element instanceof String) {
+                    JsonObject stationObj = new JsonObject((String) element);
+                    String id = stationObj.getString("id");
+                    JsonObject location = stationObj.getJsonObject("location");
+                    double x = location.getDouble("x");
+                    double y = location.getDouble("y");
+                    // Parse slots as a list of strings
+                    List<String> slots = stationObj.getJsonArray("slots")
+                            .stream()
+                            .map(Object::toString)
+                            .collect(Collectors.toList());
+                    int maxSlots = stationObj.getInteger("maxSlots", 0);
+                    stations.add(new StationViewModel(id, x, y, slots, maxSlots));
+                } else {
+                    log("Invalid station data: " + element);
+                }
+            }
+            refreshView();
+        });
+    }
 
     private void observeAllUsers() {
         vertx.eventBus().consumer("admin.user.update", message -> {

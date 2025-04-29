@@ -82,7 +82,10 @@ public abstract class AbstractView extends JFrame {
         }
     }
 
-    protected void paintAdminView(Graphics2D g2) {
+    /**
+     * Draws all e‑bikes (shared by admin and user views).
+     */
+    private void paintEBikes(Graphics2D g2) {
         int centerX = centralPanel.getWidth() / 2;
         int centerY = centralPanel.getHeight() / 2;
         for (EBikeViewModel bike : eBikes) {
@@ -90,58 +93,65 @@ public abstract class AbstractView extends JFrame {
             int y = centerY - (int) bike.y();
             g2.setColor(bike.color());
             g2.fillOval(x, y, 20, 20);
-            g2.setColor(Color.BLACK);
-            g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
-            g2.drawString(
-                String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50
-            );
             g2.drawString("STATUS: " + bike.state(), x, y + 65);
+
+            if (bike.type() == EBikeViewModel.BikeType.AUTONOMOUS) {
+                g2.drawString("A-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
+                g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
+                g2.setColor(Color.RED);
+                g2.drawString("A", x + 6, y + 15);
+            } else {
+                g2.setColor(Color.BLACK);
+                g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
+                g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
+            }
         }
     }
 
-    private void paintUserView(Graphics2D g2) {
-        int centerX = centralPanel.getWidth() / 2;
-        int centerY = centralPanel.getHeight() / 2;
-        int dy = 20;
-        for (EBikeViewModel bike : eBikes) {
-            int x = centerX + (int) bike.x();
-            int y = centerY - (int) bike.y();
-            g2.setColor(bike.color());
-            g2.fillOval(x, y, 20, 20);
-            g2.setColor(Color.BLACK);
-            g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
-            g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), 10, dy + 35);
-            g2.drawString(
-                String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50
-            );
-            dy += 15;
-        }
 
-        // Draw stations as squares with slots around them
+
+    private void paintStations(Graphics2D g2) {
+        int centerX    = centralPanel.getWidth()  / 2;
+        int centerY    = centralPanel.getHeight() / 2;
         int stationSize = 20;
-        int slotSize = 8;
-        int slotRadius = 18;
+        int slotSize    = 8;
+        int slotRadius  = 18;
+
         for (StationViewModel station : stations) {
             int sx = centerX + (int) station.getX();
             int sy = centerY - (int) station.getY();
 
-            // Draw station as a square
+            // station square
             g2.setColor(Color.BLUE);
-            g2.fillRect(sx - stationSize / 2, sy - stationSize / 2, stationSize, stationSize);
+            g2.fillRect(sx - stationSize/2, sy - stationSize/2, stationSize, stationSize);
 
-            // Draw slots as small squares around the station
+            // station slots
             int slotCount = station.getMaxSlots();
             for (int i = 0; i < slotCount; i++) {
                 double angle = 2 * Math.PI * i / slotCount;
-                int slotX = sx + (int) (slotRadius * Math.cos(angle)) - slotSize / 2;
-                int slotY = sy + (int) (slotRadius * Math.sin(angle)) - slotSize / 2;
-                // Filled slots are light gray, empty are white
-                g2.setColor(i < station.getSlots().size() ? Color.LIGHT_GRAY : Color.WHITE);
+                int slotX = sx + (int)(slotRadius * Math.cos(angle)) - slotSize/2;
+                int slotY = sy + (int)(slotRadius * Math.sin(angle)) - slotSize/2;
+                boolean filled = i < station.getSlots().size();
+                g2.setColor(filled ? Color.LIGHT_GRAY : Color.WHITE);
                 g2.fillRect(slotX, slotY, slotSize, slotSize);
                 g2.setColor(Color.DARK_GRAY);
                 g2.drawRect(slotX, slotY, slotSize, slotSize);
             }
         }
+    }
+
+    protected void paintAdminView(Graphics2D g2) {
+        // draw all bikes
+        paintEBikes(g2);
+        // draw all stations
+        paintStations(g2);
+    }
+
+    private void paintUserView(Graphics2D g2) {
+        // draw all bikes
+        paintEBikes(g2);
+        // draw all stations
+        paintStations(g2);
 
         String credit = "Credit: " + actualUser.credit();
         g2.drawString(credit, 10, 20);

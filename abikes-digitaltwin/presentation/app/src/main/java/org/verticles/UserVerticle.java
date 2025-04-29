@@ -54,10 +54,13 @@ public class UserVerticle extends AbstractVerticle {
                 System.out.println("Connected to user bikes updates WebSocket");
                 bikeWebSocket = ws;
                 ws.textMessageHandler(message ->{
-                        if(!message.contains("rideStatus"))
-                            vertx.eventBus().publish("user.bike.update."+username, new JsonArray(message));
-                        else
-                            vertx.eventBus().publish("user.ride.update."+username, new JsonObject(message));
+                        if(!message.contains("rideStatus")) {
+                            System.out.println("Message received: " + message);
+                            vertx.eventBus().publish("user.bike.update." + username, new JsonArray(message));
+                        }
+                        else{
+                        vertx.eventBus().publish("user.ride.update." + username, new JsonObject(message));
+                    }
                 });
 
             });

@@ -13,6 +13,7 @@ public class AdminVerticle extends AbstractVerticle {
     private final HttpClient httpClient;
     private WebSocket userWebSocket;
     private WebSocket bikeWebSocket;
+    private WebSocket stationWebSocket;
     private final Vertx vertx;
     private static final int PORT = 8080;
     private static final String ADDRESS = "localhost";
@@ -48,6 +49,20 @@ public class AdminVerticle extends AbstractVerticle {
                     vertx.eventBus().publish("admin.bike.update", new JsonArray(message));
                 });
             });
+
+        httpClient.webSocket(PORT, ADDRESS, "/MAP-MICROSERVICE/observeStations")
+                .onSuccess(ws -> {
+                    System.out.println("Connected to stations updates WebSocket");
+                    stationWebSocket = ws;
+                    ws.textMessageHandler(message -> {
+                        vertx.eventBus().publish("stations.update", new JsonArray(message));
+                    });
+                    ws.exceptionHandler(err -> {
+                        System.out.println("Stations WebSocket error: " + err.getMessage());
+                    });
+                }).onFailure(err -> {
+                    System.out.println("Failed to connect to stations updates WebSocket: " + err.getMessage());
+                });
     }
 
     private void handleUserUpdate(String message) {

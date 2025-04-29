@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonObject;
 import org.dialogs.admin.AddABikeDialog;
 import org.dialogs.admin.AddEBikeDialog;
 import org.dialogs.admin.RechargeBikeDialog;
-import org.models.EBikeViewModel;
+import org.models.BikeViewModel;
 import org.models.StationViewModel;
 import org.models.UserViewModel;
 import org.verticles.AdminVerticle;
@@ -76,10 +76,10 @@ public class AdminView extends AbstractView {
                     JsonObject location = bikeObj.getJsonObject("position");
                     Double x = location.getDouble("x");
                     Double y = location.getDouble("y");
-                    EBikeViewModel.EBikeState state = EBikeViewModel.EBikeState.valueOf(stateStr);
-                    EBikeViewModel.BikeType type = EBikeViewModel.BikeType.valueOf(typeStr);
+                    BikeViewModel.EBikeState state = BikeViewModel.EBikeState.valueOf(stateStr);
+                    BikeViewModel.BikeType type = BikeViewModel.BikeType.valueOf(typeStr);
 
-                    EBikeViewModel bikeModel = new EBikeViewModel(id, x, y, batteryLevel, state, type);
+                    BikeViewModel bikeModel = new BikeViewModel(id, x, y, batteryLevel, state, type);
                     eBikes.add(bikeModel);
                 } else {
                     log("Invalid bike data: " + element);

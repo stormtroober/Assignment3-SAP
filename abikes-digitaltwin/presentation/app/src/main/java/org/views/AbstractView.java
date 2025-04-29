@@ -1,7 +1,7 @@
 package org.views;
 
 
-import org.models.EBikeViewModel;
+import org.models.BikeViewModel;
 import org.models.StationViewModel;
 import org.models.UserViewModel;
 
@@ -19,7 +19,7 @@ public abstract class AbstractView extends JFrame {
     protected JButton logoutButton;
     protected JPanel buttonPanel;
 
-    protected List<EBikeViewModel> eBikes;
+    protected List<BikeViewModel> eBikes;
     protected List<StationViewModel> stations;
     protected UserViewModel actualUser;
 
@@ -88,14 +88,14 @@ public abstract class AbstractView extends JFrame {
     private void paintEBikes(Graphics2D g2) {
         int centerX = centralPanel.getWidth() / 2;
         int centerY = centralPanel.getHeight() / 2;
-        for (EBikeViewModel bike : eBikes) {
+        for (BikeViewModel bike : eBikes) {
             int x = centerX + (int) bike.x();
             int y = centerY - (int) bike.y();
             g2.setColor(bike.color());
             g2.fillOval(x, y, 20, 20);
             g2.drawString("STATUS: " + bike.state(), x, y + 65);
 
-            if (bike.type() == EBikeViewModel.BikeType.AUTONOMOUS) {
+            if (bike.type() == BikeViewModel.BikeType.AUTONOMOUS) {
                 g2.drawString("A-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
                 g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
                 g2.setColor(Color.RED);

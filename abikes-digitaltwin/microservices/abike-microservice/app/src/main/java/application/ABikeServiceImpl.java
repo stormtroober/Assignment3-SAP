@@ -4,10 +4,7 @@ import application.ports.ABikeRepository;
 import application.ports.ABikeServiceAPI;
 import application.ports.CommunicationPort;
 import application.ports.StationServiceAPI;
-import domain.model.ABike;
-import domain.model.ABikeFactory;
-import domain.model.ABikeState;
-import domain.model.P2d;
+import domain.model.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
@@ -56,13 +53,15 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
                           id,
                           new P2d(locationJson.getDouble("x"), locationJson.getDouble("y")),
                           ABikeState.AVAILABLE,
-                          100);
+                          100,
+                              BikeType.AUTONOMOUS);
               JsonObject abikeJson =
                   new JsonObject()
                       .put("id", abike.getId())
                       .put("state", abike.getABikeState().name())
                       .put("batteryLevel", abike.getBatteryLevel())
-                      .put("location", locationJson);
+                      .put("location", locationJson)
+                        .put("type", abike.getType().name());
               mapCommunicationAdapter.sendUpdate(abikeJson);
               return repository
                   .save(abikeJson)

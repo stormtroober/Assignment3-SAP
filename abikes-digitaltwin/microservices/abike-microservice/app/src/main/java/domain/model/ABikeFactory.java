@@ -11,7 +11,7 @@ public class ABikeFactory implements Factory {
     return INSTANCE;
   }
 
-  public ABike create(String id, P2d location, ABikeState state, int batteryLevel) {
-    return new ABike(id, location, state, batteryLevel);
+  public ABike create(String id, P2d location, ABikeState state, int batteryLevel, BikeType type) {
+    return new ABike(id, location, state, batteryLevel, type);
   }
 }

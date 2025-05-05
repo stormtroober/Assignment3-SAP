@@ -38,7 +38,7 @@ public class Main {
                   new ABikeServiceImpl(repository, bikeMapCommunicationAdapter, stationService);
 
               stationService
-                  .createStation("station1", 10.0f, 10.0f)
+                  .createStation("station1")
                   .thenAccept(
                       station ->
                           System.out.println("Station1 created: " + station.encodePrettily()))

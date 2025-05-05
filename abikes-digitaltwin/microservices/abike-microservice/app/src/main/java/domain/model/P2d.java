@@ -13,6 +13,14 @@ public class P2d implements ValueObject, Serializable {
     this.y = y;
   }
 
+  public double getX() {
+    return x;
+  }
+
+  public double getY() {
+    return y;
+  }
+
   public String toString() {
     return "P2d(" + x + "," + y + ")";
   }

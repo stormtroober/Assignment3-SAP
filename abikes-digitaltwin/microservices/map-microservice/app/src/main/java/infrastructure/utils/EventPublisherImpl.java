@@ -63,13 +63,23 @@ public class EventPublisherImpl implements EventPublisher {
   }
 
   private String convertStationToJson(Station station) {
-    JsonObject json = new JsonObject();
-    json.put("id", station.getId());
-    json.put(
-        "location",
-        new JsonObject().put("x", station.getLocation().x()).put("y", station.getLocation().y()));
-    json.put("slots", station.getSlots());
-    json.put("maxSlots", station.getMaxSlots());
-    return json.encode();
+      JsonObject json = new JsonObject();
+      json.put("id", station.getId());
+      json.put(
+          "location",
+          new JsonObject()
+              .put("x", station.getLocation().x())
+              .put("y", station.getLocation().y())
+      );
+      JsonArray slotsJson = new JsonArray();
+      station.getSlots().forEach(slot -> {
+          JsonObject slotJson = new JsonObject()
+              .put("id", slot.getId())
+              .put("abikeId", slot.getAbikeId());
+          slotsJson.add(slotJson);
+      });
+      json.put("slots", slotsJson);
+      json.put("maxSlots", station.getMaxSlots());
+      return json.encode();
   }
 }

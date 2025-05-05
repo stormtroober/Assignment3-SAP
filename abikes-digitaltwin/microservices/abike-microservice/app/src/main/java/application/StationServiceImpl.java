@@ -3,6 +3,9 @@ package application;
 import application.ports.CommunicationPort;
 import application.ports.StationRepository;
 import application.ports.StationServiceAPI;
+import domain.model.Station;
+import domain.model.StationFactory;
+import domain.model.StationMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
@@ -12,7 +15,6 @@ public class StationServiceImpl implements StationServiceAPI {
 
   private final StationRepository repository;
   private final CommunicationPort communicationPort;
-  public static final int MAX_SLOTS = 4;
 
   public StationServiceImpl(StationRepository repository, CommunicationPort communicationPort) {
     this.repository = repository;
@@ -21,15 +23,11 @@ public class StationServiceImpl implements StationServiceAPI {
   }
 
   @Override
-  public CompletableFuture<JsonObject> createStation(String id, float x, float y) {
-    JsonObject station =
-        new JsonObject()
-            .put("id", id)
-            .put("location", new JsonObject().put("x", x).put("y", y))
-            .put("slots", new JsonArray())
-            .put("maxSlots", MAX_SLOTS);
-    communicationPort.sendUpdate(station);
-    return repository.save(station).thenApply(v -> station);
+  public CompletableFuture<JsonObject> createStation(String id) {
+    Station station = StationFactory.createStandardStation(id);
+    JsonObject stationJson = StationMapper.toJson(station);
+    communicationPort.sendUpdate(stationJson);
+    return repository.save(stationJson).thenApply(v -> stationJson);
   }
 
   @Override

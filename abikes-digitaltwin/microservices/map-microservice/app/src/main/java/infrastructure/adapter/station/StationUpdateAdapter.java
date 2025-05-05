@@ -1,6 +1,7 @@
 package infrastructure.adapter.station;
 
 import application.ports.StationMapServiceAPI;
+import domain.model.Slot;
 import domain.model.Station;
 import domain.model.StationFactory;
 import infrastructure.adapter.kafkatopic.Topics;
@@ -82,22 +83,19 @@ public class StationUpdateAdapter {
     double x = location.getDouble("x");
     double y = location.getDouble("y");
 
-    List<String> slots =
-        body.getJsonArray("slots", new io.vertx.core.json.JsonArray()).stream()
-            .map(Object::toString)
-            .toList();
+    List<Slot> slots =
+            body.getJsonArray("slots", new io.vertx.core.json.JsonArray()).stream()
+                    .map(obj -> {
+                      JsonObject slotJson = (JsonObject) obj;
+                      String slotId = slotJson.getString("id");
+                      String abikeId = slotJson.getString("abikeId");
+                      return new Slot(slotId, abikeId);
+                    })
+                    .toList();
 
     int maxSlots = body.getInteger("maxSlots", 0);
 
     StationFactory factory = StationFactory.getInstance();
     return factory.createStation(stationId, (float) x, (float) y, slots, maxSlots);
-  }
-
-  public void stop() {
-    running.set(false);
-    if (consumerExecutor != null) {
-      consumerExecutor.shutdownNow();
-    }
-    logger.info("StationUpdateAdapter stopped and Kafka consumer executor shut down.");
   }
 }

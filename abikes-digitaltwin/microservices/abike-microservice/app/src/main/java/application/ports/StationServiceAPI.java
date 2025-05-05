@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface StationServiceAPI {
-  CompletableFuture<JsonObject> createStation(String id, float x, float y);
+  CompletableFuture<JsonObject> createStation(String id);
 
   CompletableFuture<Optional<JsonObject>> getStation(String id);
 

@@ -1,6 +1,5 @@
 package infrastructure.persistence;
 
-import application.StationServiceImpl;
 import application.ports.StationRepository;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -154,7 +153,7 @@ for (int i = 0; i < slots.size(); i++) {
     result.add(slotJson);
   } else if (slotObj instanceof String slotId) {
     // Convert string to object with null abikeId
-    result.add(new JsonObject().put("id", slotId).put("abikeId", (String) null));
+    result.add(new JsonObject().put("id", slotId).put("abikeId", null));
   }
 }
 return result;

@@ -2,7 +2,6 @@ package domain.model;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static domain.model.StationFactory.MAX_SLOTS;

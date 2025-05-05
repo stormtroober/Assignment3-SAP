@@ -19,6 +19,14 @@ public interface MapCommunicationPort {
    */
   void notifyEndRide(String bikeId, String userId);
 
+    /**
+     * Notifies the user about a ride call for a specific e-bike and user.
+     *
+     * @param bikeId the ID of the e-bike.
+     * @param userId the ID of the user.
+     */
+  void notifyUserRideCall(String bikeId, String userId);
+
   /** Initializes the communication port. */
   void init();
 }

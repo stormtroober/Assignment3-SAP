@@ -156,10 +156,6 @@ public abstract class AbstractView extends JFrame {
         }
     }
 
-
-
-
-
     private void paintStations(Graphics2D g2) {
         int centerX    = centralPanel.getWidth()  / 2;
         int centerY    = centralPanel.getHeight() / 2;

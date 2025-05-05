@@ -70,6 +70,27 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
                 });
     }
 
+    @Override
+    public void notifyUserRideCall(String bikeId, String userId) {
+        JsonObject message = new JsonObject()
+                .put("username", userId)
+                .put("bikeName", bikeId)
+                .put("action", "call");
+        String topicName = Topics.USER_RIDE_CALL.getTopicName();
+        logger.info("Sending user ride call notification to Kafka topic: {} for user: {} and bike: {}",
+                topicName, userId, bikeId);
+        producer.send(
+                new ProducerRecord<>(topicName, bikeId, message.encode()),
+                (metadata, exception) -> {
+                    if (exception == null) {
+                        logger.info("User ride call notification sent successfully to topic: {}, partition: {}, offset: {}",
+                                metadata.topic(), metadata.partition(), metadata.offset());
+                    } else {
+                        logger.error("Failed to send user ride call notification: {}", exception.getMessage());
+                    }
+                });
+    }
+
     // Method to close the producer when shutting down
     public void close() {
         if (producer != null) {

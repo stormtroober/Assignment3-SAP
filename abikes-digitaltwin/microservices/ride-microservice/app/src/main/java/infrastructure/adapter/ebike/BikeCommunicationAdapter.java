@@ -1,6 +1,6 @@
 package infrastructure.adapter.ebike;
 
-import application.ports.EbikeCommunicationPort;
+import application.ports.BikeCommunicationPort;
 import application.ports.EventPublisher;
 import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.config.ServiceConfiguration;
@@ -15,13 +15,13 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-public class EBikeCommunicationAdapter extends AbstractVerticle implements EbikeCommunicationPort {
+public class BikeCommunicationAdapter extends AbstractVerticle implements BikeCommunicationPort {
   private final WebClient webClient;
   private final String ebikeServiceUrl;
   private final Vertx vertx;
   private Producer<String, String> producer;
 
-  public EBikeCommunicationAdapter(Vertx vertx) {
+  public BikeCommunicationAdapter(Vertx vertx) {
     this.webClient = WebClient.create(vertx);
     ServiceConfiguration config = ServiceConfiguration.getInstance(vertx);
     JsonObject ebikeConfig = config.getEBikeAdapterAddress();
@@ -78,8 +78,8 @@ public class EBikeCommunicationAdapter extends AbstractVerticle implements Ebike
   }
 
   @Override
-  public CompletableFuture<JsonObject> getEbike(String id) {
-    System.out.println("Sending request to ebike-microservice -> getEbike(" + id + ")");
+  public CompletableFuture<JsonObject> getBike(String id) {
+    System.out.println("Sending request to ebike-microservice -> getBike(" + id + ")");
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
 
     webClient

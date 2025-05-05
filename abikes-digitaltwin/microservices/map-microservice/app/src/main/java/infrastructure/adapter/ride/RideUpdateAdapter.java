@@ -1,6 +1,7 @@
 package infrastructure.adapter.ride;
 
 import static infrastructure.adapter.kafkatopic.Topics.RIDE_MAP_UPDATE;
+import static infrastructure.adapter.kafkatopic.Topics.USER_RIDE_CALL;
 
 import application.ports.BikeMapServiceAPI;
 import infrastructure.utils.KafkaProperties;
@@ -42,31 +43,36 @@ public class RideUpdateAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+            new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
 
     try (consumer) {
-      // Subscribe to the map-ride-update topic
-      consumer.subscribe(List.of(RIDE_MAP_UPDATE.getTopicName()));
-      logger.info("Subscribed to Kafka topic: {}", RIDE_MAP_UPDATE.getTopicName());
+      // Subscribe to both topics
+      consumer.subscribe(List.of(RIDE_MAP_UPDATE.getTopicName(), USER_RIDE_CALL.getTopicName()));
+      logger.info("Subscribed to Kafka topics: {}, {}", RIDE_MAP_UPDATE.getTopicName(), USER_RIDE_CALL.getTopicName());
 
       while (running.get()) {
         try {
           ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
           for (ConsumerRecord<String, String> record : records) {
             try {
-              JsonObject rideUpdate = new JsonObject(record.value());
-              logger.info("Received ride update from Kafka: {}", rideUpdate);
-              processRideUpdate(rideUpdate);
+              if (record.topic().equals(RIDE_MAP_UPDATE.getTopicName())) {
+                JsonObject rideUpdate = new JsonObject(record.value());
+                logger.info("Received ride update from Kafka: {}", rideUpdate);
+                processRideUpdate(rideUpdate);
+              } else if (record.topic().equals(USER_RIDE_CALL.getTopicName())) {
+                logger.info("Received user ride call from Kafka: {}", record.value());
+                // Future: handle user ride call here
+              }
             } catch (Exception e) {
-              logger.error("Invalid ride update data from Kafka: {}", e.getMessage());
+              logger.error("Invalid data from Kafka: {}", e.getMessage());
             }
           }
           consumer.commitAsync(
-              (offsets, exception) -> {
-                if (exception != null) {
-                  logger.error("Failed to commit offsets: {}", exception.getMessage());
-                }
-              });
+                  (offsets, exception) -> {
+                    if (exception != null) {
+                      logger.error("Failed to commit offsets: {}", exception.getMessage());
+                    }
+                  });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage());
         }

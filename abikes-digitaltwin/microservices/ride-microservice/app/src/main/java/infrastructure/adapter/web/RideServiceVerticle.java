@@ -1,6 +1,7 @@
 package infrastructure.adapter.web;
 
-import application.ports.RestRideServiceAPI;
+import application.ports.RestAutonomousRideService;
+import application.ports.RestSimpleRideService;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.AbstractVerticle;
@@ -21,12 +22,14 @@ public class RideServiceVerticle extends AbstractVerticle {
   private final int eurekaPort;
   private final String eurekaHost;
   private WebClient client;
-  private final RestRideServiceAPI rideService;
+  private final RestSimpleRideService rideService;
+  private final RestAutonomousRideService autonomousRideService;
   private final MetricsManager metricsManager;
   private final Vertx vertx;
 
-  public RideServiceVerticle(RestRideServiceAPI rideService, Vertx vertx) {
+  public RideServiceVerticle(RestSimpleRideService rideService, RestAutonomousRideService autonomousRideService, Vertx vertx) {
     this.rideService = rideService;
+    this.autonomousRideService = autonomousRideService;
     this.vertx = vertx;
     ServiceConfiguration config = ServiceConfiguration.getInstance(vertx);
     JsonObject eurekaConfig = config.getEurekaConfig();
@@ -123,6 +126,19 @@ public class RideServiceVerticle extends AbstractVerticle {
                         return null;
                       });
             });
+    router.post("/rideToUser").handler(ctx -> {
+      metricsManager.incrementMethodCounter("rideToUser");
+      //var timer = metricsManager.startTimer();
+
+      JsonObject body = ctx.body().asJsonObject();
+      System.out.println("Ride to user request: " + body.encodePrettily());
+        String user = body.getString("user");
+        String bike = body.getString("bike");
+        Double x = body.getDouble("posX");
+        Double y = body.getDouble("posY");
+      //autonomousRideService.dispatchBikeToUser
+
+    });
     server
         .requestHandler(router)
         .listen(

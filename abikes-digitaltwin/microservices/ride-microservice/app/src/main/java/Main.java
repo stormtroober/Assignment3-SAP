@@ -1,6 +1,7 @@
-import application.RestRideServiceAPIImpl;
+import application.RestAutonomousRideServiceImpl;
+import application.RestSimpleRideServiceImpl;
 import application.ports.*;
-import infrastructure.adapter.ebike.EBikeCommunicationAdapter;
+import infrastructure.adapter.ebike.BikeCommunicationAdapter;
 import infrastructure.adapter.map.MapCommunicationAdapter;
 import infrastructure.adapter.user.UserCommunicationAdapter;
 import infrastructure.adapter.web.RideServiceVerticle;
@@ -17,18 +18,20 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
-              EbikeCommunicationPort ebikeCommunicationAdapter =
-                  new EBikeCommunicationAdapter(vertx);
+              BikeCommunicationPort ebikeCommunicationAdapter =
+                  new BikeCommunicationAdapter(vertx);
               MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
               UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
-              RestRideServiceAPI service =
-                  new RestRideServiceAPIImpl(
+              RestSimpleRideService service =
+                  new RestSimpleRideServiceImpl(
                       new EventPublisherImpl(vertx),
                       vertx,
                       ebikeCommunicationAdapter,
                       mapCommunicationAdapter,
                       userCommunicationAdapter);
-              RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, vertx);
+                RestAutonomousRideService autonomousRideService =
+                    new RestAutonomousRideServiceImpl(mapCommunicationAdapter, userCommunicationAdapter);
+              RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, autonomousRideService, vertx);
               rideServiceVerticle.init();
             });
   }

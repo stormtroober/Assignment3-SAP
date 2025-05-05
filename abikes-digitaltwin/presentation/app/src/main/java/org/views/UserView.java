@@ -17,6 +17,7 @@ public class UserView extends AbstractView {
     private final UserVerticle verticle;
     private final Vertx vertx;
     private JButton rideButton;
+    private JButton callABike;
     private boolean isRiding = false;
 
 
@@ -39,6 +40,23 @@ public class UserView extends AbstractView {
         rideButton = new JButton("Start Ride");
         rideButton.addActionListener(e -> toggleRide());
         buttonPanel.add(rideButton);
+
+        callABike = new JButton("Call ABike");
+        buttonPanel.add(callABike);
+
+        callABike.addActionListener(e -> {
+            SwingUtilities.invokeLater(() -> {
+                org.dialogs.user.CallBikeDialog dialog = new org.dialogs.user.CallBikeDialog(UserView.this, vertx, actualUser);
+                dialog.setVisible(true);
+                if (dialog.isConfirmed()) {
+                    String bikeId = dialog.getBikeId();
+                    double x = dialog.getPosX();
+                    double y = dialog.getPosY();
+                    // TODO: Handle the call bike logic here, e.g., send a request to the backend
+                    JOptionPane.showMessageDialog(UserView.this, "Requested bike " + bikeId + " to position (" + x + ", " + y + ")");
+                }
+            });
+        });
 
         addTopPanelButton("Recharge Credit", e -> {
             SwingUtilities.invokeLater(() -> {

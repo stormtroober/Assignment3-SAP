@@ -3,7 +3,7 @@ package application.ports;
 import java.util.concurrent.CompletableFuture;
 
 /** Port representing the REST API for domain operations in the Application. */
-public interface RestRideServiceAPI {
+public interface RestSimpleRideService {
 
   /**
    * Starts a ride for a specific user and e-bike.

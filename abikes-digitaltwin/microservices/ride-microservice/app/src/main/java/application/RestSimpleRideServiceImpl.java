@@ -6,21 +6,19 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.concurrent.CompletableFuture;
 
-public class RestRideServiceAPIImpl implements RestRideServiceAPI {
+public class RestSimpleRideServiceImpl implements RestSimpleRideService {
   private final RideRepository rideRepository;
-  private final Vertx vertx;
-  private final EbikeCommunicationPort ebikeCommunicationAdapter;
+  private final BikeCommunicationPort ebikeCommunicationAdapter;
   private final MapCommunicationPort mapCommunicationAdapter;
   private final UserCommunicationPort userCommunicationAdapter;
 
-  public RestRideServiceAPIImpl(
+  public RestSimpleRideServiceImpl(
       EventPublisher publisher,
       Vertx vertx,
-      EbikeCommunicationPort ebikeCommunicationAdapter,
+      BikeCommunicationPort ebikeCommunicationAdapter,
       MapCommunicationPort mapCommunicationAdapter,
       UserCommunicationPort userCommunicationAdapter) {
     this.rideRepository = new RideRepositoryImpl(vertx, publisher);
-    this.vertx = vertx;
     this.ebikeCommunicationAdapter = ebikeCommunicationAdapter;
     this.mapCommunicationAdapter = mapCommunicationAdapter;
     this.userCommunicationAdapter = userCommunicationAdapter;
@@ -32,7 +30,7 @@ public class RestRideServiceAPIImpl implements RestRideServiceAPI {
   private CompletableFuture<EBike> checkEbike(String bikeId) {
     System.out.println("Checking ebike: " + bikeId);
     return ebikeCommunicationAdapter
-        .getEbike(bikeId)
+        .getBike(bikeId)
         .thenApply(
             ebikeJson -> {
               if (ebikeJson == null) {

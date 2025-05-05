@@ -124,6 +124,21 @@ public class UserVerticle extends AbstractVerticle {
                     }
                 });
         });
+
+        vertx.eventBus().consumer("user.ride.callBike." + username, message -> {
+            JsonObject callDetails = (JsonObject) message.body();
+            webClient.post(PORT, ADDRESS, "/RIDE-MICROSERVICE/rideToUser")
+                    .sendJsonObject(callDetails, ar -> {
+                        if (ar.succeeded() && ar.result().statusCode() == 200) {
+                            message.reply(ar.result().bodyAsString());
+                        } else {
+                            String errorMsg = ar.succeeded() && ar.result() != null
+                                    ? ar.result().bodyAsString()
+                                    : (ar.cause() != null ? ar.cause().getMessage() : "Unknown error");
+                            message.fail(500, "Failed to call bike: " + errorMsg);
+                        }
+                    });
+        });
     }
 
     @Override

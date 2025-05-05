@@ -4,7 +4,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.concurrent.CompletableFuture;
 
 /** Port for communicating with the ebike microservice adapter. */
-public interface EbikeCommunicationPort {
+public interface BikeCommunicationPort {
 
   /**
    * Sends an update for a single e-bike.
@@ -19,7 +19,7 @@ public interface EbikeCommunicationPort {
    * @param id the ID of the e-bike to retrieve.
    * @return a CompletableFuture containing the e-bike information as a JsonObject.
    */
-  CompletableFuture<JsonObject> getEbike(String id);
+  CompletableFuture<JsonObject> getBike(String id);
 
   /** Initializes the communication port. */
   void init();

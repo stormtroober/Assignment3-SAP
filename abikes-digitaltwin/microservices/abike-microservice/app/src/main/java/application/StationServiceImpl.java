@@ -37,14 +37,16 @@ public class StationServiceImpl implements StationServiceAPI {
 
   @Override
   public CompletableFuture<JsonObject> updateStation(JsonObject station) {
-    communicationPort.sendUpdate(station);
-    return repository
-        .update(station)
-        .thenCompose(
-            v ->
-                repository
-                    .findById(station.getString("id"))
-                    .thenApply(updatedStation -> updatedStation.orElse(station)));
+      return repository
+          .update(station)
+          .thenCompose(
+              v -> repository.findById(station.getString("id"))
+                  .thenApply(updatedStation -> {
+                      JsonObject result = updatedStation.orElse(station);
+                      communicationPort.sendUpdate(result);
+                      return result;
+                  })
+          );
   }
 
   @Override

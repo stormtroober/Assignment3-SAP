@@ -101,8 +101,13 @@ public abstract class AbstractView extends JFrame {
                     double y = location.getDouble("y");
                     List<String> slots = stationObj.getJsonArray("slots")
                             .stream()
-                            .map(Object::toString)
+                            .map(slotRaw -> {
+                                JsonObject slotObj = (JsonObject) slotRaw;
+                                return slotObj.getString("abikeId"); // May be null
+                            })
                             .collect(Collectors.toList());
+
+
                     int maxSlots = stationObj.getInteger("maxSlots", 0);
                     stations.add(new StationViewModel(id, x, y, slots, maxSlots));
                 } else {
@@ -118,9 +123,22 @@ public abstract class AbstractView extends JFrame {
     private void paintEBikes(Graphics2D g2) {
         int centerX = centralPanel.getWidth() / 2;
         int centerY = centralPanel.getHeight() / 2;
+
+        // Collect all abikeIds from station slots
+        List<String> dockedABikeIds = stations.stream()
+                .flatMap(s -> s.getSlots().stream())
+                .filter(abikeId -> abikeId != null && !abikeId.equals("null"))
+                .toList();
+
         for (BikeViewModel bike : eBikes) {
+            // Skip docked autonomous bikes
+            if (bike.type() == BikeViewModel.BikeType.AUTONOMOUS && dockedABikeIds.contains(bike.id())) {
+                continue;
+            }
+
             int x = centerX + (int) bike.x();
             int y = centerY - (int) bike.y();
+
             g2.setColor(bike.color());
             g2.fillOval(x, y, 20, 20);
             g2.drawString("STATUS: " + bike.state(), x, y + 65);
@@ -140,6 +158,8 @@ public abstract class AbstractView extends JFrame {
 
 
 
+
+
     private void paintStations(Graphics2D g2) {
         int centerX    = centralPanel.getWidth()  / 2;
         int centerY    = centralPanel.getHeight() / 2;
@@ -151,24 +171,47 @@ public abstract class AbstractView extends JFrame {
             int sx = centerX + (int) station.getX();
             int sy = centerY - (int) station.getY();
 
-            // station square
+            // Draw station square
             g2.setColor(Color.BLUE);
             g2.fillRect(sx - stationSize/2, sy - stationSize/2, stationSize, stationSize);
 
-            // station slots
+            List<String> slots = station.getSlots();
             int slotCount = station.getMaxSlots();
+
             for (int i = 0; i < slotCount; i++) {
                 double angle = 2 * Math.PI * i / slotCount;
                 int slotX = sx + (int)(slotRadius * Math.cos(angle)) - slotSize/2;
                 int slotY = sy + (int)(slotRadius * Math.sin(angle)) - slotSize/2;
-                boolean filled = i < station.getSlots().size();
-                g2.setColor(filled ? Color.LIGHT_GRAY : Color.WHITE);
-                g2.fillRect(slotX, slotY, slotSize, slotSize);
+
+                String bikeId = i < slots.size() ? slots.get(i) : null;
+                boolean hasBike = bikeId != null && !bikeId.equals("null");
+
+                if (hasBike) {
+                    BikeViewModel bike = eBikes.stream()
+                            .filter(b -> b.id().equals(bikeId))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (bike != null && bike.type() == BikeViewModel.BikeType.AUTONOMOUS) {
+                        g2.setColor(bike.color());
+                        g2.fillOval(slotX - 6, slotY - 6, 20, 20);
+                        g2.setColor(Color.RED);
+                        g2.drawString("A", slotX + 4, slotY + 10);
+                    } else {
+                        g2.setColor(Color.LIGHT_GRAY);
+                        g2.fillRect(slotX, slotY, slotSize, slotSize);
+                    }
+                } else {
+                    g2.setColor(Color.WHITE);
+                    g2.fillRect(slotX, slotY, slotSize, slotSize);
+                }
                 g2.setColor(Color.DARK_GRAY);
                 g2.drawRect(slotX, slotY, slotSize, slotSize);
+
             }
         }
     }
+
 
     protected void paintAdminView(Graphics2D g2) {
         // draw all bikes

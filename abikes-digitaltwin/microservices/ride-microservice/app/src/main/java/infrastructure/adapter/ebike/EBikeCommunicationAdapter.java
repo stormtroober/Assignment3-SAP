@@ -15,7 +15,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-// TODO: I would change name, because now sends updates also to map
 public class EBikeCommunicationAdapter extends AbstractVerticle implements EbikeCommunicationPort {
   private final WebClient webClient;
   private final String ebikeServiceUrl;

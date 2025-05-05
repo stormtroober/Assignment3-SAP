@@ -65,19 +65,9 @@ public class UserVerticle extends AbstractVerticle {
 
             });
 
-        httpClient.webSocket(PORT, ADDRESS, "/MAP-MICROSERVICE/observeStations")
-                .onSuccess(ws -> {
-                    System.out.println("Connected to stations updates WebSocket");
-                    stationWebSocket = ws;
-                    ws.textMessageHandler(message -> {
-                        vertx.eventBus().publish("stations.update", new JsonArray(message));
-                    });
-                    ws.exceptionHandler(err -> {
-                        System.out.println("Stations WebSocket error: " + err.getMessage());
-                    });
-                }).onFailure(err -> {
-                    System.out.println("Failed to connect to stations updates WebSocket: " + err.getMessage());
-                });
+        WebSocketUtils.connectToStationsWebSocket(
+                vertx, httpClient, PORT, ADDRESS, ws -> stationWebSocket = ws
+        );
     }
 
     private void handleUserUpdate(String message) {

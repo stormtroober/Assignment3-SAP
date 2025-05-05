@@ -34,43 +34,72 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
   // Get all stations and pick a random one for the bike's location
   @Override
   public CompletableFuture<JsonObject> createABike(String id) {
-    return stationService
-        .getAllStations()
-        .thenCompose(
-            stations -> {
+      return stationService
+          .getAllStations()
+          .thenCompose(stations -> {
               if (stations.isEmpty()) {
-                CompletableFuture<JsonObject> failed = new CompletableFuture<>();
-                failed.completeExceptionally(new RuntimeException("No stations available"));
-                return failed;
+                  CompletableFuture<JsonObject> failed = new CompletableFuture<>();
+                  failed.completeExceptionally(new RuntimeException("No stations available"));
+                  return failed;
               }
               int idx = random.nextInt(stations.size());
               JsonObject station = stations.getJsonObject(idx);
-              JsonObject locationJson = station.getJsonObject("location");
-              // Use the singleton factory to create an ABike domain object
-              ABike abike =
-                  ABikeFactory.getInstance()
-                      .create(
-                          id,
-                          new P2d(locationJson.getDouble("x"), locationJson.getDouble("y")),
-                          ABikeState.AVAILABLE,
-                          100,
-                              BikeType.AUTONOMOUS);
-              JsonObject abikeJson =
-                  new JsonObject()
-                      .put("id", abike.getId())
-                      .put("state", abike.getABikeState().name())
-                      .put("batteryLevel", abike.getBatteryLevel())
-                      .put("location", locationJson)
-                        .put("type", abike.getType().name());
-              mapCommunicationAdapter.sendUpdate(abikeJson);
-              return repository
-                  .save(abikeJson)
-                  .thenApply(
-                      v -> {
-                        logger.info("Saved bike successfully: {}", abikeJson.encode());
-                        return abikeJson;
+              JsonArray slots = station.getJsonArray("slots");
+              JsonObject freeSlot = null;
+              for (int i = 0; i < slots.size(); i++) {
+                  JsonObject slot = slots.getJsonObject(i);
+                  if (slot.getString("abikeId") == null) {
+                      freeSlot = slot;
+                      break;
+                  }
+              }
+              JsonObject locationJson;
+              if (freeSlot == null) {
+                  // All slots full: random location
+                  double x = 100 * random.nextDouble();
+                  double y = 100 * random.nextDouble();
+                  locationJson = new JsonObject().put("x", x).put("y", y);
+              } else {
+                  // Assign bike to slot
+                  freeSlot.put("abikeId", id);
+                  locationJson = station.getJsonObject("location");
+                  // Update station in repository
+                  return stationService.updateStation(station)
+                      .thenCompose(updatedStation -> {
+                          ABike abike = ABikeFactory.getInstance().create(
+                              id,
+                              new P2d(locationJson.getDouble("x"), locationJson.getDouble("y")),
+                              ABikeState.AVAILABLE,
+                              100,
+                              BikeType.AUTONOMOUS
+                          );
+                          JsonObject abikeJson = new JsonObject()
+                              .put("id", abike.getId())
+                              .put("state", abike.getABikeState().name())
+                              .put("batteryLevel", abike.getBatteryLevel())
+                              .put("location", locationJson)
+                              .put("type", abike.getType().name());
+                          mapCommunicationAdapter.sendUpdate(abikeJson);
+                          return repository.save(abikeJson).thenApply(v -> abikeJson);
                       });
-            });
+              }
+              // If here, all slots were full, create bike at random location
+              ABike abike = ABikeFactory.getInstance().create(
+                  id,
+                  new P2d(locationJson.getDouble("x"), locationJson.getDouble("y")),
+                  ABikeState.AVAILABLE,
+                  100,
+                  BikeType.AUTONOMOUS
+              );
+              JsonObject abikeJson = new JsonObject()
+                  .put("id", abike.getId())
+                  .put("state", abike.getABikeState().name())
+                  .put("batteryLevel", abike.getBatteryLevel())
+                  .put("location", locationJson)
+                  .put("type", abike.getType().name());
+              mapCommunicationAdapter.sendUpdate(abikeJson);
+              return repository.save(abikeJson).thenApply(v -> abikeJson);
+          });
   }
 
   @Override

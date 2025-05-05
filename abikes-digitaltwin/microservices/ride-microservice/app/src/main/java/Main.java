@@ -1,7 +1,7 @@
 import application.RestAutonomousRideServiceImpl;
 import application.RestSimpleRideServiceImpl;
 import application.ports.*;
-import infrastructure.adapter.ebike.BikeCommunicationAdapter;
+import infrastructure.adapter.ebike.EBikeCommunicationAdapter;
 import infrastructure.adapter.map.MapCommunicationAdapter;
 import infrastructure.adapter.user.UserCommunicationAdapter;
 import infrastructure.adapter.web.RideServiceVerticle;
@@ -19,7 +19,7 @@ public class Main {
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
               BikeCommunicationPort ebikeCommunicationAdapter =
-                  new BikeCommunicationAdapter(vertx);
+                  new EBikeCommunicationAdapter(vertx);
               MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
               UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
               RestSimpleRideService service =

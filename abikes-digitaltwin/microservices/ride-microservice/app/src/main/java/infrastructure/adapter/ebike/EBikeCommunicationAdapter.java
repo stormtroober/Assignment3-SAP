@@ -15,13 +15,13 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-public class BikeCommunicationAdapter extends AbstractVerticle implements BikeCommunicationPort {
+public class EBikeCommunicationAdapter extends AbstractVerticle implements BikeCommunicationPort {
   private final WebClient webClient;
   private final String ebikeServiceUrl;
   private final Vertx vertx;
   private Producer<String, String> producer;
 
-  public BikeCommunicationAdapter(Vertx vertx) {
+  public EBikeCommunicationAdapter(Vertx vertx) {
     this.webClient = WebClient.create(vertx);
     ServiceConfiguration config = ServiceConfiguration.getInstance(vertx);
     JsonObject ebikeConfig = config.getEBikeAdapterAddress();

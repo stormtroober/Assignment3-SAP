@@ -1,6 +1,9 @@
 package org.views;
 
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.models.BikeViewModel;
 import org.models.StationViewModel;
 import org.models.UserViewModel;
@@ -11,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public abstract class AbstractView extends JFrame {
 
@@ -80,6 +84,32 @@ public abstract class AbstractView extends JFrame {
         } else {
             paintUserView(g2);
         }
+    }
+
+    protected void observeStationsToList(Vertx vertx) {
+        vertx.eventBus().consumer("stations.update", message -> {
+            System.out.println("Received stations update: " + message.body());
+            JsonArray update = (JsonArray) message.body();
+            stations.clear();
+            for (int i = 0; i < update.size(); i++) {
+                Object element = update.getValue(i);
+                if (element instanceof String) {
+                    JsonObject stationObj = new JsonObject((String) element);
+                    String id = stationObj.getString("id");
+                    JsonObject location = stationObj.getJsonObject("location");
+                    double x = location.getDouble("x");
+                    double y = location.getDouble("y");
+                    List<String> slots = stationObj.getJsonArray("slots")
+                            .stream()
+                            .map(Object::toString)
+                            .collect(Collectors.toList());
+                    int maxSlots = stationObj.getInteger("maxSlots", 0);
+                    stations.add(new StationViewModel(id, x, y, slots, maxSlots));
+                } else {
+                    System.out.println("[AbstractView] Invalid station data: " + element);
+                }
+            }
+        });
     }
 
     /**

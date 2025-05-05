@@ -6,14 +6,11 @@ import io.vertx.core.json.JsonObject;
 import org.dialogs.user.RechargeCreditDialog;
 import org.dialogs.user.StartRideDialog;
 import org.models.BikeViewModel;
-import org.models.StationViewModel;
 import org.models.UserViewModel;
 import org.verticles.UserVerticle;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class UserView extends AbstractView {
 
@@ -136,31 +133,8 @@ public class UserView extends AbstractView {
     }
 
     private void observeStations() {
-        vertx.eventBus().consumer("stations.update", message -> {
-            System.out.println("Received stations update: " + message.body());
-            JsonArray update = (JsonArray) message.body();
-            stations.clear();
-            for (int i = 0; i < update.size(); i++) {
-                Object element = update.getValue(i);
-                if (element instanceof String) {
-                    JsonObject stationObj = new JsonObject((String) element);
-                    String id = stationObj.getString("id");
-                    JsonObject location = stationObj.getJsonObject("location");
-                    double x = location.getDouble("x");
-                    double y = location.getDouble("y");
-                    // Parse slots as a list of strings
-                    List<String> slots = stationObj.getJsonArray("slots")
-                            .stream()
-                            .map(Object::toString)
-                            .collect(Collectors.toList());
-                    int maxSlots = stationObj.getInteger("maxSlots", 0);
-                    stations.add(new StationViewModel(id, x, y, slots, maxSlots));
-                } else {
-                    log("Invalid station data: " + element);
-                }
-            }
-            refreshView();
-        });
+        observeStationsToList(vertx);
+        refreshView();
     }
 
     public void observeUser(){

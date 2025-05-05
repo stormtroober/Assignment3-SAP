@@ -115,7 +115,7 @@ public class UserView extends AbstractView {
                     String id = bikeObj.getString("bikeName");
                     Integer batteryLevel = bikeObj.getInteger("batteryLevel");
                     String stateStr = bikeObj.getString("state");
-                    String typeStr = bikeObj.getString("type"); // <-- Read type
+                    String typeStr = bikeObj.getString("type");
                     JsonObject location = bikeObj.getJsonObject("position");
                     Double x = location.getDouble("x");
                     Double y = location.getDouble("y");

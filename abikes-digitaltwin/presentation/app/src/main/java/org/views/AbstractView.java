@@ -183,9 +183,36 @@ public abstract class AbstractView extends JFrame {
         // draw all stations
         paintStations(g2);
 
+        paintUserInfo(g2);
+        paintAvailableBikes(g2);
+    }
+
+    private void paintUserInfo(Graphics2D g2) {
         String credit = "Credit: " + actualUser.credit();
         g2.drawString(credit, 10, 20);
-        g2.drawString("AVAILABLE EBIKES: ", 10, 35);
+    }
+
+    private void paintAvailableBikes(Graphics2D g2) {
+        List<BikeViewModel> availableBikes = eBikes.stream()
+                .filter(bike -> bike.state() == BikeViewModel.EBikeState.AVAILABLE)
+                .toList();
+
+        g2.drawString("AVAILABLE EBIKES: " + availableBikes.size(), 10, 35);
+
+        int startX = 10;
+        int startY = 45;
+        int lineHeight = 14;
+        g2.setColor(Color.BLACK);
+
+        int y = startY + lineHeight;
+        for (BikeViewModel bike : availableBikes) {
+            String bikeInfo = String.format(
+                    "%s - Battery: %d%% - Type: %s",
+                    bike.id(), bike.batteryLevel(), bike.type()
+            );
+            g2.drawString(bikeInfo, startX, y);
+            y += lineHeight;
+        }
     }
 
     public void display() {

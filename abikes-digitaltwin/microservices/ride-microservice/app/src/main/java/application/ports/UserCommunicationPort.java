@@ -13,6 +13,15 @@ public interface UserCommunicationPort {
    */
   void sendUpdate(JsonObject user);
 
+    /**
+     * Sends a dispatch request for ride.
+     *
+     * @param dispatchPayload a JsonObject containing the dispatch information.
+     * @return a CompletableFuture indicating the completion of the operation.
+     */
+  CompletableFuture<Void> sendDispatchToRide(JsonObject dispatchPayload);
+
+
   /**
    * Retrieves the information of a user by their ID.
    *

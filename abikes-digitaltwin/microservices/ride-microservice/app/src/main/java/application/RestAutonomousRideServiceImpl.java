@@ -26,13 +26,21 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
     @Override
     public CompletableFuture<Void> dispatchBikeToUser(String userId, String bikeId, P2d userLocation) {
-        // Implementation for dispatching an autonomous bike to the user location
-        //mapCommunicationAdapter.notifyUserRideCall();
         CompletableFuture<ABike> ebikeFuture = checkABike(bikeId);
         CompletableFuture<User> userFuture = checkUser(userId);
 
-        return CompletableFuture.allOf(ebikeFuture, userFuture);
+        return CompletableFuture.allOf(ebikeFuture, userFuture)
+                .thenCompose(ignored -> {
+                    JsonObject dispatchMessage = new JsonObject()
+                            .put("userId", userId)
+                            .put("bikeId", bikeId)
+                            .put("location", new JsonObject()
+                                    .put("x", userLocation.x())
+                                    .put("y", userLocation.y()));
+                    return userCommunicationAdapter.sendDispatchToRide(dispatchMessage);
+                });
     }
+
 
     private CompletableFuture<User> checkUser(String userId) {
         System.out.println("Checking user: " + userId);

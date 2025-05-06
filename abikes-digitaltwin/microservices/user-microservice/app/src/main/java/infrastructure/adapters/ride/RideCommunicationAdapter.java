@@ -1,8 +1,10 @@
 package infrastructure.adapters.ride;
 
+import static infrastructure.adapters.kafkatopic.Topics.RIDE_BIKE_DISPATCH;
 import static infrastructure.adapters.kafkatopic.Topics.RIDE_USER_UPDATE;
 
 import application.ports.UserServiceAPI;
+import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.KafkaProperties;
 import infrastructure.utils.MetricsManager;
@@ -96,7 +98,8 @@ public class RideCommunicationAdapter extends AbstractVerticle {
 
     try (consumer) {
       // Subscribe to the ride-user-update topic
-      consumer.subscribe(List.of(RIDE_USER_UPDATE.getTopicName()));
+      consumer.subscribe(List.of(RIDE_USER_UPDATE.getTopicName(),
+              RIDE_BIKE_DISPATCH.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", RIDE_USER_UPDATE.getTopicName());
 
       while (running.get()) {
@@ -104,15 +107,19 @@ public class RideCommunicationAdapter extends AbstractVerticle {
           ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
           for (ConsumerRecord<String, String> record : records) {
             try {
-              JsonObject user = new JsonObject(record.value());
-              logger.info("Received user update from Kafka: {}", user);
-
-              // Process the user update using the existing updateUser method
-              processUserUpdate(user);
+              JsonObject message = new JsonObject(record.value());
+              if (record.topic().equals(Topics.RIDE_BIKE_DISPATCH.getTopicName())) {
+                logger.info("Received dispatch message: {}", message);
+                processBikeDispatch(message);
+              } else if (record.topic().equals(RIDE_USER_UPDATE.getTopicName())) {
+                logger.info("Received user update from Kafka: {}", message);
+                processUserUpdate(message);
+              }
             } catch (Exception e) {
-              logger.error("Invalid user data from Kafka: {}", e.getMessage());
+              logger.error("Invalid message from Kafka: {}", e.getMessage());
             }
           }
+
           consumer.commitAsync(
               (offsets, exception) -> {
                 if (exception != null) {
@@ -157,6 +164,12 @@ public class RideCommunicationAdapter extends AbstractVerticle {
       metricsManager.recordError(timer, "updateUser", e);
     }
   }
+
+  private void processBikeDispatch(JsonObject message) {
+    logger.info("Dispatching bike to user: {}", message);
+    // Implement the actual handling logic here, e.g., logging or triggering a domain method
+  }
+
 
   public void stop() {
     running.set(false);

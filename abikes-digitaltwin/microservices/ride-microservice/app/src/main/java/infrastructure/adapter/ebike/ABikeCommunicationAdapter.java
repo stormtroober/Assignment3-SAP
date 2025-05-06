@@ -26,7 +26,6 @@ public class ABikeCommunicationAdapter extends AbstractVerticle implements BikeC
         this.webClient = WebClient.create(vertx);
         ServiceConfiguration config = ServiceConfiguration.getInstance(vertx);
         JsonObject abikeConfig = config.getABikeAdapterAddress();
-        //da updatare con l'indirizzo microservizio ABikes
         this.abikeServiceUrl =
                 "http://" + abikeConfig.getString("name") + ":" + abikeConfig.getInteger("port");
         this.vertx = vertx;

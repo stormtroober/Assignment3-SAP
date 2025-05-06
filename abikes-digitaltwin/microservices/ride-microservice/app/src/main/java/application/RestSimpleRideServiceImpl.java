@@ -22,9 +22,6 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
     this.ebikeCommunicationAdapter = ebikeCommunicationAdapter;
     this.mapCommunicationAdapter = mapCommunicationAdapter;
     this.userCommunicationAdapter = userCommunicationAdapter;
-    this.ebikeCommunicationAdapter.init();
-    this.mapCommunicationAdapter.init();
-    this.userCommunicationAdapter.init();
   }
 
   private CompletableFuture<EBike> checkEbike(String bikeId) {

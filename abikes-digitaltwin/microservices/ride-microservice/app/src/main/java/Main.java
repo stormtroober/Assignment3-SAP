@@ -1,6 +1,7 @@
 import application.RestAutonomousRideServiceImpl;
 import application.RestSimpleRideServiceImpl;
 import application.ports.*;
+import infrastructure.adapter.ebike.ABikeCommunicationAdapter;
 import infrastructure.adapter.ebike.EBikeCommunicationAdapter;
 import infrastructure.adapter.map.MapCommunicationAdapter;
 import infrastructure.adapter.user.UserCommunicationAdapter;
@@ -18,10 +19,19 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
+              // Initialize the adapters
               BikeCommunicationPort ebikeCommunicationAdapter =
                   new EBikeCommunicationAdapter(vertx);
+              BikeCommunicationPort abikeCommunicationAdapter =
+                  new ABikeCommunicationAdapter(vertx);
               MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
               UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
+
+              ebikeCommunicationAdapter.init();
+              abikeCommunicationAdapter.init();
+              mapCommunicationAdapter.init();
+              userCommunicationAdapter.init();
+
               RestSimpleRideService service =
                   new RestSimpleRideServiceImpl(
                       new EventPublisherImpl(vertx),
@@ -30,7 +40,8 @@ public class Main {
                       mapCommunicationAdapter,
                       userCommunicationAdapter);
                 RestAutonomousRideService autonomousRideService =
-                    new RestAutonomousRideServiceImpl(mapCommunicationAdapter, userCommunicationAdapter);
+                    new RestAutonomousRideServiceImpl(abikeCommunicationAdapter, mapCommunicationAdapter, userCommunicationAdapter);
+
               RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, autonomousRideService, vertx);
               rideServiceVerticle.init();
             });

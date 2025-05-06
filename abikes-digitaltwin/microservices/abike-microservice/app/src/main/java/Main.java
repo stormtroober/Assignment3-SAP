@@ -6,6 +6,7 @@ import application.ports.StationRepository;
 import application.ports.StationServiceAPI;
 import infrastructure.adapters.map.BikeMapCommunicationAdapter;
 import infrastructure.adapters.map.StationMapCommunicationAdapter;
+import infrastructure.adapters.ride.RideCommunicationAdapter;
 import infrastructure.adapters.web.ABikeVerticle;
 import infrastructure.adapters.web.RESTABikeAdapter;
 import infrastructure.config.ServiceConfiguration;
@@ -49,11 +50,11 @@ public class Main {
                       });
 
               RESTABikeAdapter restABikeAdapter = new RESTABikeAdapter(aBikeService);
-              // RideCommunicationAdapter rideCommunicationAdapter =
-              // new RideCommunicationAdapter(eBikeService, vertx); // Port for
-              // RideCommunicationAdapter
+              RideCommunicationAdapter rideCommunicationAdapter =
+              new RideCommunicationAdapter(aBikeService, vertx);
+
               ABikeVerticle aBikeVerticle = new ABikeVerticle(restABikeAdapter, vertx);
-              // rideCommunicationAdapter.init();
+              rideCommunicationAdapter.init();
               aBikeVerticle.init();
             });
   }

@@ -2,6 +2,7 @@ package infrastructure.adapter.web;
 
 import application.ports.RestAutonomousRideService;
 import application.ports.RestSimpleRideService;
+import domain.model.P2d;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.AbstractVerticle;
@@ -128,7 +129,7 @@ public class RideServiceVerticle extends AbstractVerticle {
             });
     router.post("/rideToUser").handler(ctx -> {
       metricsManager.incrementMethodCounter("rideToUser");
-      //var timer = metricsManager.startTimer();
+      var timer = metricsManager.startTimer();
 
       JsonObject body = ctx.body().asJsonObject();
       System.out.println("Ride to user request: " + body.encodePrettily());
@@ -136,6 +137,14 @@ public class RideServiceVerticle extends AbstractVerticle {
         String bike = body.getString("bike");
         Double x = body.getDouble("posX");
         Double y = body.getDouble("posY");
+        autonomousRideService.dispatchBikeToUser(user, bike, new P2d(x, y)).thenAccept(v -> {
+            ctx.response().setStatusCode(200).end("Ride dispatched");
+            metricsManager.recordTimer(timer, "rideToUser");
+            }).exceptionally(ex -> {
+            ctx.response().setStatusCode(500).end(ex.getMessage());
+            //metricsManager.recordError(timer, "rideToUser", ex);
+            return null;
+        });
       //autonomousRideService.dispatchBikeToUser
 
     });

@@ -86,7 +86,7 @@ public class ABikeCommunicationAdapter extends AbstractVerticle implements BikeC
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
 
         webClient
-                .getAbs(abikeServiceUrl + "/api/ebikes/" + id)
+                .getAbs(abikeServiceUrl + "/api/abikes/" + id)
                 .send()
                 .onSuccess(
                         response -> {
@@ -94,14 +94,14 @@ public class ABikeCommunicationAdapter extends AbstractVerticle implements BikeC
                                 System.out.println("ABike received successfully");
                                 future.complete(response.bodyAsJsonObject());
                             } else {
-                                System.err.println("Failed to get EBike: " + response.statusCode());
+                                System.err.println("Failed to get ABike: " + response.statusCode());
                                 future.completeExceptionally(
-                                        new RuntimeException("Failed to get Ebike: " + response.statusCode()));
+                                        new RuntimeException("Failed to get Abike: " + response.statusCode()));
                             }
                         })
                 .onFailure(
                         err -> {
-                            System.err.println("Failed to get EBike: " + err.getMessage());
+                            System.err.println("Failed to get ABike: " + err.getMessage());
                             future.completeExceptionally(err);
                         });
 

@@ -41,7 +41,7 @@ public class UserVerticle extends AbstractVerticle {
             .onSuccess(ws -> {
                 System.out.println("Connected to user updates WebSocket: " + username);
                 userWebSocket = ws;
-                ws.textMessageHandler(this::handleUserUpdate);
+                ws.textMessageHandler(this::handleUpdateFromUser);
                 ws.exceptionHandler(err -> {
                     System.out.println("WebSocket error: " + err.getMessage());
                 });
@@ -70,11 +70,34 @@ public class UserVerticle extends AbstractVerticle {
         );
     }
 
+    private void handleUpdateFromUser(String message){
+        JsonObject update = new JsonObject(message);
+        if (update.containsKey("location")) {
+            handleBikeDispatch(message);
+        }
+        else {
+            handleUserUpdate(message);
+        }
+    }
+
+    //{"userId":"ale","bikeId":"a","location":{"x":11.0,"y":11.0}}
+    private void handleBikeDispatch(String message) {
+        JsonObject dispatch = new JsonObject(message);
+        String bikeId = dispatch.getString("bikeId");
+        // publish on the user’s address so their view sees it
+        vertx.eventBus().publish(
+                "user.bike.dispatch." + username,
+                dispatch
+        );
+    }
+
+    //{"username":"ale","type":"USER","credit":38398}
     private void handleUserUpdate(String message) {
         JsonObject update = new JsonObject(message);
         String username = update.getString("username");
         vertx.eventBus().publish("user.update." + username, update);
     }
+
 
     @Override
     public void start() {

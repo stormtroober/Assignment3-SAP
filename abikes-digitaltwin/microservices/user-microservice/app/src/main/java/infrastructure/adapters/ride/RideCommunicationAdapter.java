@@ -167,8 +167,14 @@ public class RideCommunicationAdapter extends AbstractVerticle {
 
   private void processBikeDispatch(JsonObject message) {
     logger.info("Dispatching bike to user: {}", message);
-    // Implement the actual handling logic here, e.g., logging or triggering a domain method
+    String username = message.getString("username");
+    if (username != null && !username.isBlank()) {
+      vertx.eventBus().publish(username, message.encode());
+    } else {
+      logger.error("Dispatch message missing username: {}", message);
+    }
   }
+
 
 
   public void stop() {

@@ -167,7 +167,7 @@ public class RideCommunicationAdapter extends AbstractVerticle {
 
   private void processBikeDispatch(JsonObject message) {
     logger.info("Dispatching bike to user: {}", message);
-    String username = message.getString("username");
+    String username = message.getString("userId");
     if (username != null && !username.isBlank()) {
       vertx.eventBus().publish(username, message.encode());
     } else {

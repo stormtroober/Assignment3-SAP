@@ -31,6 +31,7 @@ public class UserView extends AbstractView {
         observeUser();
         observeRideUpdate();
         observeStations();
+        observeDispatches();
         refreshView();
     }
 
@@ -152,6 +153,11 @@ public class UserView extends AbstractView {
 
     private void observeStations() {
         observeStationsToList(vertx);
+        refreshView();
+    }
+
+    private void observeDispatches(){
+        observeDispatchesToList(vertx);
         refreshView();
     }
 

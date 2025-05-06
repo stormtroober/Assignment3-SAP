@@ -5,6 +5,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.models.BikeViewModel;
+import org.models.DispatchViewModel;
 import org.models.StationViewModel;
 import org.models.UserViewModel;
 
@@ -25,6 +26,7 @@ public abstract class AbstractView extends JFrame {
 
     protected List<BikeViewModel> eBikes;
     protected List<StationViewModel> stations;
+    protected List<DispatchViewModel> pendingDispatches;
     protected UserViewModel actualUser;
 
 
@@ -61,6 +63,7 @@ public abstract class AbstractView extends JFrame {
         this.actualUser = actualUser;
         this.eBikes = new CopyOnWriteArrayList<>();
         this.stations = new CopyOnWriteArrayList<>();
+        this.pendingDispatches = new CopyOnWriteArrayList<>();
     }
 
     protected void addTopPanelButton(String text, ActionListener actionListener) {
@@ -84,7 +87,22 @@ public abstract class AbstractView extends JFrame {
         } else {
             paintUserView(g2);
         }
+        paintDispatches(g2);
     }
+
+    protected void observeDispatchesToList(Vertx vertx) {
+        vertx.eventBus().consumer(
+                "user.bike.dispatch." + actualUser.username(),
+                message -> {
+                    JsonObject json = (JsonObject) message.body();
+                    // build a view‐model and add it
+                    DispatchViewModel d = DispatchViewModel.fromJson(json);
+                    pendingDispatches.add(d);
+                    updateVisualizerPanel();
+                }
+        );
+    }
+
 
     protected void observeStationsToList(Vertx vertx) {
         vertx.eventBus().consumer("stations.update", message -> {
@@ -115,6 +133,23 @@ public abstract class AbstractView extends JFrame {
                 }
             }
         });
+    }
+
+    /**
+     * Draw every pending dispatch as a red dot + label.
+     */
+    private void paintDispatches(Graphics2D g2) {
+        int centerX = centralPanel.getWidth() / 2;
+        int centerY = centralPanel.getHeight() / 2;
+
+        for (DispatchViewModel d : pendingDispatches) {
+            int x = centerX + (int) d.getX();
+            int y = centerY - (int) d.getY();
+
+            g2.setColor(d.getColor());
+            g2.fillOval(x - 5, y - 5, 10, 10);
+            g2.drawString("Waiting for bike " + d.getBikeId(), x + 8, y);
+        }
     }
 
     /**

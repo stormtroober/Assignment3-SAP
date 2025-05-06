@@ -83,7 +83,6 @@ public class UserVerticle extends AbstractVerticle {
     //{"userId":"ale","bikeId":"a","location":{"x":11.0,"y":11.0}}
     private void handleBikeDispatch(String message) {
         JsonObject dispatch = new JsonObject(message);
-        String bikeId = dispatch.getString("bikeId");
         // publish on the user’s address so their view sees it
         vertx.eventBus().publish(
                 "user.bike.dispatch." + username,

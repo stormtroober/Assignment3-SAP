@@ -60,8 +60,12 @@ public class RideUpdateAdapter {
                 logger.info("Received ride update from Kafka: {}", rideUpdate);
                 processRideUpdate(rideUpdate);
               } else if (record.topic().equals(USER_RIDE_CALL.getTopicName())) {
+                //TODO: handle the user ride call start and finish
                 logger.info("Received user ride call from Kafka: {}", record.value());
-                // Future: handle user ride call here
+                JsonObject rideUpdate = new JsonObject(record.value());
+                String username = rideUpdate.getString("username");
+                String bikeName = rideUpdate.getString("bikeName");
+                notifyStartRide(username, bikeName);
               }
             } catch (Exception e) {
               logger.error("Invalid data from Kafka: {}", e.getMessage());

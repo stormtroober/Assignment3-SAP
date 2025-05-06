@@ -31,6 +31,29 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
         return CompletableFuture.allOf(ebikeFuture, userFuture)
                 .thenCompose(ignored -> {
+
+                    ABike bike = ebikeFuture.join();
+                    User user = userFuture.join();
+
+                    if (bike == null || user == null) {
+                        return CompletableFuture.failedFuture(
+                                new RuntimeException("ABike or User not found"));
+                    } else if (bike.getABikeState() != ABikeState.AVAILABLE) {
+                        return CompletableFuture.failedFuture(
+                                new RuntimeException("ABike is not available"));
+                    } else if (user.getCredit() == 0) {
+                        return CompletableFuture.failedFuture(new RuntimeException("User has no credit"));
+                    } else if (bike.getBatteryLevel() == 0) {
+                        return CompletableFuture.failedFuture(
+                                new RuntimeException("ABike has no battery"));
+                    }
+
+                    System.out.println("Dispatching bike to user: " + userId + " at location: " + userLocation);
+
+                    Ride ride = new Ride("ride-" + userId + "-" + bikeId, user, bike);
+
+                    mapCommunicationAdapter.notifyUserRideCall(bikeId, userId);
+
                     JsonObject dispatchMessage = new JsonObject()
                             .put("userId", userId)
                             .put("bikeId", bikeId)

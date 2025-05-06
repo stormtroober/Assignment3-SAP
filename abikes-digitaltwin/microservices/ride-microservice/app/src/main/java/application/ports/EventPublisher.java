@@ -4,6 +4,7 @@ package application.ports;
 public interface EventPublisher {
   String RIDE_UPDATE_ADDRESS_EBIKE = "ride.updates.ebike";
   String RIDE_UPDATE_ADDRESS_USER = "ride.updates.user";
+  String RIDE_UPDATE_ADDRESS_ABIKE = "ride.updates.abike";
 
   /**
    * Publishes an update for an e-bike.

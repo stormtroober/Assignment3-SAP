@@ -45,6 +45,7 @@ public class ServiceConfiguration {
                             .add("MAP_PORT")
                             .add("EBIKE_HOST")
                             .add("EBIKE_PORT")
+                                .add("ABIKE_HOST")
                             .add("USER_HOST")
                             .add("USER_PORT")));
 
@@ -92,6 +93,12 @@ public class ServiceConfiguration {
     return new JsonObject()
         .put("name", config.getString("EBIKE_HOST", "ebike-microservice"))
         .put("port", config.getInteger("EBIKE_PORT", 8081));
+  }
+
+  public JsonObject getABikeAdapterAddress() {
+    return new JsonObject()
+            .put("name", config.getString("ABIKE_HOST", "abike-microservice"))
+            .put("port", config.getInteger("EBIKE_PORT", 8081));
   }
 
   public JsonObject getUserAdapterAddress() {

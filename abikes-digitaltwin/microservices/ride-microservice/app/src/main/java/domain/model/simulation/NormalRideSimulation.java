@@ -1,13 +1,16 @@
-package domain.model;
+package domain.model.simulation;
 
 import application.ports.EventPublisher;
 import ddd.Service;
+import domain.model.Ride;
+import domain.model.User;
+import domain.model.V2d;
 import domain.model.bike.EBike;
 import domain.model.bike.EBikeState;
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
 
-public class RideSimulation implements Service {
+public class NormalRideSimulation implements RideSimulation, Service {
   private final Ride ride;
   private final Vertx vertx;
   private volatile boolean stopped = false;
@@ -17,7 +20,7 @@ public class RideSimulation implements Service {
   private static final int BATTERY_DECREASE = 1;
   private final String id;
 
-  public RideSimulation(Ride ride, Vertx vertx, EventPublisher publisher) {
+  public NormalRideSimulation(Ride ride, Vertx vertx, EventPublisher publisher) {
     this.ride = ride;
     this.vertx = vertx;
     this.publisher = publisher;

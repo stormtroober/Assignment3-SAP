@@ -1,6 +1,8 @@
 package domain.model;
 
 import ddd.Aggregate;
+import domain.model.bike.Bike;
+
 import java.util.Date;
 import java.util.Optional;
 

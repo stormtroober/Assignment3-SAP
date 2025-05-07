@@ -1,6 +1,7 @@
-package domain.model;
+package domain.model.bike;
 
 import ddd.Factory;
+import domain.model.P2d;
 
 public class ABikeFactory implements Factory {
   private static final ABikeFactory INSTANCE = new ABikeFactory();

@@ -1,4 +1,4 @@
-package domain.model;
+package domain.model.bike;
 
 public enum ABikeState implements BikeState {
   AVAILABLE,

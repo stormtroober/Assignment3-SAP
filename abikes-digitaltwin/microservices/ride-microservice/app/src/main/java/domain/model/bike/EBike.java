@@ -1,6 +1,8 @@
-package domain.model;
+package domain.model.bike;
 
 import ddd.Aggregate;
+import domain.model.P2d;
+import domain.model.V2d;
 
 public class EBike implements Bike, Aggregate<String> {
 

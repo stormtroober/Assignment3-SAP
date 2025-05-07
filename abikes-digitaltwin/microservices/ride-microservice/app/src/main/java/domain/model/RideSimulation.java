@@ -2,6 +2,8 @@ package domain.model;
 
 import application.ports.EventPublisher;
 import ddd.Service;
+import domain.model.bike.EBike;
+import domain.model.bike.EBikeState;
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
 

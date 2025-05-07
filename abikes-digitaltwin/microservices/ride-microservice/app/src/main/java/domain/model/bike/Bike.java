@@ -1,4 +1,6 @@
-package domain.model;
+package domain.model.bike;
+
+import domain.model.P2d;
 
 public interface Bike {
     String getId();

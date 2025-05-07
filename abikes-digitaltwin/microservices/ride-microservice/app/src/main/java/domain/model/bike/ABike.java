@@ -1,6 +1,8 @@
-package domain.model;
+package domain.model.bike;
 
 import ddd.Aggregate;
+import domain.model.P2d;
+
 import java.io.Serializable;
 
 public class ABike implements Bike, Aggregate<String>, Serializable {

@@ -52,7 +52,7 @@ public class RideSimulation implements Service {
   }
 
   private void updateRide() {
-    EBike bike = ride.getEbike();
+    EBike bike = (EBike) ride.getBike();
     User user = ride.getUser();
 
     synchronized (bike) {
@@ -104,11 +104,11 @@ public class RideSimulation implements Service {
 
   private void completeSimulation() {
     publisher.publishEBikeUpdate(
-        ride.getEbike().getId(),
-        ride.getEbike().getLocation().x(),
-        ride.getEbike().getLocation().y(),
-        ride.getEbike().getState().toString(),
-        ride.getEbike().getBatteryLevel());
+        ride.getBike().getId(),
+        ride.getBike().getLocation().x(),
+        ride.getBike().getLocation().y(),
+        ride.getBike().getState().toString(),
+        ride.getBike().getBatteryLevel());
     publisher.publishUserUpdate(ride.getUser().getId(), ride.getUser().getCredit());
   }
 
@@ -120,8 +120,8 @@ public class RideSimulation implements Service {
   public void stopSimulationManually() {
     System.out.println("Stopping simulation manually");
     ride.end();
-    if (ride.getEbike().getState() == EBikeState.IN_USE) {
-      ride.getEbike().setState(EBikeState.AVAILABLE);
+    if (ride.getBike().getState() == EBikeState.IN_USE) {
+      ride.getBike().setState(EBikeState.AVAILABLE);
     }
     stopped = true;
   }

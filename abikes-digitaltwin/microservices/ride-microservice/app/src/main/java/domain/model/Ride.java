@@ -7,15 +7,15 @@ import java.util.Optional;
 public class Ride implements Aggregate<String> {
   private final String id;
   private final User user;
-  private final EBike ebike;
+  private final Bike bike;
   private final Date startTime;
   private volatile Optional<Date> endTime;
   private volatile boolean ongoing;
 
-  public Ride(String id, User user, EBike ebike) {
+  public Ride(String id, User user, Bike bike) {
     this.id = id;
     this.user = user;
-    this.ebike = ebike;
+    this.bike = bike;
     this.startTime = new Date();
     this.endTime = Optional.empty();
     this.ongoing = false;
@@ -30,17 +30,13 @@ public class Ride implements Aggregate<String> {
     return user;
   }
 
-  public EBike getEbike() {
-    return ebike;
-  }
-
   public boolean isOngoing() {
     return ongoing;
   }
 
   public void start() {
     this.ongoing = true;
-    this.ebike.setState(EBikeState.IN_USE);
+    this.bike.startRide();
   }
 
   public void end() {
@@ -50,16 +46,21 @@ public class Ride implements Aggregate<String> {
     }
   }
 
+  public Bike getBike() {
+    return bike;
+  }
+
   @Override
   public String toString() {
     return String.format(
-        "Ride{id='%s', user='%s', ebike='%s', ebikeState='%s', position='%s', batteryLevel=%d, ongoing=%s}",
-        id,
-        user.getId(),
-        ebike.getId(),
-        ebike.getState(),
-        ebike.getLocation().toString(),
-        ebike.getBatteryLevel(),
-        ongoing);
+            "Ride{id='%s', user='%s', bike='%s', bikeState='%s', position='%s', batteryLevel=%d, ongoing=%s}",
+            id,
+            user.getId(),
+            bike.getId(),
+            bike.getState().name(),
+            bike.getLocation().toString(),
+            bike.getBatteryLevel(),
+            ongoing);
   }
+
 }

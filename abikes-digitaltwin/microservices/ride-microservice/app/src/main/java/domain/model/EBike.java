@@ -2,7 +2,7 @@ package domain.model;
 
 import ddd.Aggregate;
 
-public class EBike implements Aggregate<String> {
+public class EBike implements Bike, Aggregate<String> {
 
   private final String id;
   private volatile EBikeState state;
@@ -27,6 +27,11 @@ public class EBike implements Aggregate<String> {
 
   public synchronized EBikeState getState() {
     return state;
+  }
+
+  @Override
+  public void setState(BikeState state) {
+    this.state = (EBikeState) state;
   }
 
   public synchronized void setState(EBikeState state) {
@@ -59,6 +64,12 @@ public class EBike implements Aggregate<String> {
       this.state = EBikeState.MAINTENANCE;
     }
   }
+
+  @Override
+  public synchronized void startRide() {
+    setState(EBikeState.IN_USE);
+  }
+
 
   @Override
   public String toString() {

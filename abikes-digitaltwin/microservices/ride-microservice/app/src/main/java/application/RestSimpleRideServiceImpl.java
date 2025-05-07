@@ -117,10 +117,10 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                 rideSimulation.stopSimulationManually();
                 ebikeCommunicationAdapter.sendUpdate(
                     new JsonObject()
-                        .put("id", rideSimulation.getRide().getEbike().getId())
-                        .put("state", rideSimulation.getRide().getEbike().getState().toString()));
+                        .put("id", rideSimulation.getRide().getBike().getId())
+                        .put("state", rideSimulation.getRide().getBike().getState().toString()));
                 mapCommunicationAdapter.notifyEndRide(
-                    rideSimulation.getRide().getEbike().getId(), userId);
+                    rideSimulation.getRide().getBike().getId(), userId);
                 rideRepository.removeRide(rideSimulation.getRide());
               }
               return CompletableFuture.completedFuture(null);

@@ -1,6 +1,6 @@
 package domain.model;
 
-public enum ABikeState {
+public enum ABikeState implements BikeState {
   AVAILABLE,
   IN_USE,
   MAINTENANCE,

@@ -1,49 +1,75 @@
 package domain.model;
 
 import ddd.Aggregate;
-
 import java.io.Serializable;
 
-  public class ABike implements Aggregate<String>, Serializable {
+public class ABike implements Bike, Aggregate<String>, Serializable {
 
-    private final String id;
-    private final ABikeState state;
-    private final P2d location;
-    private final int batteryLevel; // 0..100
-    private final BikeType type;
+  private final String id;
+  private volatile ABikeState state;
+  private volatile P2d location;
+  private volatile int batteryLevel; // 0..100
+  private final BikeType type;
 
-    public ABike(String id, P2d location, ABikeState state, int battery, BikeType type) {
-      this.id = id;
-      this.state = state;
-      this.location = location;
-      this.batteryLevel = battery;
-      this.type = type;
-    }
+  public ABike(String id, P2d location, ABikeState state, int battery, BikeType type) {
+    this.id = id;
+    this.state = state;
+    this.location = location;
+    this.batteryLevel = battery;
+    this.type = type;
+  }
 
-    public String getId() {
-      return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public P2d getLocation() {
-      return location;
-    }
+  public synchronized P2d getLocation() {
+    return location;
+  }
 
-    public int getBatteryLevel() {
-      return batteryLevel;
-    }
+  public synchronized void setLocation(P2d location) {
+    this.location = location;
+  }
 
-    public ABikeState getABikeState() {
-      return state;
-    }
+  @Override
+  public synchronized BikeState getState() {
+    return state;
+  }
 
-    public BikeType getType() {
-      return type;
-    }
+  @Override
+  public void setState(BikeState state) {
+    this.state = (ABikeState) state;
+  }
 
-    @Override
-    public String toString() {
-      return String.format(
-          "ABike{id='%s', location=%s, batteryLevel=%d%%, state='%s', type='%s'}",
-          id, location, batteryLevel, state, type);
+  public synchronized void setState(ABikeState state) {
+    this.state = state;
+  }
+
+  public synchronized int getBatteryLevel() {
+    return batteryLevel;
+  }
+
+  public synchronized void decreaseBattery(int amount) {
+    this.batteryLevel = Math.max(this.batteryLevel - amount, 0);
+    if (this.batteryLevel == 0) {
+      this.state = ABikeState.MAINTENANCE;
     }
   }
+
+  public BikeType getType() {
+    return type;
+  }
+
+  @Override
+  public void startRide() {
+    // If ABikeState is mutable, update it. Otherwise, throw or log.
+  }
+
+
+  @Override
+  public synchronized String toString() {
+    return String.format(
+        "ABike{id='%s', location=%s, batteryLevel=%d%%, state='%s', type='%s'}",
+        id, location, batteryLevel, state, type);
+  }
+}

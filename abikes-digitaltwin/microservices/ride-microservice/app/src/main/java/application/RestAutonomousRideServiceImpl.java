@@ -38,7 +38,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                     if (bike == null || user == null) {
                         return CompletableFuture.failedFuture(
                                 new RuntimeException("ABike or User not found"));
-                    } else if (bike.getABikeState() != ABikeState.AVAILABLE) {
+                    } else if (bike.getState() != ABikeState.AVAILABLE) {
                         return CompletableFuture.failedFuture(
                                 new RuntimeException("ABike is not available"));
                     } else if (user.getCredit() == 0) {

@@ -2,6 +2,8 @@ package application;
 
 import application.ports.*;
 import domain.model.*;
+import domain.model.bike.EBike;
+import domain.model.bike.EBikeState;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.concurrent.CompletableFuture;

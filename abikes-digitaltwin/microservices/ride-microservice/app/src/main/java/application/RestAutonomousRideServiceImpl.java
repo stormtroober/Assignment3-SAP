@@ -5,6 +5,10 @@ import application.ports.MapCommunicationPort;
 import application.ports.RestAutonomousRideService;
 import application.ports.UserCommunicationPort;
 import domain.model.*;
+import domain.model.bike.ABike;
+import domain.model.bike.ABikeFactory;
+import domain.model.bike.ABikeState;
+import domain.model.bike.BikeType;
 import io.vertx.core.json.JsonObject;
 
 import java.util.concurrent.CompletableFuture;

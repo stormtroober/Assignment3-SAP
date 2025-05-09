@@ -74,55 +74,55 @@ public class RideCommunicationAdapter extends AbstractVerticle {
         logger.info("Initializing Kafka consumer for EBike updates");
         consumerExecutor = Executors.newSingleThreadExecutor();
         running.set(true);
-        //consumerExecutor.submit(this::runKafkaConsumer);
+        consumerExecutor.submit(this::runKafkaConsumer);
     }
 
-//    private void runKafkaConsumer() {
-//        KafkaConsumer<String, String> consumer =
-//                new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
-//        try (consumer) {
-//            consumer.subscribe(List.of(Topics.EBIKE_RIDE_UPDATE.getTopicName()));
-//            logger.info("Subscribed to Kafka topic: {}", Topics.EBIKE_RIDE_UPDATE.getTopicName());
-//
-//            while (running.get()) {
-//                try {
-//                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-//                    for (ConsumerRecord<String, String> record : records) {
-//                        try {
-//                            JsonObject updateJson = new JsonObject(record.value());
-//                            aBikeService
-//                                    .updateEBike(updateJson)
-//                                    .thenAccept(
-//                                            updated ->
-//                                                    logger.info(
-//                                                            "EBike {} updated successfully via Kafka consumer",
-//                                                            updateJson.getString("id")))
-//                                    .exceptionally(
-//                                            e -> {
-//                                                logger.error(
-//                                                        "Failed to update EBike {}: {}",
-//                                                        updateJson.getString("id"),
-//                                                        e.getMessage());
-//                                                return null;
-//                                            });
-//                        } catch (Exception e) {
-//                            logger.error("Invalid EBike data from Kafka: {}", e.getMessage());
-//                        }
-//                    }
-//                    consumer.commitAsync(
-//                            (offsets, exception) -> {
-//                                if (exception != null) {
-//                                    logger.error("Failed to commit offsets: {}", exception.getMessage());
-//                                }
-//                            });
-//                } catch (Exception e) {
-//                    logger.error("Error during Kafka polling: {}", e.getMessage());
-//                }
-//            }
-//        } catch (Exception e) {
-//            logger.error("Error setting up Kafka consumer: {}", e.getMessage());
-//        }
-//    }
+    private void runKafkaConsumer() {
+        KafkaConsumer<String, String> consumer =
+                new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        try (consumer) {
+            consumer.subscribe(List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName()));
+            logger.info("Subscribed to Kafka topic: {}", Topics.ABIKE_RIDE_UPDATE.getTopicName());
+
+            while (running.get()) {
+                try {
+                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                    for (ConsumerRecord<String, String> record : records) {
+                        try {
+                            JsonObject updateJson = new JsonObject(record.value());
+                            aBikeService
+                                    .updateABike(updateJson)
+                                    .thenAccept(
+                                            updated ->
+                                                    logger.info(
+                                                            "ABike {} updated successfully via Kafka consumer",
+                                                            updateJson.getString("id")))
+                                    .exceptionally(
+                                            e -> {
+                                                logger.error(
+                                                        "Failed to update ABike {}: {}",
+                                                        updateJson.getString("id"),
+                                                        e.getMessage());
+                                                return null;
+                                            });
+                        } catch (Exception e) {
+                            logger.error("Invalid ABike data from Kafka: {}", e.getMessage());
+                        }
+                    }
+                    consumer.commitAsync(
+                            (offsets, exception) -> {
+                                if (exception != null) {
+                                    logger.error("Failed to commit offsets: {}", exception.getMessage());
+                                }
+                            });
+                } catch (Exception e) {
+                    logger.error("Error during Kafka polling: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error setting up Kafka consumer: {}", e.getMessage());
+        }
+    }
 
     @Override
     public void stop() {

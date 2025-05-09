@@ -182,7 +182,7 @@ public abstract class AbstractView extends JFrame {
                 g2.drawString("A-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
                 g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
                 g2.setColor(Color.RED);
-                g2.drawString("A", x + 6, y + 15);
+                g2.drawString(bike.id(), x + 6, y + 15);
             } else {
                 g2.setColor(Color.BLACK);
                 g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);

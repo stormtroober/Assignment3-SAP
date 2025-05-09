@@ -16,5 +16,4 @@ public interface ABikeServiceAPI {
 
   CompletableFuture<JsonArray> getAllABikes();
 
-  CompletableFuture<JsonObject> requestABikeAtLocation(float x, float y, String userId);
 }

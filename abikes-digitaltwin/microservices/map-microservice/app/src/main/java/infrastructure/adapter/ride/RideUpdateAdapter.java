@@ -1,7 +1,6 @@
 package infrastructure.adapter.ride;
 
 import static infrastructure.adapter.kafkatopic.Topics.RIDE_MAP_UPDATE;
-import static infrastructure.adapter.kafkatopic.Topics.USER_RIDE_CALL;
 
 import application.ports.BikeMapServiceAPI;
 import infrastructure.utils.KafkaProperties;
@@ -47,8 +46,8 @@ public class RideUpdateAdapter {
 
     try (consumer) {
       // Subscribe to both topics
-      consumer.subscribe(List.of(RIDE_MAP_UPDATE.getTopicName(), USER_RIDE_CALL.getTopicName()));
-      logger.info("Subscribed to Kafka topics: {}, {}", RIDE_MAP_UPDATE.getTopicName(), USER_RIDE_CALL.getTopicName());
+      consumer.subscribe(List.of(RIDE_MAP_UPDATE.getTopicName()));
+      logger.info("Subscribed to Kafka topic: {}, {}", RIDE_MAP_UPDATE.getTopicName());
 
       while (running.get()) {
         try {
@@ -59,13 +58,6 @@ public class RideUpdateAdapter {
                 JsonObject rideUpdate = new JsonObject(record.value());
                 logger.info("Received ride update from Kafka: {}", rideUpdate);
                 processRideUpdate(rideUpdate);
-              } else if (record.topic().equals(USER_RIDE_CALL.getTopicName())) {
-                //TODO: handle the user ride call start and finish
-                logger.info("Received user ride call from Kafka: {}", record.value());
-                JsonObject rideUpdate = new JsonObject(record.value());
-                String username = rideUpdate.getString("username");
-                String bikeName = rideUpdate.getString("bikeName");
-                notifyStartRide(username, bikeName);
               }
             } catch (Exception e) {
               logger.error("Invalid data from Kafka: {}", e.getMessage());

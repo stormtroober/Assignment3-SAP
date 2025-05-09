@@ -72,7 +72,6 @@ public class EBike implements Bike, Aggregate<String> {
     setState(EBikeState.IN_USE);
   }
 
-
   @Override
   public String toString() {
     return String.format(

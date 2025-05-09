@@ -124,43 +124,6 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
   }
 
   @Override
-  public CompletableFuture<JsonObject> requestABikeAtLocation(float x, float y, String userId) {
-    return repository
-        .findAll()
-        .thenCompose(
-            abikesArray -> {
-              // Find available bikes with sufficient battery
-              JsonObject closestBike = null;
-              double minDistance = Double.MAX_VALUE;
-              for (int i = 0; i < abikesArray.size(); i++) {
-                JsonObject bike = abikesArray.getJsonObject(i);
-                if (!"AVAILABLE".equals(bike.getString("state"))) continue;
-                int battery = bike.getInteger("batteryLevel", 0);
-                if (battery < 20) continue; // threshold, adjust as needed
-                JsonObject loc = bike.getJsonObject("location");
-                double dist = Math.hypot(loc.getDouble("x") - x, loc.getDouble("y") - y);
-                if (dist < minDistance) {
-                  minDistance = dist;
-                  closestBike = bike;
-                }
-              }
-              if (closestBike == null) {
-                CompletableFuture<JsonObject> failed = new CompletableFuture<>();
-                failed.completeExceptionally(new RuntimeException("No available bikes nearby"));
-                return failed;
-              }
-              // Update bike state and destination
-              closestBike
-                  .put("state", "MOVING_TO_USER")
-                  .put("reservedBy", userId)
-                  .put("destination", new JsonObject().put("x", x).put("y", y));
-              mapCommunicationAdapter.sendUpdate(closestBike);
-              JsonObject finalClosestBike = closestBike;
-              return repository.update(closestBike).thenApply(v -> finalClosestBike);
-            });
-  }
-
-  @Override
   public CompletableFuture<JsonObject> updateABike(JsonObject abike) {
     if (abike.containsKey("batteryLevel")) {
       int newBattery = abike.getInteger("batteryLevel");

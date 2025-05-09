@@ -2,7 +2,6 @@ package domain.model.bike;
 
 import ddd.Aggregate;
 import domain.model.P2d;
-
 import java.io.Serializable;
 
 public class ABike implements Bike, Aggregate<String>, Serializable {
@@ -66,7 +65,6 @@ public class ABike implements Bike, Aggregate<String>, Serializable {
   public void startRide() {
     // If ABikeState is mutable, update it. Otherwise, throw or log.
   }
-
 
   @Override
   public synchronized String toString() {

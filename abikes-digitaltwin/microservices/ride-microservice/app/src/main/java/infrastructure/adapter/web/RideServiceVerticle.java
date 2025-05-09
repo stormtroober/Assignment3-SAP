@@ -28,7 +28,10 @@ public class RideServiceVerticle extends AbstractVerticle {
   private final MetricsManager metricsManager;
   private final Vertx vertx;
 
-  public RideServiceVerticle(RestSimpleRideService rideService, RestAutonomousRideService autonomousRideService, Vertx vertx) {
+  public RideServiceVerticle(
+      RestSimpleRideService rideService,
+      RestAutonomousRideService autonomousRideService,
+      Vertx vertx) {
     this.rideService = rideService;
     this.autonomousRideService = autonomousRideService;
     this.vertx = vertx;
@@ -127,27 +130,36 @@ public class RideServiceVerticle extends AbstractVerticle {
                         return null;
                       });
             });
-    router.post("/rideToUser").handler(ctx -> {
-      metricsManager.incrementMethodCounter("rideToUser");
-      var timer = metricsManager.startTimer();
+    router
+        .post("/rideToUser")
+        .handler(
+            ctx -> {
+              metricsManager.incrementMethodCounter("rideToUser");
+              var timer = metricsManager.startTimer();
 
-      JsonObject body = ctx.body().asJsonObject();
-      System.out.println("Ride to user request: " + body.encodePrettily());
-        String user = body.getString("user");
-        String bike = body.getString("bike");
-        Double x = body.getDouble("posX");
-        Double y = body.getDouble("posY");
-        autonomousRideService.dispatchBikeToUser(user, bike, new P2d(x, y)).thenAccept(v -> {
-            ctx.response().setStatusCode(200).end("Ride dispatched");
-            metricsManager.recordTimer(timer, "rideToUser");
-            }).exceptionally(ex -> {
-            ctx.response().setStatusCode(500).end(ex.getMessage());
-            //metricsManager.recordError(timer, "rideToUser", ex);
-            return null;
-        });
-      //autonomousRideService.dispatchBikeToUser
+              JsonObject body = ctx.body().asJsonObject();
+              System.out.println("Ride to user request: " + body.encodePrettily());
+              String user = body.getString("user");
+              String bike = body.getString("bike");
+              Double x = body.getDouble("posX");
+              Double y = body.getDouble("posY");
+              autonomousRideService
+                  .dispatchBikeToUser(user, bike, new P2d(x, y))
+                  .thenAccept(
+                      v -> {
+                        ctx.response().setStatusCode(200).end("Ride dispatched");
+                        metricsManager.recordTimer(timer, "rideToUser");
+                      })
+                  .exceptionally(
+                      ex -> {
+                        ctx.response().setStatusCode(500).end(ex.getMessage());
+                        System.out.println("Error: " + ex.getMessage());
+                        // metricsManager.recordError(timer, "rideToUser", ex);
+                        return null;
+                      });
+              // autonomousRideService.dispatchBikeToUser
 
-    });
+            });
     server
         .requestHandler(router)
         .listen(

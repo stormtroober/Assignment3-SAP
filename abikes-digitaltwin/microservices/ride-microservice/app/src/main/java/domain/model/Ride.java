@@ -2,7 +2,6 @@ package domain.model;
 
 import ddd.Aggregate;
 import domain.model.bike.Bike;
-
 import java.util.Date;
 import java.util.Optional;
 
@@ -55,14 +54,13 @@ public class Ride implements Aggregate<String> {
   @Override
   public String toString() {
     return String.format(
-            "Ride{id='%s', user='%s', bike='%s', bikeState='%s', position='%s', batteryLevel=%d, ongoing=%s}",
-            id,
-            user.getId(),
-            bike.getId(),
-            bike.getState().name(),
-            bike.getLocation().toString(),
-            bike.getBatteryLevel(),
-            ongoing);
+        "Ride{id='%s', user='%s', bike='%s', bikeState='%s', position='%s', batteryLevel=%d, ongoing=%s}",
+        id,
+        user.getId(),
+        bike.getId(),
+        bike.getState().name(),
+        bike.getLocation().toString(),
+        bike.getBatteryLevel(),
+        ongoing);
   }
-
 }

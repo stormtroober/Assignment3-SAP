@@ -53,15 +53,15 @@ public class BikeUpdateAdapter {
               EBike bike = createEBikeFromJson(body);
               mapService
                   .updateEBike(bike)
-                  .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
+                  .thenAccept(v -> logger.info("Bike {} updated successfully", bike.getId()))
                   .exceptionally(
                       ex -> {
                         logger.error(
-                            "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
+                            "Failed to update Bike {}: {}", bike.getId(), ex.getMessage());
                         return null;
                       });
             } catch (Exception e) {
-              logger.error("Invalid EBike data from Kafka: {}", e.getMessage());
+              logger.error("Invalid Bike data from Kafka: {}", e.getMessage());
             }
           }
           consumer.commitAsync(

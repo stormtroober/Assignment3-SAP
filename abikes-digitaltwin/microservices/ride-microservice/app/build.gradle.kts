@@ -3,6 +3,7 @@ plugins {
     java
     application
     id("com.diffplug.spotless") version "6.25.0"
+    kotlin("jvm") version "1.9.22"
 }
 
 java {
@@ -29,6 +30,7 @@ dependencies {
     implementation("io.micrometer:micrometer-core:1.12.3")
     implementation("io.micrometer:micrometer-registry-prometheus:1.12.3")
     //implementation("io.vertx:vertx-micrometer-metrics:4.4.0")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

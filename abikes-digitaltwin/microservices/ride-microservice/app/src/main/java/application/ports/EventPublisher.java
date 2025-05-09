@@ -7,6 +7,17 @@ public interface EventPublisher {
   String RIDE_UPDATE_ADDRESS_ABIKE = "ride.updates.abike";
 
   /**
+   * Publishes an update for an autonomous bike.
+   *
+   * @param id the ID of the autonomous bike.
+   * @param x the x-coordinate of the bike's location.
+   * @param y the y-coordinate of the bike's location.
+   * @param state the state of the bike.
+   * @param batteryLevel the battery level of the bike.
+   */
+  void publishABikeUpdate(String id, double x, double y, String state, int batteryLevel);
+
+  /**
    * Publishes an update for an e-bike.
    *
    * @param id the ID of the e-bike.

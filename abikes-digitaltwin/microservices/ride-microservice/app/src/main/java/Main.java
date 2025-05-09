@@ -32,17 +32,25 @@ public class Main {
               mapCommunicationAdapter.init();
               userCommunicationAdapter.init();
 
+              EventPublisher eventPublisher = new EventPublisherImpl(vertx);
+
               RestSimpleRideService service =
                   new RestSimpleRideServiceImpl(
-                      new EventPublisherImpl(vertx),
+                      eventPublisher,
                       vertx,
                       ebikeCommunicationAdapter,
                       mapCommunicationAdapter,
                       userCommunicationAdapter);
-                RestAutonomousRideService autonomousRideService =
-                    new RestAutonomousRideServiceImpl(abikeCommunicationAdapter, mapCommunicationAdapter, userCommunicationAdapter);
+              RestAutonomousRideService autonomousRideService =
+                  new RestAutonomousRideServiceImpl(
+                      eventPublisher,
+                      vertx,
+                      abikeCommunicationAdapter,
+                      mapCommunicationAdapter,
+                      userCommunicationAdapter);
 
-              RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, autonomousRideService, vertx);
+              RideServiceVerticle rideServiceVerticle =
+                  new RideServiceVerticle(service, autonomousRideService, vertx);
               rideServiceVerticle.init();
             });
   }

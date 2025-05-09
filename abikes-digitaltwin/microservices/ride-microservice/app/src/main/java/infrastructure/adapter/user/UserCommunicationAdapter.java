@@ -77,27 +77,28 @@ public class UserCommunicationAdapter extends AbstractVerticle implements UserCo
         });
   }
 
-    @Override
-    public CompletableFuture<Void> sendDispatchToRide(JsonObject dispatchPayload) {
-        String topicName = Topics.RIDE_BIKE_DISPATCH.getTopicName();
-        CompletableFuture<Void> result = new CompletableFuture<>();
+  @Override
+  public CompletableFuture<Void> sendDispatchToRide(JsonObject dispatchPayload) {
+    String topicName = Topics.RIDE_BIKE_DISPATCH.getTopicName();
+    CompletableFuture<Void> result = new CompletableFuture<>();
 
-        producer.send(
-                new ProducerRecord<>(topicName, dispatchPayload.getString("userId"), dispatchPayload.encode()),
-                (metadata, exception) -> {
-                    if (exception == null) {
-                        System.out.println("Dispatch message sent successfully");
-                        result.complete(null);
-                    } else {
-                        System.err.println("Failed to send dispatch message: " + exception.getMessage());
-                        result.completeExceptionally(exception);
-                    }
-                });
+    producer.send(
+        new ProducerRecord<>(
+            topicName, dispatchPayload.getString("userId"), dispatchPayload.encode()),
+        (metadata, exception) -> {
+          if (exception == null) {
+            System.out.println("Dispatch message sent successfully");
+            result.complete(null);
+          } else {
+            System.err.println("Failed to send dispatch message: " + exception.getMessage());
+            result.completeExceptionally(exception);
+          }
+        });
 
-        return result;
-    }
+    return result;
+  }
 
-    @Override
+  @Override
   public CompletableFuture<JsonObject> getUser(String id) {
     System.out.println("Sending request to user-microservice -> getUser(" + id + ")");
     CompletableFuture<JsonObject> future = new CompletableFuture<>();

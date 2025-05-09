@@ -6,8 +6,11 @@ import domain.model.bike.EBike;
 import domain.model.bike.EBikeState;
 import domain.model.repository.RideRepository;
 import domain.model.repository.RideRepositoryImpl;
+import domain.model.repository.SimulationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class RestSimpleRideServiceImpl implements RestSimpleRideService {
@@ -88,9 +91,10 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                   return CompletableFuture.failedFuture(
                       new RuntimeException("EBike has no battery"));
                 }
-                System.out.println("Starting ride for user: " + userId + " and bike: " + bikeId);
-                Ride ride = new Ride("ride-" + userId + "-" + bikeId, user, ebike);
-                rideRepository.addRide(ride);
+
+                System.out.println("Starting ride for user: " + userId + " and bike: " + bikeId + "-" + SimulationType.NORMAL_SIM);
+                Ride ride = new Ride("ride-" + userId + "-" + bikeId + "-" + SimulationType.NORMAL_SIM, user, ebike);
+                rideRepository.addRide(ride, SimulationType.NORMAL_SIM, Optional.empty());
                 rideRepository
                     .getRideSimulation(ride.getId())
                     .startSimulation()

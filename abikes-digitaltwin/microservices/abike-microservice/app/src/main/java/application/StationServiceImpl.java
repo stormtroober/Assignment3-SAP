@@ -53,4 +53,68 @@ public class StationServiceImpl implements StationServiceAPI {
   public CompletableFuture<JsonArray> getAllStations() {
     return repository.findAll();
   }
+
+  @Override
+  public CompletableFuture<JsonObject> assignBikeToStation(String stationId, String bikeId) {
+    return repository.findById(stationId).thenCompose(optionalStation -> {
+      if (optionalStation.isEmpty()) {
+        return CompletableFuture.failedFuture(new RuntimeException("Station not found: " + stationId));
+      }
+      JsonObject station = optionalStation.get();
+      JsonArray slots = station.getJsonArray("slots");
+      JsonObject freeSlot = null;
+      for (int i = 0; i < slots.size(); i++) {
+        JsonObject slot = slots.getJsonObject(i);
+        if (slot.getString("abikeId") == null) {
+          freeSlot = slot;
+          break;
+        }
+      }
+      if (freeSlot == null) {
+        return CompletableFuture.failedFuture(new RuntimeException("No free slots in station: " + stationId));
+      }
+      freeSlot.put("abikeId", bikeId);
+      return updateStation(station);
+    });
+  }
+
+  @Override
+  public CompletableFuture<JsonObject> deassignBikeFromStation(String stationId, String bikeId) {
+    return repository.findById(stationId).thenCompose(optionalStation -> {
+      if (optionalStation.isEmpty()) {
+        return CompletableFuture.failedFuture(new RuntimeException("Station not found: " + stationId));
+      }
+      JsonObject station = optionalStation.get();
+      JsonArray slots = station.getJsonArray("slots");
+      JsonObject bikeSlot = null;
+      for (int i = 0; i < slots.size(); i++) {
+        JsonObject slot = slots.getJsonObject(i);
+        if (bikeId.equals(slot.getString("abikeId"))) {
+          bikeSlot = slot;
+          break;
+        }
+      }
+      if (bikeSlot == null) {
+        return CompletableFuture.failedFuture(new RuntimeException("Bike " + bikeId + " not found in station: " + stationId));
+      }
+      bikeSlot.putNull("abikeId");
+      return updateStation(station);
+    });
+  }
+
+  public CompletableFuture<Optional<JsonObject>> findStationWithFreeSlot() {
+      return getAllStations().thenApply(stations -> {
+          for (int i = 0; i < stations.size(); i++) {
+              JsonObject station = stations.getJsonObject(i);
+              JsonArray slots = station.getJsonArray("slots");
+              for (int j = 0; j < slots.size(); j++) {
+                  JsonObject slot = slots.getJsonObject(j);
+                  if (slot.getString("abikeId") == null) {
+                      return Optional.of(station);
+                  }
+              }
+          }
+          return Optional.empty();
+      });
+  }
 }

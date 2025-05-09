@@ -153,35 +153,17 @@ public abstract class AbstractView extends JFrame {
         int centerX = centralPanel.getWidth() / 2;
         int centerY = centralPanel.getHeight() / 2;
 
-        // Collect all abikeIds from station slots
-//        List<String> dockedABikeIds = stations.stream()
-//                .flatMap(s -> s.getSlots().stream())
-//                .filter(abikeId -> abikeId != null && !abikeId.equals("null"))
-//                .toList();
-
+        g2.setColor(Color.BLACK);
         for (EBikeViewModel bike : eBikes) {
-            // Skip docked autonomous bikes
-//            if (bike.type() == EBikeViewModel.BikeType.AUTONOMOUS && dockedABikeIds.contains(bike.id())) {
-//                continue;
-//            }
 
             int x = centerX + (int) bike.x();
             int y = centerY - (int) bike.y();
 
-            g2.setColor(Color.BLACK);
             g2.fillOval(x, y, 20, 20);
             g2.drawString("STATUS: " + bike.state(), x, y + 65);
 
-//            if (bike.type() == EBikeViewModel.BikeType.AUTONOMOUS) {
-//                g2.drawString("A-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
-//                g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
-//                g2.setColor(Color.RED);
-//                g2.drawString(bike.id(), x + 6, y + 15);
-//            } else {
-                g2.setColor(Color.BLACK);
-                g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
-                g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
-//            }
+            g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
+            g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
         }
     }
 
@@ -197,7 +179,7 @@ public abstract class AbstractView extends JFrame {
             int sy = centerY - (int) station.getY();
 
             // Draw station square
-            g2.setColor(Color.BLUE);
+            g2.setColor(Color.GREEN);
             g2.fillRect(sx - stationSize/2, sy - stationSize/2, stationSize, stationSize);
 
             List<String> slots = station.getSlots();
@@ -221,11 +203,12 @@ public abstract class AbstractView extends JFrame {
                         g2.setColor(Color.BLUE);
                         g2.fillOval(slotX - 6, slotY - 6, 20, 20);
                         g2.setColor(Color.RED);
-                        g2.drawString(bike.id(), slotX + 4, slotY + 10);
-                    } else {
-                        g2.setColor(Color.WHITE);
-                        g2.fillRect(slotX, slotY, slotSize, slotSize);
+                        g2.drawString(bike.id(), slotX + 2, slotY + 10);
                     }
+                }
+                else {
+                    g2.setColor(Color.WHITE);
+                    g2.fillRect(slotX, slotY, slotSize, slotSize);
                 }
             }
         }

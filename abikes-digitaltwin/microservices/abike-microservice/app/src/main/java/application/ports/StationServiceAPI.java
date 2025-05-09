@@ -13,4 +13,10 @@ public interface StationServiceAPI {
   CompletableFuture<JsonObject> updateStation(JsonObject station);
 
   CompletableFuture<JsonArray> getAllStations();
+
+  CompletableFuture<JsonObject> assignBikeToStation(String stationId, String bikeId);
+
+  CompletableFuture<JsonObject> deassignBikeFromStation(String stationId, String bikeId);
+
+  CompletableFuture<Optional<JsonObject>> findStationWithFreeSlot();
 }

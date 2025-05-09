@@ -4,10 +4,7 @@ package org.views;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.models.BikeViewModel;
-import org.models.DispatchViewModel;
-import org.models.StationViewModel;
-import org.models.UserViewModel;
+import org.models.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +21,8 @@ public abstract class AbstractView extends JFrame {
     protected JButton logoutButton;
     protected JPanel buttonPanel;
 
-    protected List<BikeViewModel> eBikes;
+    protected List<EBikeViewModel> eBikes;
+    protected List<ABikeViewModel> aBikes;
     protected List<StationViewModel> stations;
     protected List<DispatchViewModel> pendingDispatches;
     protected UserViewModel actualUser;
@@ -52,16 +50,12 @@ public abstract class AbstractView extends JFrame {
         add(centralPanel, BorderLayout.CENTER);
 
         logoutButton = new JButton("Logout");
-        logoutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        logoutButton.addActionListener(e -> dispose());
         topPanel.add(logoutButton, BorderLayout.EAST);
 
         this.actualUser = actualUser;
         this.eBikes = new CopyOnWriteArrayList<>();
+        this.aBikes = new CopyOnWriteArrayList<>();
         this.stations = new CopyOnWriteArrayList<>();
         this.pendingDispatches = new CopyOnWriteArrayList<>();
     }
@@ -160,34 +154,34 @@ public abstract class AbstractView extends JFrame {
         int centerY = centralPanel.getHeight() / 2;
 
         // Collect all abikeIds from station slots
-        List<String> dockedABikeIds = stations.stream()
-                .flatMap(s -> s.getSlots().stream())
-                .filter(abikeId -> abikeId != null && !abikeId.equals("null"))
-                .toList();
+//        List<String> dockedABikeIds = stations.stream()
+//                .flatMap(s -> s.getSlots().stream())
+//                .filter(abikeId -> abikeId != null && !abikeId.equals("null"))
+//                .toList();
 
-        for (BikeViewModel bike : eBikes) {
+        for (EBikeViewModel bike : eBikes) {
             // Skip docked autonomous bikes
-            if (bike.type() == BikeViewModel.BikeType.AUTONOMOUS && dockedABikeIds.contains(bike.id())) {
-                continue;
-            }
+//            if (bike.type() == EBikeViewModel.BikeType.AUTONOMOUS && dockedABikeIds.contains(bike.id())) {
+//                continue;
+//            }
 
             int x = centerX + (int) bike.x();
             int y = centerY - (int) bike.y();
 
-            g2.setColor(bike.color());
+            g2.setColor(Color.BLACK);
             g2.fillOval(x, y, 20, 20);
             g2.drawString("STATUS: " + bike.state(), x, y + 65);
 
-            if (bike.type() == BikeViewModel.BikeType.AUTONOMOUS) {
-                g2.drawString("A-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
-                g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
-                g2.setColor(Color.RED);
-                g2.drawString(bike.id(), x + 6, y + 15);
-            } else {
+//            if (bike.type() == EBikeViewModel.BikeType.AUTONOMOUS) {
+//                g2.drawString("A-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
+//                g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
+//                g2.setColor(Color.RED);
+//                g2.drawString(bike.id(), x + 6, y + 15);
+//            } else {
                 g2.setColor(Color.BLACK);
                 g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
                 g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
-            }
+//            }
         }
     }
 
@@ -218,27 +212,21 @@ public abstract class AbstractView extends JFrame {
                 boolean hasBike = bikeId != null && !bikeId.equals("null");
 
                 if (hasBike) {
-                    BikeViewModel bike = eBikes.stream()
+                    ABikeViewModel bike = aBikes.stream()
                             .filter(b -> b.id().equals(bikeId))
                             .findFirst()
                             .orElse(null);
 
-                    if (bike != null && bike.type() == BikeViewModel.BikeType.AUTONOMOUS) {
-                        g2.setColor(bike.color());
+                    if (bike != null) {
+                        g2.setColor(Color.BLUE);
                         g2.fillOval(slotX - 6, slotY - 6, 20, 20);
                         g2.setColor(Color.RED);
                         g2.drawString(bike.id(), slotX + 4, slotY + 10);
                     } else {
-                        g2.setColor(Color.LIGHT_GRAY);
+                        g2.setColor(Color.WHITE);
                         g2.fillRect(slotX, slotY, slotSize, slotSize);
                     }
-                } else {
-                    g2.setColor(Color.WHITE);
-                    g2.fillRect(slotX, slotY, slotSize, slotSize);
                 }
-                g2.setColor(Color.DARK_GRAY);
-                g2.drawRect(slotX, slotY, slotSize, slotSize);
-
             }
         }
     }
@@ -262,24 +250,39 @@ public abstract class AbstractView extends JFrame {
     }
 
     private void paintUserInfo(Graphics2D g2) {
+        g2.setColor(Color.BLACK);
         String credit = "Credit: " + actualUser.credit();
         g2.drawString(credit, 10, 20);
     }
 
     private void paintAvailableBikes(Graphics2D g2) {
-        List<BikeViewModel> availableBikes = eBikes.stream()
-                .filter(bike -> bike.state() == BikeViewModel.EBikeState.AVAILABLE)
+        g2.setColor(Color.BLACK);
+        List<EBikeViewModel> availableBikes = eBikes.stream()
+                .filter(bike -> bike.state() == EBikeState.AVAILABLE)
                 .toList();
 
-        g2.drawString("AVAILABLE EBIKES: " + availableBikes.size(), 10, 35);
+        List<ABikeViewModel> availableABikes = aBikes.stream()
+                .filter(bike -> bike.state() == ABikeState.AVAILABLE)
+                .toList();
+
+        g2.drawString("AVAILABLE EBIKES: " + (availableBikes.size() + availableABikes.size()), 10, 35);
 
         int startX = 10;
         int startY = 45;
         int lineHeight = 14;
-        g2.setColor(Color.BLACK);
 
         int y = startY + lineHeight;
-        for (BikeViewModel bike : availableBikes) {
+        g2.setColor(Color.BLACK);
+        for (EBikeViewModel bike : availableBikes) {
+            String bikeInfo = String.format(
+                    "%s - Battery: %d%% - Type: %s",
+                    bike.id(), bike.batteryLevel(), bike.type()
+            );
+            g2.drawString(bikeInfo, startX, y);
+            y += lineHeight;
+        }
+        g2.setColor(Color.BLUE);
+        for(ABikeViewModel bike : availableABikes) {
             String bikeInfo = String.format(
                     "%s - Battery: %d%% - Type: %s",
                     bike.id(), bike.batteryLevel(), bike.type()

@@ -5,8 +5,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.dialogs.user.RechargeCreditDialog;
 import org.dialogs.user.StartRideDialog;
-import org.models.BikeViewModel;
-import org.models.UserViewModel;
+import org.models.*;
 import org.verticles.UserVerticle;
 
 import javax.swing.*;
@@ -49,13 +48,6 @@ public class UserView extends AbstractView {
             SwingUtilities.invokeLater(() -> {
                 org.dialogs.user.CallBikeDialog dialog = new org.dialogs.user.CallBikeDialog(UserView.this, vertx, actualUser);
                 dialog.setVisible(true);
-                if (dialog.isConfirmed()) {
-                    String bikeId = dialog.getBikeId();
-                    double x = dialog.getPosX();
-                    double y = dialog.getPosY();
-                    // TODO: Handle the call bike logic here, e.g., send a request to the backend
-                    JOptionPane.showMessageDialog(UserView.this, "Requested bike " + bikeId + " to position (" + x + ", " + y + ")");
-                }
             });
         });
 
@@ -126,7 +118,8 @@ public class UserView extends AbstractView {
     private void observeAvailableBikes() {
         vertx.eventBus().consumer("user.bike.update." + actualUser.username(), message -> {
             JsonArray update = (JsonArray) message.body();
-            eBikes.clear();
+
+            // Process updates without clearing existing bikes first
             for (int i = 0; i < update.size(); i++) {
                 Object element = update.getValue(i);
                 if (element instanceof String) {
@@ -138,17 +131,36 @@ public class UserView extends AbstractView {
                     JsonObject location = bikeObj.getJsonObject("position");
                     Double x = location.getDouble("x");
                     Double y = location.getDouble("y");
-                    BikeViewModel.EBikeState state = BikeViewModel.EBikeState.valueOf(stateStr);
-                    BikeViewModel.BikeType type = BikeViewModel.BikeType.valueOf(typeStr);
 
-                    BikeViewModel bikeModel = new BikeViewModel(id, x, y, batteryLevel, state, type);
-                    eBikes.add(bikeModel);
+                    BikeType bikeType = BikeType.valueOf(typeStr.toUpperCase());
+
+                    // Remove existing bike with same ID if present
+                    removeExistingBike(id);
+
+                    // Add updated or new bike
+                    switch(bikeType) {
+                        case NORMAL:
+                            EBikeState state = EBikeState.valueOf(stateStr);
+                            eBikes.add(new EBikeViewModel(id, x, y, batteryLevel, state, bikeType));
+                            break;
+                        case AUTONOMOUS:
+                            ABikeState stateAbike = ABikeState.valueOf(stateStr);
+                            aBikes.add(new ABikeViewModel(id, x, y, batteryLevel, stateAbike, bikeType));
+                            break;
+                        default:
+                            log("Invalid bike state: " + stateStr);
+                    }
                 } else {
                     log("Invalid bike data: " + element);
                 }
             }
             refreshView();
         });
+    }
+
+    private void removeExistingBike(String bikeId) {
+        eBikes.removeIf(bike -> bike.id().equals(bikeId));
+        aBikes.removeIf(bike -> bike.id().equals(bikeId));
     }
 
     private void observeStations() {

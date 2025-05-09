@@ -6,8 +6,7 @@ import io.vertx.core.json.JsonObject;
 import org.dialogs.admin.AddABikeDialog;
 import org.dialogs.admin.AddEBikeDialog;
 import org.dialogs.admin.RechargeBikeDialog;
-import org.models.BikeViewModel;
-import org.models.UserViewModel;
+import org.models.*;
 import org.verticles.AdminVerticle;
 
 import javax.swing.*;
@@ -71,14 +70,33 @@ public class AdminView extends AbstractView {
                     Integer batteryLevel = bikeObj.getInteger("batteryLevel");
                     String stateStr = bikeObj.getString("state");
                     String typeStr = bikeObj.getString("type");
+
                     JsonObject location = bikeObj.getJsonObject("position");
                     Double x = location.getDouble("x");
                     Double y = location.getDouble("y");
-                    BikeViewModel.EBikeState state = BikeViewModel.EBikeState.valueOf(stateStr);
-                    BikeViewModel.BikeType type = BikeViewModel.BikeType.valueOf(typeStr);
 
-                    BikeViewModel bikeModel = new BikeViewModel(id, x, y, batteryLevel, state, type);
-                    eBikes.add(bikeModel);
+                    BikeType bikeType;
+                    try {
+                        bikeType = BikeType.valueOf(typeStr.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        log("Invalid bike type: " + typeStr);
+                        continue;
+                    }
+
+                    switch(bikeType) {
+                        case NORMAL:
+                            EBikeState stateEbike = EBikeState.valueOf(stateStr);
+                            EBikeViewModel eBikeModel = new EBikeViewModel(id, x, y, batteryLevel, stateEbike, bikeType);
+                            eBikes.add(eBikeModel);
+                            break;
+                        case AUTONOMOUS:
+                            ABikeState stateAbike = ABikeState.valueOf(stateStr);
+                            ABikeViewModel aBikeModel = new ABikeViewModel(id, x, y, batteryLevel, stateAbike, bikeType);
+                            aBikes.add(aBikeModel);
+                            break;
+                        default:
+                            log("Invalid bike state: " + stateStr);
+                    }
                 } else {
                     log("Invalid bike data: " + element);
                 }
@@ -124,6 +142,7 @@ public class AdminView extends AbstractView {
     }
 
     private void printAllUsers(Graphics2D g2) {
+        g2.setColor(Color.BLACK);
         int dy = 20;
         g2.drawString("ALL USERS: ", 10, dy);
         dy += 15;

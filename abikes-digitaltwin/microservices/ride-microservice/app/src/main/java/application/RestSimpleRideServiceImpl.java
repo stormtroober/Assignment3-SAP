@@ -2,6 +2,7 @@ package application;
 
 import application.ports.*;
 import domain.model.*;
+import domain.model.bike.BikeType;
 import domain.model.bike.EBike;
 import domain.model.bike.EBikeState;
 import domain.model.repository.RideRepository;
@@ -9,7 +10,6 @@ import domain.model.repository.RideRepositoryImpl;
 import domain.model.repository.SimulationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -92,8 +92,18 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                       new RuntimeException("EBike has no battery"));
                 }
 
-                System.out.println("Starting ride for user: " + userId + " and bike: " + bikeId + "-" + SimulationType.NORMAL_SIM);
-                Ride ride = new Ride("ride-" + userId + "-" + bikeId + "-" + SimulationType.NORMAL_SIM, user, ebike);
+                System.out.println(
+                    "Starting ride for user: "
+                        + userId
+                        + " and bike: "
+                        + bikeId
+                        + "-"
+                        + SimulationType.NORMAL_SIM);
+                Ride ride =
+                    new Ride(
+                        "ride-" + userId + "-" + bikeId + "-" + SimulationType.NORMAL_SIM,
+                        user,
+                        ebike);
                 rideRepository.addRide(ride, SimulationType.NORMAL_SIM, Optional.empty());
                 rideRepository
                     .getRideSimulation(ride.getId())
@@ -101,14 +111,14 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                     .whenComplete(
                         (result, throwable) -> {
                           if (throwable == null) {
-                            mapCommunicationAdapter.notifyEndRide(bikeId, userId);
+                            mapCommunicationAdapter.notifyEndRide(bikeId, BikeType.NORMAL, userId);
                             rideRepository.removeRide(ride);
                           } else {
                             System.err.println(
                                 "Error during ride simulation: " + throwable.getMessage());
                           }
                         });
-                mapCommunicationAdapter.notifyStartRide(bikeId, userId);
+                mapCommunicationAdapter.notifyStartRide(bikeId, BikeType.NORMAL, userId);
                 return CompletableFuture.completedFuture(null);
               } catch (Exception e) {
                 return CompletableFuture.failedFuture(e);
@@ -128,7 +138,7 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                         .put("id", rideSimulation.getRide().getBike().getId())
                         .put("state", rideSimulation.getRide().getBike().getState().toString()));
                 mapCommunicationAdapter.notifyEndRide(
-                    rideSimulation.getRide().getBike().getId(), userId);
+                    rideSimulation.getRide().getBike().getId(), BikeType.NORMAL, userId);
                 rideRepository.removeRide(rideSimulation.getRide());
               }
               return CompletableFuture.completedFuture(null);

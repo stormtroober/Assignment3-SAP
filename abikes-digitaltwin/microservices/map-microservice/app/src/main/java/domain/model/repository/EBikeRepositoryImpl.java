@@ -67,8 +67,7 @@ public class EBikeRepositoryImpl implements EBikeRepository, Repository {
                 .filter(
                     bike -> {
                       String assignedBikeName = bikeAssignments.get(username);
-                      return assignedBikeName != null
-                          && assignedBikeName.equals(bike.getId());
+                      return assignedBikeName != null && assignedBikeName.equals(bike.getId());
                     })
                 .collect(Collectors.toList()));
   }

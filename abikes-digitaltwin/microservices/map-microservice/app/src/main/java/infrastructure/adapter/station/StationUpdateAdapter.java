@@ -84,14 +84,15 @@ public class StationUpdateAdapter {
     double y = location.getDouble("y");
 
     List<Slot> slots =
-            body.getJsonArray("slots", new io.vertx.core.json.JsonArray()).stream()
-                    .map(obj -> {
-                      JsonObject slotJson = (JsonObject) obj;
-                      String slotId = slotJson.getString("id");
-                      String abikeId = slotJson.getString("abikeId");
-                      return new Slot(slotId, abikeId);
-                    })
-                    .toList();
+        body.getJsonArray("slots", new io.vertx.core.json.JsonArray()).stream()
+            .map(
+                obj -> {
+                  JsonObject slotJson = (JsonObject) obj;
+                  String slotId = slotJson.getString("id");
+                  String abikeId = slotJson.getString("abikeId");
+                  return new Slot(slotId, abikeId);
+                })
+            .toList();
 
     int maxSlots = body.getInteger("maxSlots", 0);
 

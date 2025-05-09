@@ -1,5 +1,6 @@
 package application.ports;
 
+import domain.model.ABike;
 import domain.model.EBike;
 import domain.model.Station;
 import java.util.List;
@@ -14,20 +15,26 @@ public interface EventPublisher {
    */
   void publishBikesUpdate(List<EBike> bikes);
 
+  void publishABikesUpdate(List<ABike> bikes);
+
+  void publishUserABikesUpdate(List<ABike> bikes, String username);
+
   /**
    * Publishes an update for a user's e-bikes.
    *
    * @param bikes the list of e-bikes for the user.
    * @param username the username of the user.
    */
-  void publishUserBikesUpdate(List<EBike> bikes, String username);
+  void publishUserEBikesUpdate(List<EBike> bikes, String username);
 
   /**
    * Publishes an update for the available e-bikes of a user.
    *
    * @param bikes the list of available e-bikes for the user.
    */
-  void publishUserAvailableBikesUpdate(List<EBike> bikes);
+  void publishUserAvailableEBikesUpdate(List<EBike> bikes);
+
+  void publishUserAvailableABikesUpdate(List<ABike> bikes);
 
   /**
    * Publishes an event to notify a user that his ride has been forced to stop.

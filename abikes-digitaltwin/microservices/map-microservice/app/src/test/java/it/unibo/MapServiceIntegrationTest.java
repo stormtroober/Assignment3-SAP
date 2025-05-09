@@ -93,10 +93,10 @@
 //        public void publishBikesUpdate(List<EBike> bikes) {}
 //
 //        @Override
-//        public void publishUserBikesUpdate(List<EBike> bikes, String username) {}
+//        public void publishUserEBikesUpdate(List<EBike> bikes, String username) {}
 //
 //        @Override
-//        public void publishUserAvailableBikesUpdate(List<EBike> bikes) {
+//        public void publishUserAvailableEBikesUpdate(List<EBike> bikes) {
 //            this.publishedBikes = bikes;
 //            System.out.println("Available bikes: " + bikes);
 //        }

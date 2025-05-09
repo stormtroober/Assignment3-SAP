@@ -227,7 +227,7 @@ public abstract class AbstractView extends JFrame {
                         g2.setColor(bike.color());
                         g2.fillOval(slotX - 6, slotY - 6, 20, 20);
                         g2.setColor(Color.RED);
-                        g2.drawString("A", slotX + 4, slotY + 10);
+                        g2.drawString(bike.id(), slotX + 4, slotY + 10);
                     } else {
                         g2.setColor(Color.LIGHT_GRAY);
                         g2.fillRect(slotX, slotY, slotSize, slotSize);

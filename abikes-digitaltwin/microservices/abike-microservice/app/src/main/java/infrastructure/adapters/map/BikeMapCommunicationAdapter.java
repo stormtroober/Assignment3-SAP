@@ -19,7 +19,7 @@ public class BikeMapCommunicationAdapter implements CommunicationPort {
 
   @Override
   public void sendUpdate(JsonObject ebike) {
-    System.out.println("Sending EBike update to Kafka topic: " + topicName);
+    System.out.println("Sending ABike update to Kafka topic: " + topicName);
     producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()));
   }
 

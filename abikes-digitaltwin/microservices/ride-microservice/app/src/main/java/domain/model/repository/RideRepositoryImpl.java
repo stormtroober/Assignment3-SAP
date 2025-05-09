@@ -9,7 +9,6 @@ import domain.model.simulation.NormalRideSimulation;
 import domain.model.simulation.RideSimulation;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ConcurrentHashSet;
-
 import java.util.Optional;
 
 public class RideRepositoryImpl implements RideRepository, Repository {
@@ -24,25 +23,25 @@ public class RideRepositoryImpl implements RideRepository, Repository {
     this.publisher = publisher;
   }
 
-@Override
-public void addRide(Ride ride, SimulationType type, Optional<P2d> destination) {
+  @Override
+  public void addRide(Ride ride, SimulationType type, Optional<P2d> destination) {
     RideSimulation sim;
     switch (type) {
-        case AUTONOMOUS_SIM:
-            if (destination.isPresent()) {
-                sim = new AutonomousRideSimulation(ride, vertx, publisher, destination.get());
-                break;
-            }
-            else {
-                throw new IllegalArgumentException("Destination must be provided for autonomous simulation");
-            }
-        case NORMAL_SIM:
-        default:
-            sim = new NormalRideSimulation(ride, vertx, publisher);
-            break;
+      case AUTONOMOUS_SIM:
+        if (destination.isPresent()) {
+          sim = new AutonomousRideSimulation(ride, vertx, publisher, destination.get());
+          break;
+        } else {
+          throw new IllegalArgumentException(
+              "Destination must be provided for autonomous simulation");
+        }
+      case NORMAL_SIM:
+      default:
+        sim = new NormalRideSimulation(ride, vertx, publisher);
+        break;
     }
     rides.add(sim);
-}
+  }
 
   @Override
   public void removeRide(Ride ride) {

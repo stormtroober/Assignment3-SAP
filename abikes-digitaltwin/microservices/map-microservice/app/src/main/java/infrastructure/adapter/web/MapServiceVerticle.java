@@ -102,12 +102,17 @@ public class MapServiceVerticle extends AbstractVerticle {
                                         metricsManager.incrementMethodCounter(
                                             "observeAllBikes_message_sent");
                                       });
+                            var abikeConsumer = vertx.eventBus().consumer("abikes.update", message -> {
+                                webSocket.writeTextMessage(message.body().toString());
+                                metricsManager.incrementMethodCounter("observeAllBikes_abike_message_sent");
+                            });
 
                           bikeMapService.getAllBikes();
 
                           webSocket.closeHandler(
                               v -> {
                                 consumer.unregister();
+                                abikeConsumer.unregister();
                                 metricsManager.incrementMethodCounter(
                                     "observeAllBikes_connection_closed");
                               });
@@ -115,6 +120,7 @@ public class MapServiceVerticle extends AbstractVerticle {
                           webSocket.exceptionHandler(
                               err -> {
                                 consumer.unregister();
+                                abikeConsumer.unregister();
                                 metricsManager.incrementMethodCounter(
                                     "observeAllBikes_connection_error");
                               });
@@ -150,11 +156,22 @@ public class MapServiceVerticle extends AbstractVerticle {
                           metricsManager.incrementMethodCounter(
                               "observeUserBikes_connection_success");
 
-                          var globalConsumer =
+                          var availableEBikesConsumer =
                               vertx
                                   .eventBus()
                                   .consumer(
                                       "available_bikes",
+                                      message -> {
+                                        webSocket.writeTextMessage(message.body().toString());
+
+                                        metricsManager.incrementMethodCounter(
+                                            "observeUserBikes_message_sent");
+                                      });
+                          var availableABikesConsumer =
+                              vertx
+                                  .eventBus()
+                                  .consumer(
+                                      "available_abikes",
                                       message -> {
                                         webSocket.writeTextMessage(message.body().toString());
 
@@ -182,6 +199,12 @@ public class MapServiceVerticle extends AbstractVerticle {
                                         metricsManager.incrementMethodCounter(
                                             "observeUserBikes_message_sent");
                                       });
+                            var userABikeConsumer =
+                                vertx.eventBus().consumer(username + ".abikes", message -> {
+                                    webSocket.writeTextMessage(message.body().toString());
+                                    metricsManager.incrementMethodCounter("observeUserBikes_abike_message_sent");
+                            });
+
                           bikeMapService.registerUser(username);
                           bikeMapService.getAllBikes(username);
 
@@ -194,8 +217,11 @@ public class MapServiceVerticle extends AbstractVerticle {
                                 metricsManager.incrementMethodCounter(
                                     "observeUserBikes_connection_closed");
                                 bikeMapService.deregisterUser(username);
-                                globalConsumer.unregister();
+                                availableEBikesConsumer.unregister();
                                 userConsumer.unregister();
+                                stopRideConsumer.unregister();
+                                userABikeConsumer.unregister();
+                                availableABikesConsumer.unregister();
                               });
 
                           webSocket.exceptionHandler(
@@ -205,8 +231,11 @@ public class MapServiceVerticle extends AbstractVerticle {
                                 metricsManager.incrementMethodCounter(
                                     "observeUserBikes_connection_error");
                                 bikeMapService.deregisterUser(username);
-                                globalConsumer.unregister();
+                                availableEBikesConsumer.unregister();
                                 userConsumer.unregister();
+                                stopRideConsumer.unregister();
+                                userABikeConsumer.unregister();
+                                availableABikesConsumer.unregister();
                               });
                         } else {
                           ctx.response().setStatusCode(500).end("WebSocket Upgrade Failed");

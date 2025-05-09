@@ -12,7 +12,6 @@ import domain.model.repository.SimulationType;
 import domain.model.simulation.RideSimulation;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -60,8 +59,13 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
               }
 
               // create ride and simulation
-              Ride ride = new Ride("ride-" + userId + "-" + bikeId + "-" + SimulationType.AUTONOMOUS_SIM, user, bike);
-              rideRepository.addRide(ride, SimulationType.AUTONOMOUS_SIM, Optional.of(userLocation));
+              Ride ride =
+                  new Ride(
+                      "ride-" + userId + "-" + bikeId + "-" + SimulationType.AUTONOMOUS_SIM,
+                      user,
+                      bike);
+              rideRepository.addRide(
+                  ride, SimulationType.AUTONOMOUS_SIM, Optional.of(userLocation));
 
               RideSimulation sim = rideRepository.getRideSimulation(ride.getId());
               // start simulation and notify on completion
@@ -69,7 +73,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                   .whenComplete(
                       (res, err) -> {
                         if (err == null) {
-                          mapCommunicationAdapter.notifyEndRide(bikeId, userId);
+                          mapCommunicationAdapter.notifyEndRide(bikeId, bike.getType(), userId);
                           rideRepository.removeRide(ride);
                         } else {
                           System.err.println(
@@ -77,7 +81,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                         }
                       });
 
-              mapCommunicationAdapter.notifyStartRide(bikeId, userId);
+              mapCommunicationAdapter.notifyStartRide(bikeId, bike.getType(), userId);
 
               return CompletableFuture.completedFuture(null);
             });

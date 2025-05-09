@@ -1,10 +1,7 @@
 package infrastructure.adapter.ebike;
 
 import application.ports.BikeMapServiceAPI;
-import domain.model.BikeType;
-import domain.model.EBike;
-import domain.model.EBikeFactory;
-import domain.model.EBikeState;
+import domain.model.*;
 import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonObject;
@@ -50,30 +47,51 @@ public class BikeUpdateAdapter {
           for (ConsumerRecord<String, String> record : records) {
             try {
               JsonObject body = new JsonObject(record.value());
-              EBike bike = createEBikeFromJson(body);
-              mapService
-                  .updateEBike(bike)
-                  .thenAccept(v -> logger.info("Bike {} updated successfully", bike.getId()))
-                  .exceptionally(
-                      ex -> {
-                        logger.error(
-                            "Failed to update Bike {}: {}", bike.getId(), ex.getMessage());
-                        return null;
-                      });
+              String topic = record.topic();
+
+              if (Topics.EBIKE_UPDATES.getTopicName().equals(topic)) {
+                EBike bike = createEBikeFromJson(body);
+                mapService
+                    .updateEBike(bike)
+                    .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
+                    .exceptionally(
+                        ex -> {
+                          logger.error(
+                              "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
+                          return null;
+                        });
+              } else if (Topics.ABIKE_UPDATES.getTopicName().equals(topic)) {
+                ABike bike = createABikeFromJson(body);
+                mapService
+                    .updateABike(bike)
+                    .thenAccept(v -> logger.info("ABike {} updated successfully", bike.getId()))
+                    .exceptionally(
+                        ex -> {
+                          logger.error(
+                              "Failed to update ABike {}: {}", bike.getId(), ex.getMessage());
+                          return null;
+                        });
+              } else {
+                logger.warn("Received message from unknown topic: {}", topic);
+              }
+
             } catch (Exception e) {
               logger.error("Invalid Bike data from Kafka: {}", e.getMessage());
             }
           }
+
           consumer.commitAsync(
               (offsets, exception) -> {
                 if (exception != null) {
                   logger.error("Failed to commit offsets: {}", exception.getMessage());
                 }
               });
+
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage());
         }
       }
+
     } catch (Exception e) {
       logger.error("Error setting up Kafka consumer: {}", e.getMessage());
     }
@@ -95,6 +113,20 @@ public class BikeUpdateAdapter {
     EBikeFactory factory = EBikeFactory.getInstance();
     return factory.create(
         bikeName, new domain.model.P2d((float) x, (float) y), state, batteryLevel, type);
+  }
+
+  private ABike createABikeFromJson(JsonObject body) {
+    String id = body.getString("id");
+    JsonObject loc = body.getJsonObject("location");
+    float x = loc.getFloat("x");
+    float y = loc.getFloat("y");
+    ABikeState state = ABikeState.valueOf(body.getString("state"));
+    int batteryLevel = body.getInteger("batteryLevel");
+    BikeType type = BikeType.AUTONOMOUS;
+    if (body.containsKey("type")) {
+      type = BikeType.valueOf(body.getString("type"));
+    }
+    return ABikeFactory.getInstance().create(id, new P2d(x, y), state, batteryLevel, type);
   }
 
   public void stop() {

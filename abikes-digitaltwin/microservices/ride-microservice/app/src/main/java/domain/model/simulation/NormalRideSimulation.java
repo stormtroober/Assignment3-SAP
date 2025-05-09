@@ -57,10 +57,10 @@ public class NormalRideSimulation implements RideSimulation, Service {
   }
 
   private void updateRide() {
-    EBike bike = (EBike) ride.getBike();
     User user = ride.getUser();
 
-    synchronized (bike) {
+    synchronized (ride.getBike()) {
+      EBike bike = (EBike) ride.getBike();
       if (bike.getBatteryLevel() == 0) {
         System.out.println("Bike has no battery");
         ride.end();

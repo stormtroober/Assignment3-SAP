@@ -3,14 +3,17 @@ package infrastructure.adapter.ride;
 import static infrastructure.adapter.kafkatopic.Topics.RIDE_MAP_UPDATE;
 
 import application.ports.BikeMapServiceAPI;
+import domain.model.BikeType;
 import infrastructure.utils.KafkaProperties;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.json.JsonObject;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -42,7 +45,7 @@ public class RideUpdateAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-            new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
 
     try (consumer) {
       // Subscribe to both topics
@@ -64,11 +67,11 @@ public class RideUpdateAdapter {
             }
           }
           consumer.commitAsync(
-                  (offsets, exception) -> {
-                    if (exception != null) {
-                      logger.error("Failed to commit offsets: {}", exception.getMessage());
-                    }
-                  });
+              (offsets, exception) -> {
+                if (exception != null) {
+                  logger.error("Failed to commit offsets: {}", exception.getMessage());
+                }
+              });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage());
         }
@@ -82,32 +85,44 @@ public class RideUpdateAdapter {
     String action = rideUpdate.getString("action");
     String username = rideUpdate.getString("username");
     String bikeName = rideUpdate.getString("bikeName");
+    String bikeTypeStr = rideUpdate.getString("bikeType");
 
-    if (action == null || username == null || bikeName == null) {
+    if (action == null || username == null || bikeName == null || bikeTypeStr == null) {
       logger.error("Incomplete ride update data: {}", rideUpdate);
+      return;
+    }
+
+    BikeType bikeType;
+    try {
+      bikeType = BikeType.valueOf(bikeTypeStr.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      logger.error(
+          "Invalid bike type: {}. Must be one of: {}",
+          bikeTypeStr,
+          Arrays.stream(BikeType.values()).map(Enum::name).collect(Collectors.joining(", ")));
       return;
     }
 
     switch (action) {
       case "start":
-        notifyStartRide(username, bikeName);
+        notifyStartRide(username, bikeName, bikeType);
         break;
       case "stop":
-        notifyStopRide(username, bikeName);
+        notifyStopRide(username, bikeName, bikeType);
         break;
       default:
         logger.error("Unknown action in ride update: {}", action);
     }
   }
 
-  private void notifyStartRide(String username, String bikeName) {
+  private void notifyStartRide(String username, String bikeName, BikeType bikeType) {
     metricsManager.incrementMethodCounter("notifyStartRide");
     var timer = metricsManager.startTimer();
 
     logger.info("Processing start ride notification for user: {} and bike: {}", username, bikeName);
 
     mapService
-        .notifyStartRide(username, bikeName)
+        .notifyStartRide(username, bikeName, bikeType)
         .thenAccept(
             v -> {
               logger.info("Start ride notification processed successfully");
@@ -121,14 +136,14 @@ public class RideUpdateAdapter {
             });
   }
 
-  private void notifyStopRide(String username, String bikeName) {
+  private void notifyStopRide(String username, String bikeName, BikeType bikeType) {
     metricsManager.incrementMethodCounter("notifyStopRide");
     var timer = metricsManager.startTimer();
 
     logger.info("Processing stop ride notification for user: {} and bike: {}", username, bikeName);
 
     mapService
-        .notifyStopRide(username, bikeName)
+        .notifyStopRide(username, bikeName, bikeType)
         .thenAccept(
             v -> {
               logger.info("Stop ride notification processed successfully");

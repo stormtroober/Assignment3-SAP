@@ -1,5 +1,7 @@
 package application.ports;
 
+import domain.model.bike.BikeType;
+
 /** Port for communicating with the map microservice adapter. */
 public interface MapCommunicationPort {
 
@@ -9,7 +11,7 @@ public interface MapCommunicationPort {
    * @param bikeId the ID of the e-bike.
    * @param userId the ID of the user.
    */
-  void notifyStartRide(String bikeId, String userId);
+  void notifyStartRide(String bikeId, BikeType type, String userId);
 
   /**
    * Notifies the end of a ride for a specific e-bike and user.
@@ -17,7 +19,7 @@ public interface MapCommunicationPort {
    * @param bikeId the ID of the e-bike.
    * @param userId the ID of the user.
    */
-  void notifyEndRide(String bikeId, String userId);
+  void notifyEndRide(String bikeId, BikeType type, String userId);
 
   /** Initializes the communication port. */
   void init();

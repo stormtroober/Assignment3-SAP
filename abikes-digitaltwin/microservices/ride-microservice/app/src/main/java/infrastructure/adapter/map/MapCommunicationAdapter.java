@@ -1,6 +1,7 @@
 package infrastructure.adapter.map;
 
 import application.ports.MapCommunicationPort;
+import domain.model.bike.BikeType;
 import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonObject;
@@ -21,15 +22,20 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
   }
 
   @Override
-  public void notifyStartRide(String bikeId, String userId) {
+  public void notifyStartRide(String bikeId, BikeType type, String userId) {
     JsonObject message =
-        new JsonObject().put("username", userId).put("bikeName", bikeId).put("action", "start");
+        new JsonObject()
+            .put("username", userId)
+            .put("bikeName", bikeId)
+            .put("bikeType", type)
+            .put("action", "start");
 
     String topicName = Topics.RIDE_MAP_UPDATE.getTopicName();
     logger.info(
-        "Sending start ride notification to Kafka topic: {} for user: {} and bike: {}",
+        "Sending start ride notification to Kafka topic: {} for user: {} and bike: {}, type: {}",
         topicName,
         userId,
+        type,
         bikeId);
 
     producer.send(
@@ -48,9 +54,13 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
   }
 
   @Override
-  public void notifyEndRide(String bikeId, String userId) {
+  public void notifyEndRide(String bikeId, BikeType type, String userId) {
     JsonObject message =
-        new JsonObject().put("username", userId).put("bikeName", bikeId).put("action", "stop");
+        new JsonObject()
+            .put("username", userId)
+            .put("bikeName", bikeId)
+            .put("bikeType", type)
+            .put("action", "stop");
 
     String topicName = Topics.RIDE_MAP_UPDATE.getTopicName();
     logger.info(

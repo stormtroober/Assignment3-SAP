@@ -1,7 +1,8 @@
 package application.ports;
 
+import domain.model.ABike;
+import domain.model.BikeType;
 import domain.model.EBike;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /** Port representing the REST API for the map service Application. */
@@ -16,12 +17,12 @@ public interface BikeMapServiceAPI {
   CompletableFuture<Void> updateEBike(EBike bike);
 
   /**
-   * Updates the information of multiple e-bikes.
+   * Updates the information of a single autonomous bike.
    *
-   * @param bikes the list of e-bikes to update.
-   * @return a CompletableFuture that completes when the updates are done.
+   * @param bike the autonomous bike to update.
+   * @return a CompletableFuture that completes when the update is done.
    */
-  CompletableFuture<Void> updateEBikes(List<EBike> bikes);
+  CompletableFuture<Void> updateABike(ABike bike);
 
   /**
    * Notifies the start of a ride for a user.
@@ -30,7 +31,7 @@ public interface BikeMapServiceAPI {
    * @param bikeName the name of the e-bike.
    * @return a CompletableFuture that completes when the notification is done.
    */
-  CompletableFuture<Void> notifyStartRide(String username, String bikeName);
+  CompletableFuture<Void> notifyStartRide(String username, String bikeName, BikeType bikeType);
 
   /**
    * Notifies the stop of a ride for a user.
@@ -39,7 +40,7 @@ public interface BikeMapServiceAPI {
    * @param bikeName the name of the e-bike.
    * @return a CompletableFuture that completes when the notification is done.
    */
-  CompletableFuture<Void> notifyStopRide(String username, String bikeName);
+  CompletableFuture<Void> notifyStopRide(String username, String bikeName, BikeType bikeType);
 
   /** Retrieves all e-bikes for admin users. */
   void getAllBikes();

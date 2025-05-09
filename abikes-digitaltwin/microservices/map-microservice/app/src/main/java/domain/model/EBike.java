@@ -31,7 +31,9 @@ public class EBike implements Aggregate<String>, Serializable {
     return batteryLevel;
   }
 
-  public P2d getPosition() {return location;}
+  public P2d getPosition() {
+    return location;
+  }
 
   public BikeType getType() {
     return type;

@@ -19,12 +19,12 @@ import org.slf4j.LoggerFactory;
 public class BikeUpdateAdapter {
 
   private static final Logger logger = LoggerFactory.getLogger(BikeUpdateAdapter.class);
-  private final BikeMapServiceAPI mapService;
+  private final BikeMapServiceAPI bikeMapServiceAPI;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
 
-  public BikeUpdateAdapter(BikeMapServiceAPI mapService) {
-    this.mapService = mapService;
+  public BikeUpdateAdapter(BikeMapServiceAPI bikeMapServiceAPI) {
+    this.bikeMapServiceAPI = bikeMapServiceAPI;
   }
 
   public void init() {
@@ -45,13 +45,13 @@ public class BikeUpdateAdapter {
         try {
           ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
           for (ConsumerRecord<String, String> record : records) {
-            try {
+
               JsonObject body = new JsonObject(record.value());
               String topic = record.topic();
 
               if (Topics.EBIKE_UPDATES.getTopicName().equals(topic)) {
                 EBike bike = createEBikeFromJson(body);
-                mapService
+                bikeMapServiceAPI
                     .updateEBike(bike)
                     .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
                     .exceptionally(
@@ -62,7 +62,7 @@ public class BikeUpdateAdapter {
                         });
               } else if (Topics.ABIKE_UPDATES.getTopicName().equals(topic)) {
                 ABike bike = createABikeFromJson(body);
-                mapService
+                bikeMapServiceAPI
                     .updateABike(bike)
                     .thenAccept(v -> logger.info("ABike {} updated successfully", bike.getId()))
                     .exceptionally(
@@ -75,9 +75,7 @@ public class BikeUpdateAdapter {
                 logger.warn("Received message from unknown topic: {}", topic);
               }
 
-            } catch (Exception e) {
-              logger.error("Invalid Bike data from Kafka: {}", e.getMessage());
-            }
+
           }
 
           consumer.commitAsync(

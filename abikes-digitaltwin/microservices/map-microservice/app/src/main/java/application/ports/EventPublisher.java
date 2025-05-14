@@ -34,6 +34,11 @@ public interface EventPublisher {
    */
   void publishUserAvailableEBikesUpdate(List<EBike> bikes);
 
+    /**
+     * Publishes an update for the available a-bikes of a user.
+     *
+     * @param bikes the list of available a-bikes for the user.
+     */
   void publishUserAvailableABikesUpdate(List<ABike> bikes);
 
   /**

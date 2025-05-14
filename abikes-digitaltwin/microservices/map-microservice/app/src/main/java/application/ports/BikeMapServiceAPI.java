@@ -34,6 +34,12 @@ public interface BikeMapServiceAPI {
   CompletableFuture<Void> notifyStartRide(String username, String bikeName, BikeType bikeType);
 
   /**
+   * Notifies the system that an autonomous bike is being dispatched to a user.
+   * This will deassign the bike from its current station.
+   */
+  CompletableFuture<Void> notifyStartRideToUser(String username, String bikeName, BikeType bikeType);
+
+  /**
    * Notifies the stop of a ride for a user.
    *
    * @param username the username of the user.

@@ -21,67 +21,60 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
     producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
   }
 
-  @Override
-  public void notifyStartRide(String bikeId, BikeType type, String userId) {
+  private void sendNotification(
+      String bikeId, BikeType type, String userId, String action, String logMessagePrefix) {
     JsonObject message =
         new JsonObject()
             .put("username", userId)
             .put("bikeName", bikeId)
             .put("bikeType", type)
-            .put("action", "start");
+            .put("action", action);
 
     String topicName = Topics.RIDE_MAP_UPDATE.getTopicName();
     logger.info(
-        "Sending start ride notification to Kafka topic: {} for user: {} and bike: {}, type: {}",
+        "Sending {} notification to Kafka topic: {} for user: {} and bike: {}, type: {}",
+        logMessagePrefix,
         topicName,
         userId,
-        type,
-        bikeId);
+        bikeId,
+        type);
 
     producer.send(
         new ProducerRecord<>(topicName, bikeId, message.encode()),
         (metadata, exception) -> {
           if (exception == null) {
             logger.info(
-                "Start ride notification sent successfully to topic: {}, partition: {}, offset: {}",
+                "{} notification sent successfully to topic: {}, partition: {}, offset: {}",
+                logMessagePrefix,
                 metadata.topic(),
                 metadata.partition(),
                 metadata.offset());
           } else {
-            logger.error("Failed to send start ride notification: {}", exception.getMessage());
+            logger.error(
+                "Failed to send {} notification: {}", logMessagePrefix, exception.getMessage());
           }
         });
   }
 
   @Override
+  public void notifyStartRide(String bikeId, BikeType type, String userId) {
+    sendNotification(bikeId, type, userId, "start", "start ride");
+  }
+
+  @Override
   public void notifyEndRide(String bikeId, BikeType type, String userId) {
-    JsonObject message =
-        new JsonObject()
-            .put("username", userId)
-            .put("bikeName", bikeId)
-            .put("bikeType", type)
-            .put("action", "stop");
+    sendNotification(bikeId, type, userId, "stop", "end ride");
+  }
 
-    String topicName = Topics.RIDE_MAP_UPDATE.getTopicName();
-    logger.info(
-        "Sending end ride notification to Kafka topic: {} for user: {} and bike: {}",
-        topicName,
-        userId,
-        bikeId);
+  @Override
+  public void notifyStartRideToUser(String bikeId, BikeType type, String userId) {
+    logger.info("Sending start ride to user: {} for bike: {}, type: {}", userId, bikeId, type);
+    sendNotification(bikeId, type, userId, "user_start", "start ride to user");
+  }
 
-    producer.send(
-        new ProducerRecord<>(topicName, bikeId, message.encode()),
-        (metadata, exception) -> {
-          if (exception == null) {
-            logger.info(
-                "End ride notification sent successfully to topic: {}, partition: {}, offset: {}",
-                metadata.topic(),
-                metadata.partition(),
-                metadata.offset());
-          } else {
-            logger.error("Failed to send end ride notification: {}", exception.getMessage());
-          }
-        });
+  @Override
+  public void notifyStopRideToUser(String bikeId, BikeType type, String userId) {
+    sendNotification(bikeId, type, userId, "user_stop", "stop ride to user");
   }
 
   // Method to close the producer when shutting down

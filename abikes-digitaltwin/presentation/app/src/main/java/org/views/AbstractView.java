@@ -165,6 +165,27 @@ public abstract class AbstractView extends JFrame {
             g2.drawString("E-Bike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
             g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
         }
+
+        for(ABikeViewModel bike : aBikes) {
+            boolean isBikeInStation = false;
+            for(StationViewModel station : stations) {
+                if(station.getSlots().contains(bike.id())) {
+                    isBikeInStation = true;
+                    break;
+                }
+            }
+            if (!isBikeInStation) {
+                int x = centerX + (int) bike.x();
+                int y = centerY - (int) bike.y();
+
+                g2.fillOval(x, y, 20, 20);
+                g2.drawString("STATUS: " + bike.state(), x, y + 65);
+
+                g2.drawString("ABike: " + bike.id() + " - battery: " + bike.batteryLevel(), x, y + 35);
+                g2.drawString(String.format("(x: %.2f, y: %.2f)", bike.x(), bike.y()), x, y + 50);
+            }
+
+        }
     }
 
     private void paintStations(Graphics2D g2) {
@@ -179,7 +200,7 @@ public abstract class AbstractView extends JFrame {
             int sy = centerY - (int) station.getY();
 
             // Draw station square
-            g2.setColor(Color.GREEN);
+            g2.setColor(Color.BLUE);
             g2.fillRect(sx - stationSize/2, sy - stationSize/2, stationSize, stationSize);
 
             List<String> slots = station.getSlots();

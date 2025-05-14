@@ -22,13 +22,13 @@ import org.slf4j.LoggerFactory;
 
 public class RideUpdateAdapter {
   private static final Logger logger = LoggerFactory.getLogger(RideUpdateAdapter.class);
-  private final BikeMapServiceAPI mapService;
+  private final BikeMapServiceAPI bikeMapService;
   private final MetricsManager metricsManager;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
 
-  public RideUpdateAdapter(BikeMapServiceAPI mapService) {
-    this.mapService = mapService;
+  public RideUpdateAdapter(BikeMapServiceAPI bikeMapService) {
+    this.bikeMapService = bikeMapService;
     this.metricsManager = MetricsManager.getInstance();
   }
 
@@ -50,7 +50,7 @@ public class RideUpdateAdapter {
     try (consumer) {
       // Subscribe to both topics
       consumer.subscribe(List.of(RIDE_MAP_UPDATE.getTopicName()));
-      logger.info("Subscribed to Kafka topic: {}, {}", RIDE_MAP_UPDATE.getTopicName());
+      logger.info("Subscribed to Kafka topic: {}", RIDE_MAP_UPDATE.getTopicName());
 
       while (running.get()) {
         try {
@@ -110,9 +110,35 @@ public class RideUpdateAdapter {
       case "stop":
         notifyStopRide(username, bikeName, bikeType);
         break;
+      case "user_start":
+        notifyStartRideToUser(username, bikeName, bikeType);
+      case "user_stop":
+        //notifyStopRideToUser(username, bikeName, bikeType);
+        break;
       default:
         logger.error("Unknown action in ride update: {}", action);
     }
+  }
+
+  private void notifyStartRideToUser(String username, String bikeName, BikeType bikeType) {
+    metricsManager.incrementMethodCounter("notifyStartRideToUser");
+    var timer = metricsManager.startTimer();
+
+    logger.info("Processing autonomous bike dispatch for user: {} and bike: {}", username, bikeName);
+
+    bikeMapService
+            .notifyStartRideToUser(username, bikeName, bikeType)
+            .thenAccept(
+                    v -> {
+                      logger.info("Autonomous bike dispatch processed successfully");
+                      metricsManager.recordTimer(timer, "notifyStartRideToUser");
+                    })
+            .exceptionally(
+                    ex -> {
+                      logger.error("Error processing autonomous bike dispatch: {}", ex.getMessage());
+                      metricsManager.recordError(timer, "notifyStartRideToUser", ex);
+                      return null;
+                    });
   }
 
   private void notifyStartRide(String username, String bikeName, BikeType bikeType) {
@@ -121,7 +147,7 @@ public class RideUpdateAdapter {
 
     logger.info("Processing start ride notification for user: {} and bike: {}", username, bikeName);
 
-    mapService
+    bikeMapService
         .notifyStartRide(username, bikeName, bikeType)
         .thenAccept(
             v -> {
@@ -142,7 +168,7 @@ public class RideUpdateAdapter {
 
     logger.info("Processing stop ride notification for user: {} and bike: {}", username, bikeName);
 
-    mapService
+    bikeMapService
         .notifyStopRide(username, bikeName, bikeType)
         .thenAccept(
             v -> {

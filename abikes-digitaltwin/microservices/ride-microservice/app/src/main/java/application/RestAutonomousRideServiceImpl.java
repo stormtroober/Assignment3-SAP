@@ -73,7 +73,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                   .whenComplete(
                       (res, err) -> {
                         if (err == null) {
-                          mapCommunicationAdapter.notifyEndRide(bikeId, bike.getType(), userId);
+                          mapCommunicationAdapter.notifyStopRideToUser(
+                              bikeId, bike.getType(), userId);
                           rideRepository.removeRide(ride);
                         } else {
                           System.err.println(
@@ -81,7 +82,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                         }
                       });
 
-              mapCommunicationAdapter.notifyStartRide(bikeId, bike.getType(), userId);
+              mapCommunicationAdapter.notifyStartRideToUser(bikeId, bike.getType(), userId);
 
               return CompletableFuture.completedFuture(null);
             });

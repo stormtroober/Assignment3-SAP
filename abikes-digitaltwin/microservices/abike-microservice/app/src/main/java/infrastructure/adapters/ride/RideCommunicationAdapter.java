@@ -1,6 +1,8 @@
 package infrastructure.adapters.ride;
 
 import application.ports.ABikeServiceAPI;
+import application.ports.StationServiceAPI;
+import domain.model.BikeType;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.KafkaProperties;
@@ -13,10 +15,13 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -26,14 +31,16 @@ import org.slf4j.LoggerFactory;
 public class RideCommunicationAdapter extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(RideCommunicationAdapter.class);
     private final ABikeServiceAPI aBikeService;
+    private final StationServiceAPI stationService;
     private final int port;
     private final Vertx vertx;
     private final MetricsManager metricsManager;
     private ExecutorService consumerExecutor;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public RideCommunicationAdapter(ABikeServiceAPI aBikeService, Vertx vertx) {
+    public RideCommunicationAdapter(ABikeServiceAPI aBikeService, StationServiceAPI stationService, Vertx vertx) {
         this.aBikeService = aBikeService;
+        this.stationService = stationService;
         this.port = ServiceConfiguration.getInstance(vertx).getRideAdapterConfig().getInteger("port");
         this.vertx = vertx;
         this.metricsManager = MetricsManager.getInstance();
@@ -81,32 +88,39 @@ public class RideCommunicationAdapter extends AbstractVerticle {
         KafkaConsumer<String, String> consumer =
                 new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
         try (consumer) {
-            consumer.subscribe(List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName()));
+            consumer.subscribe(List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName(), Topics.RIDE_MAP_UPDATE.getTopicName()));
             logger.info("Subscribed to Kafka topic: {}", Topics.ABIKE_RIDE_UPDATE.getTopicName());
 
             while (running.get()) {
                 try {
                     ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                     for (ConsumerRecord<String, String> record : records) {
-                        try {
-                            JsonObject updateJson = new JsonObject(record.value());
-                            aBikeService
-                                    .updateABike(updateJson)
-                                    .thenAccept(
-                                            updated ->
-                                                    logger.info(
-                                                            "ABike {} updated successfully via Kafka consumer",
-                                                            updateJson.getString("id")))
-                                    .exceptionally(
-                                            e -> {
-                                                logger.error(
-                                                        "Failed to update ABike {}: {}",
-                                                        updateJson.getString("id"),
-                                                        e.getMessage());
-                                                return null;
-                                            });
-                        } catch (Exception e) {
-                            logger.error("Invalid ABike data from Kafka: {}", e.getMessage());
+                        if (record.topic().equals(Topics.RIDE_MAP_UPDATE.getTopicName())) {
+                            logger.info("Received ride update from Kafka: {}", record.value());
+                            JsonObject payload = new JsonObject(record.value());
+                            processRideUpdate(payload);
+                        }
+                        else {
+                            try {
+                                JsonObject updateJson = new JsonObject(record.value());
+                                aBikeService
+                                        .updateABike(updateJson)
+                                        .thenAccept(
+                                                updated ->
+                                                        logger.info(
+                                                                "ABike {} updated successfully via Kafka consumer",
+                                                                updateJson.getString("id")))
+                                        .exceptionally(
+                                                e -> {
+                                                    logger.error(
+                                                            "Failed to update ABike {}: {}",
+                                                            updateJson.getString("id"),
+                                                            e.getMessage());
+                                                    return null;
+                                                });
+                            } catch (Exception e) {
+                                logger.error("Invalid ABike data from Kafka: {}", e.getMessage());
+                            }
                         }
                     }
                     consumer.commitAsync(
@@ -144,6 +158,33 @@ public class RideCommunicationAdapter extends AbstractVerticle {
                         err -> {
                             logger.error("Failed to deploy RideCommunicationAdapter", err);
                         });
+    }
+
+    private void processRideUpdate(JsonObject rideUpdate) {
+        String action = rideUpdate.getString("action");
+        String username = rideUpdate.getString("username");
+        String bikeName = rideUpdate.getString("bikeName");
+        String bikeTypeStr = rideUpdate.getString("bikeType");
+
+        if (action == null || username == null || bikeName == null || bikeTypeStr == null) {
+            logger.error("Incomplete ride update data: {}", rideUpdate);
+            return;
+        }
+
+//        BikeType bikeType;
+//        try {
+//            bikeType = BikeType.valueOf(bikeTypeStr.toUpperCase());
+//        } catch (IllegalArgumentException e) {
+//            logger.error(
+//                    "Invalid bike type: {}. Must be one of: {}",
+//                    bikeTypeStr,
+//                    Arrays.stream(BikeType.values()).map(Enum::name).collect(Collectors.joining(", ")));
+//            return;
+//        }
+
+        if(action.equals("user_start")){
+            stationService.deassignBikeFromStation(bikeName);
+        }
     }
 
     private void getABike(RoutingContext ctx) {

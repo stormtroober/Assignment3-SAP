@@ -2,6 +2,7 @@ package application;
 
 import application.ports.BikeMapServiceAPI;
 import application.ports.EventPublisher;
+import application.ports.StationMapServiceAPI;
 import domain.model.ABike;
 import domain.model.BikeType;
 import domain.model.EBike;
@@ -19,11 +20,13 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
   private final EBikeRepository eBikeRepository;
   private final EventPublisher eventPublisher;
   private final List<String> registeredUsers = new CopyOnWriteArrayList<>();
+  private final StationMapServiceAPI stationMapService;
 
-  public BikeMapServiceAPIImpl(EventPublisher eventPublisher) {
+  public BikeMapServiceAPIImpl(EventPublisher eventPublisher, StationMapServiceAPI stationMapService ) {
     this.aBikeRepository = new ABikeRepositoryImpl();
     this.eBikeRepository = new EBikeRepositoryImpl();
     this.eventPublisher = eventPublisher;
+    this.stationMapService = stationMapService;
   }
 
   @Override
@@ -67,49 +70,67 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
             });
   }
 
-  @Override
-  public CompletableFuture<Void> updateABike(ABike bike) {
-    return aBikeRepository
-        .saveBike(bike)
-        .thenAccept(
-            v -> {
-              // publish full fleet update
-              aBikeRepository.getAllBikes().thenAccept(eventPublisher::publishABikesUpdate);
+    @Override
+    public CompletableFuture<Void> updateABike(ABike bike) {
+        System.out.println("Starting updateABike for bike: " + bike.getId());
+        return aBikeRepository
+                .saveBike(bike)
+                .thenAccept(
+                        v -> {
+                            System.out.println("Successfully saved ABike: " + bike.getId());
 
-              // publish per-user assigned + available bikes
-              aBikeRepository
-                  .getUsersWithAssignedAndAvailableBikes()
-                  .thenAccept(
-                      usersWithBikeMap -> {
-                        if (!usersWithBikeMap.isEmpty()) {
-                          usersWithBikeMap.forEach(
-                              (user, userBikes) ->
-                                  eventPublisher.publishUserABikesUpdate(userBikes, user));
+                            // publish full fleet update
+                            aBikeRepository.getAllBikes().thenAccept(bikes -> {
+                                System.out.println("Publishing full ABike fleet update with " + bikes.size() + " bikes");
+                                eventPublisher.publishABikesUpdate(bikes);
+                            });
 
-                          registeredUsers.stream()
-                              .filter(user -> !usersWithBikeMap.containsKey(user))
-                              .forEach(
-                                  user ->
-                                      aBikeRepository
-                                          .getAvailableBikes()
-                                          .thenAccept(
-                                              avail ->
-                                                  eventPublisher.publishUserABikesUpdate(
-                                                      avail, user)));
-                        } else {
-                          // no one has a bike, just broadcast available
-                          aBikeRepository
-                              .getAvailableBikes()
-                              .thenAccept(eventPublisher::publishUserAvailableABikesUpdate);
-                        }
-                      });
-            });
-  }
+                            // publish per-user assigned + available bikes
+                            aBikeRepository
+                                    .getUsersWithAssignedAndAvailableBikes()
+                                    .thenAccept(
+                                            usersWithBikeMap -> {
+                                                System.out.println("Retrieved users with assigned bikes map, size: " + usersWithBikeMap.size());
+                                                if (!usersWithBikeMap.isEmpty()) {
+                                                    usersWithBikeMap.forEach(
+                                                            (user, userBikes) -> {
+                                                                System.out.println("Publishing ABikes update for user " + user + " with " + userBikes.size() + " bikes");
+                                                                eventPublisher.publishUserABikesUpdate(userBikes, user);
+                                                            });
+
+                                                    registeredUsers.stream()
+                                                            .filter(user -> !usersWithBikeMap.containsKey(user))
+                                                            .forEach(
+                                                                    user ->
+                                                                            aBikeRepository
+                                                                                    .getAvailableBikes()
+                                                                                    .thenAccept(
+                                                                                            avail -> {
+                                                                                                System.out.println("Publishing available ABikes to user " + user + " with " + avail.size() + " bikes");
+                                                                                                eventPublisher.publishUserABikesUpdate(avail, user);
+                                                                                            }));
+                                                } else {
+                                                    // no one has a bike, just broadcast available
+                                                    System.out.println("No users with assigned bikes, broadcasting available bikes to all");
+                                                    aBikeRepository
+                                                            .getAvailableBikes()
+                                                            .thenAccept(available -> {
+                                                                System.out.println("Broadcasting " + available.size() + " available ABikes to all users");
+                                                                eventPublisher.publishUserAvailableABikesUpdate(available);
+                                                            });
+                                                }
+                                            });
+                        })
+                .exceptionally(ex -> {
+                    System.err.println("Error in updateABike: " + ex.getMessage());
+                    ex.printStackTrace();
+                    return null;
+                });
+    }
 
   @Override
   public CompletableFuture<Void> notifyStartRide(
       String username, String bikeName, BikeType bikeType) {
-    if (bikeType == BikeType.NORMAL) {
       return eBikeRepository
           .getBike(bikeName)
           .thenCompose(bike -> eBikeRepository.assignBikeToUser(username, bike))
@@ -118,22 +139,27 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
                   eBikeRepository
                       .getAvailableBikes()
                       .thenAccept(eventPublisher::publishUserAvailableEBikesUpdate));
-    } else if (bikeType == BikeType.AUTONOMOUS) {
-      return aBikeRepository
-          .getBike(bikeName)
-          .thenCompose(bike -> aBikeRepository.assignBikeToUser(username, bike))
-          .thenAccept(
-              v ->
-                  aBikeRepository
-                      .getAvailableBikes()
-                      .thenAccept(eventPublisher::publishUserAvailableABikesUpdate));
-    } else {
-      return CompletableFuture.failedFuture(
-          new IllegalArgumentException("Unsupported bike type: " + bikeType));
-    }
   }
 
-  @Override
+    @Override
+    public CompletableFuture<Void> notifyStartRideToUser(String username, String bikeName, BikeType bikeType) {
+        // This method handles autonomous bikes
+        if (bikeType != BikeType.AUTONOMOUS) {
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Only autonomous bikes supported for autonomous dispatch"));
+        }
+        System.out.println("Starting notifyStartRideToUser for bike: " + bikeName);
+        return aBikeRepository.getBike(bikeName)
+                .thenCompose(bike -> aBikeRepository.assignBikeToUser(username, bike))
+                .thenAccept(v -> {
+                    // Update available bikes for all users
+                    aBikeRepository
+                            .getAvailableBikes()
+                            .thenAccept(eventPublisher::publishUserAvailableABikesUpdate);
+                });
+    }
+
+    @Override
   public CompletableFuture<Void> notifyStopRide(
       String username, String bikeName, BikeType bikeType) {
     if (bikeType == BikeType.NORMAL) {

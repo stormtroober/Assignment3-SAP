@@ -22,8 +22,8 @@ public class Main {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
               // Services
-              BikeMapServiceAPI bikeService = new BikeMapServiceAPIImpl(eventPublisher);
-              StationMapServiceAPI stationMapService = new StationMapServiceAPIImpl(eventPublisher);
+                StationMapServiceAPI stationMapService = new StationMapServiceAPIImpl(eventPublisher);
+              BikeMapServiceAPI bikeService = new BikeMapServiceAPIImpl(eventPublisher, stationMapService);
 
               MapServiceVerticle mapServiceVerticle =
                   new MapServiceVerticle(bikeService, stationMapService, vertx);

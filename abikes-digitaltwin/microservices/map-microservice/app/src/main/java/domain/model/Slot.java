@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Slot implements Serializable {
   private final String id;
-  private final String abikeId; // null if free
+  private String abikeId; // null if free
 
   public Slot(String id, String abikeId) {
     this.id = id;
@@ -17,6 +17,10 @@ public class Slot implements Serializable {
 
   public String getAbikeId() {
     return abikeId;
+  }
+
+  public void free(){
+    this.abikeId = null;
   }
 
   public boolean isOccupied() {

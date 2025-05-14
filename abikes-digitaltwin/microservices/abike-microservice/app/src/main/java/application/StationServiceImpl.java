@@ -8,6 +8,7 @@ import domain.model.StationFactory;
 import domain.model.StationMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -78,29 +79,34 @@ public class StationServiceImpl implements StationServiceAPI {
     });
   }
 
-  @Override
-  public CompletableFuture<JsonObject> deassignBikeFromStation(String stationId, String bikeId) {
-    return repository.findById(stationId).thenCompose(optionalStation -> {
-      if (optionalStation.isEmpty()) {
-        return CompletableFuture.failedFuture(new RuntimeException("Station not found: " + stationId));
-      }
-      JsonObject station = optionalStation.get();
-      JsonArray slots = station.getJsonArray("slots");
-      JsonObject bikeSlot = null;
-      for (int i = 0; i < slots.size(); i++) {
-        JsonObject slot = slots.getJsonObject(i);
-        if (bikeId.equals(slot.getString("abikeId"))) {
-          bikeSlot = slot;
-          break;
-        }
-      }
-      if (bikeSlot == null) {
-        return CompletableFuture.failedFuture(new RuntimeException("Bike " + bikeId + " not found in station: " + stationId));
-      }
-      bikeSlot.putNull("abikeId");
-      return updateStation(station);
-    });
-  }
+    @Override
+    public CompletableFuture<JsonObject> deassignBikeFromStation(String bikeId) {
+        return repository.findAll()
+                .thenCompose(stations -> {
+                    for (int i = 0; i < stations.size(); i++) {
+                        JsonObject station = stations.getJsonObject(i);
+                        JsonArray slots = station.getJsonArray("slots");
+                        boolean foundBike = false;
+
+                        for (int j = 0; j < slots.size(); j++) {
+                            JsonObject slot = slots.getJsonObject(j);
+                            if (bikeId.equals(slot.getString("abikeId"))) {
+                                // Set the abikeId to null in this slot
+                                slot.putNull("abikeId");
+                                foundBike = true;
+                            }
+                        }
+
+                        if (foundBike) {
+                            // Update the station with the modified slots
+                            return updateStation(station);
+                        }
+                    }
+
+                    // Bike not found in any station
+                    return CompletableFuture.completedFuture(null);
+                });
+    }
 
   public CompletableFuture<Optional<JsonObject>> findStationWithFreeSlot() {
       return getAllStations().thenApply(stations -> {

@@ -3,6 +3,9 @@ package domain.model.repository;
 import ddd.Repository;
 import domain.model.ABike;
 import domain.model.ABikeState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ABikeRepositoryImpl implements ABikeRepository, Repository {
+    Logger logger = LoggerFactory.getLogger(ABikeRepositoryImpl.class);
   private final ConcurrentHashMap<String, ABike> bikes = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, String> bikeAssignments = new ConcurrentHashMap<>();
 
@@ -40,6 +44,7 @@ public class ABikeRepositoryImpl implements ABikeRepository, Repository {
           if (bikeAssignments.containsValue(bike.getId())) {
             throw new IllegalStateException("Bike is already assigned");
           }
+            logger.info("Assigning bike {} to user {}", bike, username);
           bikeAssignments.put(username, bike.getId());
         });
   }

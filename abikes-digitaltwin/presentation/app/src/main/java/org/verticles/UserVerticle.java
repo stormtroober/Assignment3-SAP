@@ -72,7 +72,7 @@ public class UserVerticle extends AbstractVerticle {
 
     private void handleUpdateFromUser(String message){
         JsonObject update = new JsonObject(message);
-        if (update.containsKey("location")) {
+        if (update.containsKey("positionX")) {
             handleBikeDispatch(message);
         }
         else {
@@ -80,7 +80,15 @@ public class UserVerticle extends AbstractVerticle {
         }
     }
 
-    //{"userId":"ale","bikeId":"a","location":{"x":11.0,"y":11.0}}
+    //{
+    //
+    //  "userId" : "ale",
+    //
+    //  "positionX" : 1.0,
+    //
+    //  "positionY" : 50.0
+    //
+    //}
     private void handleBikeDispatch(String message) {
         JsonObject dispatch = new JsonObject(message);
         // publish on the user’s address so their view sees it

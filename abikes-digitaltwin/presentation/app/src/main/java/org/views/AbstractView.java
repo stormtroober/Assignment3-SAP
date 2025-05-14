@@ -84,6 +84,15 @@ public abstract class AbstractView extends JFrame {
         paintDispatches(g2);
     }
 
+    //{
+    //
+    //  "userId" : "ale",
+    //
+    //  "positionX" : 1.0,
+    //
+    //  "positionY" : 50.0
+    //
+    //}
     protected void observeDispatchesToList(Vertx vertx) {
         vertx.eventBus().consumer(
                 "user.bike.dispatch." + actualUser.username(),

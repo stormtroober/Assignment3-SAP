@@ -12,12 +12,16 @@ import domain.model.repository.SimulationType;
 import domain.model.simulation.RideSimulation;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class RestAutonomousRideServiceImpl implements RestAutonomousRideService {
 
-  private final RideRepository rideRepository;
+  private final Logger logger = LoggerFactory.getLogger(RestAutonomousRideServiceImpl.class);
+    private final RideRepository rideRepository;
   private final BikeCommunicationPort abikeCommunicationAdapter;
   private final MapCommunicationPort mapCommunicationAdapter;
   private final UserCommunicationPort userCommunicationAdapter;
@@ -58,6 +62,13 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                 return CompletableFuture.failedFuture(new RuntimeException("ABike has no battery"));
               }
 
+              JsonObject userJson = new JsonObject();
+                userJson.put("userId", user.getId());
+                userJson.put("bikeId", bikeId);
+                userJson.put("positionX", userLocation.x());
+                userJson.put("positionY", userLocation.y());
+                logger.info("Dispatch for user: {}", userJson.encodePrettily());
+              userCommunicationAdapter.sendDispatchToRide(userJson);
               // create ride and simulation
               Ride ride =
                   new Ride(

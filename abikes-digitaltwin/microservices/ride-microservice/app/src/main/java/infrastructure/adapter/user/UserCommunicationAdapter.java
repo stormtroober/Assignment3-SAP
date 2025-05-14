@@ -77,14 +77,23 @@ public class UserCommunicationAdapter extends AbstractVerticle implements UserCo
         });
   }
 
+  //{
+  //
+  //  "userId" : "ale",
+  //
+  //  "positionX" : 1.0,
+  //
+  //  "positionY" : 50.0
+  //
+  //}
   @Override
-  public CompletableFuture<Void> sendDispatchToRide(JsonObject dispatchPayload) {
+  public CompletableFuture<Void> sendDispatchToRide(JsonObject userPosition) {
     String topicName = Topics.RIDE_BIKE_DISPATCH.getTopicName();
     CompletableFuture<Void> result = new CompletableFuture<>();
 
     producer.send(
         new ProducerRecord<>(
-            topicName, dispatchPayload.getString("userId"), dispatchPayload.encode()),
+                topicName, userPosition.getString("userId"), userPosition.encode()),
         (metadata, exception) -> {
           if (exception == null) {
             System.out.println("Dispatch message sent successfully");

@@ -165,6 +165,15 @@ public class RideCommunicationAdapter extends AbstractVerticle {
     }
   }
 
+  //{
+  //
+  //  "userId" : "ale",
+  //
+  //  "positionX" : 1.0,
+  //
+  //  "positionY" : 50.0
+  //
+  //}
   private void processBikeDispatch(JsonObject message) {
     logger.info("Dispatching bike to user: {}", message);
     String username = message.getString("userId");

@@ -26,11 +26,19 @@ public class DispatchViewModel {
     }
 
     /** Build from the JSON payload your verticle is emitting. */
+    //{
+    //
+    //  "userId" : "ale",
+    //
+    //  "positionX" : 1.0,
+    //
+    //  "positionY" : 50.0
+    //
+    //}
     public static DispatchViewModel fromJson(JsonObject json) {
         String bikeId = json.getString("bikeId");
-        JsonObject loc = json.getJsonObject("location");
-        double x = loc.getDouble("x");
-        double y = loc.getDouble("y");
+        double x = json.getDouble("positionX");
+        double y = json.getDouble("positionY");
         return new DispatchViewModel(bikeId, x, y);
     }
 

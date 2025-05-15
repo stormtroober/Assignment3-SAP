@@ -8,13 +8,16 @@ import domain.model.bike.EBikeState;
 import domain.model.repository.RideRepository;
 import domain.model.repository.RideRepositoryImpl;
 import domain.model.repository.SimulationType;
+import domain.model.repository.UserRepository;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class RestSimpleRideServiceImpl implements RestSimpleRideService {
-  private final RideRepository rideRepository;
+
+    private final UserRepository userRepository;
+    private final RideRepository rideRepository;
   private final BikeCommunicationPort ebikeCommunicationAdapter;
   private final MapCommunicationPort mapCommunicationAdapter;
   private final UserCommunicationPort userCommunicationAdapter;
@@ -22,6 +25,7 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
   public RestSimpleRideServiceImpl(
       EventPublisher publisher,
       Vertx vertx,
+      UserRepository userRepository,
       BikeCommunicationPort ebikeCommunicationAdapter,
       MapCommunicationPort mapCommunicationAdapter,
       UserCommunicationPort userCommunicationAdapter) {
@@ -29,6 +33,7 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
     this.ebikeCommunicationAdapter = ebikeCommunicationAdapter;
     this.mapCommunicationAdapter = mapCommunicationAdapter;
     this.userCommunicationAdapter = userCommunicationAdapter;
+    this.userRepository = userRepository;
   }
 
   private CompletableFuture<EBike> checkEbike(String bikeId) {
@@ -54,17 +59,14 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
 
   private CompletableFuture<User> checkUser(String userId) {
     System.out.println("Checking user: " + userId);
-    return userCommunicationAdapter
-        .getUser(userId)
-        .thenApply(
-            userJson -> {
-              if (userJson == null) {
-                System.err.println("User not found");
-                return null;
-              }
 
-              return new User(userJson.getString("username"), userJson.getInteger("credit"));
-            });
+    Optional<User> user = userRepository.findById(userId);
+    if (user.isPresent()) {
+      return CompletableFuture.completedFuture(user.get());
+    } else {
+      System.err.println("User not found");
+      return CompletableFuture.completedFuture(null);
+    }
   }
 
   @Override

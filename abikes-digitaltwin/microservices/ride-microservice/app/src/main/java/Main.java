@@ -1,10 +1,13 @@
 import application.RestAutonomousRideServiceImpl;
 import application.RestSimpleRideServiceImpl;
 import application.ports.*;
+import domain.model.repository.InMemoryUserRepository;
+import domain.model.repository.UserRepository;
 import infrastructure.adapter.ebike.ABikeCommunicationAdapter;
 import infrastructure.adapter.ebike.EBikeCommunicationAdapter;
 import infrastructure.adapter.map.MapCommunicationAdapter;
 import infrastructure.adapter.user.UserCommunicationAdapter;
+import infrastructure.adapter.user.UserConsumerAdapter;
 import infrastructure.adapter.web.RideServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.EventPublisherImpl;
@@ -32,12 +35,14 @@ public class Main {
               mapCommunicationAdapter.init();
               userCommunicationAdapter.init();
 
+                UserRepository userRepository = new InMemoryUserRepository();
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
 
               RestSimpleRideService service =
                   new RestSimpleRideServiceImpl(
                       eventPublisher,
                       vertx,
+                      userRepository,
                       ebikeCommunicationAdapter,
                       mapCommunicationAdapter,
                       userCommunicationAdapter);
@@ -52,6 +57,11 @@ public class Main {
               RideServiceVerticle rideServiceVerticle =
                   new RideServiceVerticle(service, autonomousRideService, vertx);
               rideServiceVerticle.init();
+
+              //TODO: we need the port here
+                UserConsumerAdapter userConsumerAdapter =
+                    new UserConsumerAdapter(userRepository);
+                userConsumerAdapter.init();
             });
   }
 }

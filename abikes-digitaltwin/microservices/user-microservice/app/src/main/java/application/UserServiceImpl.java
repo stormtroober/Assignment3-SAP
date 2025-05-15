@@ -12,11 +12,11 @@ import java.util.concurrent.CompletableFuture;
 public class UserServiceImpl implements UserServiceAPI {
 
   private final UserRepository repository;
-  private final UserEventPublisher UserEventPublisher;
+  private final UserEventPublisher userEventPublisher;
 
-  public UserServiceImpl(UserRepository repository, UserEventPublisher UserEventPublisher) {
+  public UserServiceImpl(UserRepository repository, UserEventPublisher userEventPublisher) {
     this.repository = repository;
-    this.UserEventPublisher = UserEventPublisher;
+    this.userEventPublisher = userEventPublisher;
   }
 
   @Override
@@ -26,7 +26,9 @@ public class UserServiceImpl implements UserServiceAPI {
         .thenApply(
             user -> {
               if (user.isPresent()) {
-                return user.get();
+                  JsonObject userJson = user.get();
+                  userEventPublisher.publishAllUsersUpdates(userJson);
+                  return userJson;
               } else {
                 System.out.println("User not found");
               }
@@ -56,8 +58,8 @@ public class UserServiceImpl implements UserServiceAPI {
                     .save(user)
                     .thenApply(
                         v -> {
-                          UserEventPublisher.publishUserUpdate(username, user);
-                          UserEventPublisher.publishAllUsersUpdates(user);
+                          userEventPublisher.publishUserUpdate(username, user);
+                          userEventPublisher.publishAllUsersUpdates(user);
                           return user;
                         });
               }
@@ -93,8 +95,8 @@ public class UserServiceImpl implements UserServiceAPI {
                     .update(existingUser)
                     .thenApply(
                         v -> {
-                          UserEventPublisher.publishUserUpdate(username, existingUser);
-                          UserEventPublisher.publishAllUsersUpdates(existingUser);
+                          userEventPublisher.publishUserUpdate(username, existingUser);
+                          userEventPublisher.publishAllUsersUpdates(existingUser);
                           return existingUser;
                         });
               } else {
@@ -119,8 +121,8 @@ public class UserServiceImpl implements UserServiceAPI {
                     .update(user)
                     .thenApply(
                         v -> {
-                          UserEventPublisher.publishUserUpdate(username, user);
-                          UserEventPublisher.publishAllUsersUpdates(user);
+                          userEventPublisher.publishUserUpdate(username, user);
+                          userEventPublisher.publishAllUsersUpdates(user);
                           return user;
                         });
               }
@@ -142,8 +144,8 @@ public class UserServiceImpl implements UserServiceAPI {
                     .update(user)
                     .thenApply(
                         v -> {
-                          UserEventPublisher.publishUserUpdate(username, user);
-                          UserEventPublisher.publishAllUsersUpdates(user);
+                          userEventPublisher.publishUserUpdate(username, user);
+                          userEventPublisher.publishAllUsersUpdates(user);
                           return user;
                         });
               }

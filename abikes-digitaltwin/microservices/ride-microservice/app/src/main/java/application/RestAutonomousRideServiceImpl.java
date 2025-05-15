@@ -68,6 +68,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                 userJson.put("positionX", userLocation.x());
                 userJson.put("positionY", userLocation.y());
                 logger.info("Dispatch for user: {}", userJson.encodePrettily());
+              //To have the dot of user in the map
               userCommunicationAdapter.sendDispatchToRide(userJson);
               // create ride and simulation
               Ride ride =

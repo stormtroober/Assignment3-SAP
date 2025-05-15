@@ -19,6 +19,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
   private final CommunicationPort mapCommunicationAdapter;
   private final StationServiceAPI stationService;
   private final Random random = new Random();
+  public static final Integer MAX_BATTERY = 500;
   private static final Logger logger = LoggerFactory.getLogger(ABikeServiceImpl.class);
 
   public ABikeServiceImpl(
@@ -46,7 +47,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
                                   id,
                                   new P2d(locationJson.getDouble("x"), locationJson.getDouble("y")),
                                   ABikeState.AVAILABLE,
-                                  100,
+                                  MAX_BATTERY,
                                   BikeType.AUTONOMOUS
                           );
                           JsonObject abikeJson = new JsonObject()
@@ -67,7 +68,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
                       id,
                       new P2d(locationJson.getDouble("x"), locationJson.getDouble("y")),
                       ABikeState.AVAILABLE,
-                      100,
+                      MAX_BATTERY,
                       BikeType.AUTONOMOUS
               );
               JsonObject abikeJson = new JsonObject()

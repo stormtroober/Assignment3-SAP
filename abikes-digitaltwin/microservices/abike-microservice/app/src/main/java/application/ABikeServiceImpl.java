@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class ABikeServiceImpl implements ABikeServiceAPI {
 
   private final ABikeRepository repository;
-  private final CommunicationPort mapCommunicationAdapter;
+  private final CommunicationPort bikeCommunicationAdapter;
   private final StationServiceAPI stationService;
   private final Random random = new Random();
   public static final Integer MAX_BATTERY = 500;
@@ -24,12 +24,12 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
 
   public ABikeServiceImpl(
       ABikeRepository repository,
-      CommunicationPort mapCommunicationAdapter,
+      CommunicationPort bikeCommunicationAdapter,
       StationServiceAPI stationService) {
     this.repository = repository;
-    this.mapCommunicationAdapter = mapCommunicationAdapter;
+    this.bikeCommunicationAdapter = bikeCommunicationAdapter;
     this.stationService = stationService;
-    repository.findAll().thenAccept(mapCommunicationAdapter::sendAllUpdates);
+    repository.findAll().thenAccept(bikeCommunicationAdapter::sendAllUpdates);
   }
 
   // Get all stations and pick a random one for the bike's location
@@ -56,7 +56,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
                                   .put("batteryLevel", abike.getBatteryLevel())
                                   .put("location", locationJson)
                                   .put("type", abike.getType().name());
-                          mapCommunicationAdapter.sendUpdate(abikeJson);
+                          bikeCommunicationAdapter.sendUpdate(abikeJson);
                           return repository.save(abikeJson).thenApply(v -> abikeJson);
                       });
           } else {
@@ -77,7 +77,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
                       .put("batteryLevel", abike.getBatteryLevel())
                       .put("location", locationJson)
                       .put("type", abike.getType().name());
-              mapCommunicationAdapter.sendUpdate(abikeJson);
+              bikeCommunicationAdapter.sendUpdate(abikeJson);
               return repository.save(abikeJson).thenApply(v -> abikeJson);
           }
       });
@@ -97,7 +97,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
               if (optionalABike.isPresent()) {
                 JsonObject abike = optionalABike.get();
                 abike.put("batteryLevel", 100).put("state", "AVAILABLE");
-                mapCommunicationAdapter.sendUpdate(abike);
+                bikeCommunicationAdapter.sendUpdate(abike);
                 return repository.update(abike).thenApply(v -> abike);
               }
               return CompletableFuture.completedFuture(null);
@@ -130,7 +130,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
                     .findById(abike.getString("id"))
                     .thenApply(
                         updatedABike -> {
-                          mapCommunicationAdapter.sendUpdate(updatedABike.orElse(abike));
+                          bikeCommunicationAdapter.sendUpdate(updatedABike.orElse(abike));
                           return abike;
                         }));
   }

@@ -1,10 +1,9 @@
 import application.RestAutonomousRideServiceImpl;
 import application.RestSimpleRideServiceImpl;
 import application.ports.*;
-import domain.model.repository.InMemoryUserRepository;
-import domain.model.repository.UserRepository;
-import infrastructure.adapter.ebike.ABikeCommunicationAdapter;
-import infrastructure.adapter.ebike.EBikeCommunicationAdapter;
+import domain.model.repository.*;
+import infrastructure.adapter.bike.BikeCommunicationAdapter;
+import infrastructure.adapter.bike.BikeConsumerAdapter;
 import infrastructure.adapter.map.MapCommunicationAdapter;
 import infrastructure.adapter.user.UserCommunicationAdapter;
 import infrastructure.adapter.user.UserConsumerAdapter;
@@ -23,19 +22,25 @@ public class Main {
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
               // Initialize the adapters
-              BikeCommunicationPort ebikeCommunicationAdapter =
-                  new EBikeCommunicationAdapter(vertx);
-              BikeCommunicationPort abikeCommunicationAdapter =
-                  new ABikeCommunicationAdapter(vertx);
+//              BikeCommunicationPort ebikeCommunicationAdapter =
+//                  new EBikeCommunicationAdapter(vertx);
+//              BikeCommunicationPort abikeCommunicationAdapter =
+//                  new ABikeCommunicationAdapter(vertx);
               MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
               UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
 
-              ebikeCommunicationAdapter.init();
-              abikeCommunicationAdapter.init();
+//              ebikeCommunicationAdapter.init();
+//              abikeCommunicationAdapter.init();
+
+                BikeCommunicationPort bikeCommunicationAdapter = new BikeCommunicationAdapter(vertx);
+                bikeCommunicationAdapter.init();
+
               mapCommunicationAdapter.init();
               userCommunicationAdapter.init();
 
-                UserRepository userRepository = new InMemoryUserRepository();
+              UserRepository userRepository = new InMemoryUserRepository();
+              ABikeRepository abikeRepository = new InMemoryABikeRepository();
+              EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
 
               RestSimpleRideService service =
@@ -43,25 +48,30 @@ public class Main {
                       eventPublisher,
                       vertx,
                       userRepository,
-                      ebikeCommunicationAdapter,
-                      mapCommunicationAdapter,
-                      userCommunicationAdapter);
+                      ebikeRepository,
+                      bikeCommunicationAdapter,
+                      mapCommunicationAdapter);
               RestAutonomousRideService autonomousRideService =
                   new RestAutonomousRideServiceImpl(
                       eventPublisher,
                       vertx,
-                      abikeCommunicationAdapter,
+                        bikeCommunicationAdapter,
                       mapCommunicationAdapter,
-                      userCommunicationAdapter);
+                      userCommunicationAdapter,
+                        abikeRepository,
+                        userRepository);
 
               RideServiceVerticle rideServiceVerticle =
                   new RideServiceVerticle(service, autonomousRideService, vertx);
               rideServiceVerticle.init();
 
-              //TODO: we need the port here
-                UserConsumerAdapter userConsumerAdapter =
-                    new UserConsumerAdapter(userRepository);
-                userConsumerAdapter.init();
+              // TODO: we need the port here
+              UserConsumerAdapter userConsumerAdapter = new UserConsumerAdapter(userRepository);
+              userConsumerAdapter.init();
+
+              BikeConsumerAdapter bikeConsumerAdapter =
+                  new BikeConsumerAdapter(abikeRepository, ebikeRepository);
+              bikeConsumerAdapter.init();
             });
   }
 }

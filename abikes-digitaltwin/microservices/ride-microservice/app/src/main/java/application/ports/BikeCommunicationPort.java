@@ -11,15 +11,9 @@ public interface BikeCommunicationPort {
    *
    * @param ebike a JsonObject representing the e-bike update.
    */
-  void sendUpdate(JsonObject ebike);
+  void sendUpdateEBike(JsonObject ebike);
 
-  /**
-   * Retrieves the information of an e-bike by its ID.
-   *
-   * @param id the ID of the e-bike to retrieve.
-   * @return a CompletableFuture containing the e-bike information as a JsonObject.
-   */
-  CompletableFuture<JsonObject> getBike(String id);
+  void sendUpdateABike(JsonObject abike);
 
   /** Initializes the communication port. */
   void init();

@@ -24,7 +24,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   private static final double SPEED = 1.0; // units per tick
   private static final int BATTERY_DECREASE = 1;
   private static final int CREDIT_DECREASE = 1;
-  private static final double ARRIVAL_THRESHOLD = 0.1; // distance to consider arrived
+  private static final double ARRIVAL_THRESHOLD = 1.5; // distance to consider arrived
 
   public AutonomousRideSimulation(
       Ride ride, Vertx vertx, EventPublisher publisher, P2d destination) {

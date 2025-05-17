@@ -5,10 +5,7 @@ import domain.model.*;
 import domain.model.bike.BikeType;
 import domain.model.bike.EBike;
 import domain.model.bike.EBikeState;
-import domain.model.repository.RideRepository;
-import domain.model.repository.RideRepositoryImpl;
-import domain.model.repository.SimulationType;
-import domain.model.repository.UserRepository;
+import domain.model.repository.*;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
@@ -16,42 +13,43 @@ import java.util.concurrent.CompletableFuture;
 
 public class RestSimpleRideServiceImpl implements RestSimpleRideService {
 
-    private final UserRepository userRepository;
-    private final RideRepository rideRepository;
-  private final BikeCommunicationPort ebikeCommunicationAdapter;
+  private final EBikeRepository ebikeRepository;
+  private final UserRepository userRepository;
+  private final RideRepository rideRepository;
+  private final BikeCommunicationPort bikeCommunicationAdapter;
   private final MapCommunicationPort mapCommunicationAdapter;
-  private final UserCommunicationPort userCommunicationAdapter;
 
   public RestSimpleRideServiceImpl(
       EventPublisher publisher,
       Vertx vertx,
       UserRepository userRepository,
-      BikeCommunicationPort ebikeCommunicationAdapter,
-      MapCommunicationPort mapCommunicationAdapter,
-      UserCommunicationPort userCommunicationAdapter) {
+      EBikeRepository ebikeRepository,
+      BikeCommunicationPort bikeCommunicationAdapter,
+      MapCommunicationPort mapCommunicationAdapter) {
     this.rideRepository = new RideRepositoryImpl(vertx, publisher);
-    this.ebikeCommunicationAdapter = ebikeCommunicationAdapter;
+    this.bikeCommunicationAdapter = bikeCommunicationAdapter;
     this.mapCommunicationAdapter = mapCommunicationAdapter;
-    this.userCommunicationAdapter = userCommunicationAdapter;
     this.userRepository = userRepository;
+    this.ebikeRepository = ebikeRepository;
   }
 
   private CompletableFuture<EBike> checkEbike(String bikeId) {
     System.out.println("Checking ebike: " + bikeId);
-    return ebikeCommunicationAdapter
-        .getBike(bikeId)
+    return ebikeRepository
+        .findById(bikeId)
         .thenApply(
-            ebikeJson -> {
-              if (ebikeJson == null) {
+            ebikeJsonOptional -> {
+              if (ebikeJsonOptional.isEmpty()) {
                 System.err.println("EBike not found");
                 return null;
               }
 
+              JsonObject ebikeJson = ebikeJsonOptional.get();
               JsonObject location = ebikeJson.getJsonObject("location");
               return new EBike(
                   ebikeJson.getString("id"),
-                  location.getDouble("x"), // Get x from location object
-                  location.getDouble("y"), // Get y from location object
+                  location.getDouble("x"),
+                  location.getDouble("y"),
                   EBikeState.valueOf(ebikeJson.getString("state")),
                   ebikeJson.getInteger("batteryLevel"));
             });
@@ -135,7 +133,7 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
             rideSimulation -> {
               if (rideSimulation != null) {
                 rideSimulation.stopSimulationManually();
-                ebikeCommunicationAdapter.sendUpdate(
+                bikeCommunicationAdapter.sendUpdateEBike(
                     new JsonObject()
                         .put("id", rideSimulation.getRide().getBike().getId())
                         .put("state", rideSimulation.getRide().getBike().getState().toString()));

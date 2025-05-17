@@ -77,7 +77,7 @@ public class UserCommunicationAdapter extends AbstractVerticle implements UserCo
         });
   }
 
-  //{
+  // {
   //
   //  "userId" : "ale",
   //
@@ -85,15 +85,14 @@ public class UserCommunicationAdapter extends AbstractVerticle implements UserCo
   //
   //  "positionY" : 50.0
   //
-  //}
+  // }
   @Override
   public CompletableFuture<Void> sendDispatchToRide(JsonObject userPosition) {
     String topicName = Topics.RIDE_BIKE_DISPATCH.getTopicName();
     CompletableFuture<Void> result = new CompletableFuture<>();
 
     producer.send(
-        new ProducerRecord<>(
-                topicName, userPosition.getString("userId"), userPosition.encode()),
+        new ProducerRecord<>(topicName, userPosition.getString("userId"), userPosition.encode()),
         (metadata, exception) -> {
           if (exception == null) {
             System.out.println("Dispatch message sent successfully");

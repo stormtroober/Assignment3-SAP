@@ -6,36 +6,39 @@ import domain.model.bike.ABike;
 import domain.model.bike.ABikeFactory;
 import domain.model.bike.ABikeState;
 import domain.model.bike.BikeType;
-import domain.model.repository.RideRepository;
-import domain.model.repository.RideRepositoryImpl;
-import domain.model.repository.SimulationType;
+import domain.model.repository.*;
 import domain.model.simulation.RideSimulation;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RestAutonomousRideServiceImpl implements RestAutonomousRideService {
 
   private final Logger logger = LoggerFactory.getLogger(RestAutonomousRideServiceImpl.class);
-    private final RideRepository rideRepository;
-  private final BikeCommunicationPort abikeCommunicationAdapter;
+  private final RideRepository rideRepository;
+  private final BikeCommunicationPort bikeCommunicationAdapter;
   private final MapCommunicationPort mapCommunicationAdapter;
   private final UserCommunicationPort userCommunicationAdapter;
+  private final ABikeRepository abikeRepository;
+  private final UserRepository userRepository;
 
   public RestAutonomousRideServiceImpl(
       EventPublisher publisher,
       Vertx vertx,
-      BikeCommunicationPort abikeCommunicationAdapter,
+      BikeCommunicationPort bikeCommunicationAdapter,
       MapCommunicationPort mapCommunicationAdapter,
-      UserCommunicationPort userCommunicationAdapter) {
+      UserCommunicationPort userCommunicationAdapter,
+      ABikeRepository abikeRepository,
+      UserRepository userRepository) {
     this.rideRepository = new RideRepositoryImpl(vertx, publisher);
-    this.abikeCommunicationAdapter = abikeCommunicationAdapter;
+    this.bikeCommunicationAdapter = bikeCommunicationAdapter;
     this.mapCommunicationAdapter = mapCommunicationAdapter;
     this.userCommunicationAdapter = userCommunicationAdapter;
+    this.abikeRepository = abikeRepository;
+    this.userRepository = userRepository;
   }
 
   @Override
@@ -63,12 +66,12 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
               }
 
               JsonObject userJson = new JsonObject();
-                userJson.put("userId", user.getId());
-                userJson.put("bikeId", bikeId);
-                userJson.put("positionX", userLocation.x());
-                userJson.put("positionY", userLocation.y());
-                logger.info("Dispatch for user: {}", userJson.encodePrettily());
-              //To have the dot of user in the map
+              userJson.put("userId", user.getId());
+              userJson.put("bikeId", bikeId);
+              userJson.put("positionX", userLocation.x());
+              userJson.put("positionY", userLocation.y());
+              logger.info("Dispatch for user: {}", userJson.encodePrettily());
+              // To have the dot of user in the map
               userCommunicationAdapter.sendDispatchToRide(userJson);
               // create ride and simulation
               Ride ride =
@@ -102,29 +105,29 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
   private CompletableFuture<User> checkUser(String userId) {
     System.out.println("Checking user: " + userId);
-    return userCommunicationAdapter
-        .getUser(userId)
-        .thenApply(
-            userJson -> {
-              if (userJson == null) {
-                System.err.println("User not found");
-                return null;
-              }
 
-              return new User(userJson.getString("username"), userJson.getInteger("credit"));
-            });
+    Optional<User> user = userRepository.findById(userId);
+    if (user.isPresent()) {
+      return CompletableFuture.completedFuture(user.get());
+    } else {
+      System.err.println("User not found");
+      return CompletableFuture.completedFuture(null);
+    }
   }
 
   private CompletableFuture<ABike> checkABike(String bikeId) {
     System.out.println("Checking abike: " + bikeId);
-    return abikeCommunicationAdapter
-        .getBike(bikeId)
+
+    return abikeRepository
+        .findById(bikeId)
         .thenApply(
-            abikeJson -> {
-              if (abikeJson == null) {
+            abikeJsonOptional -> {
+              if (abikeJsonOptional.isEmpty()) {
                 System.err.println("ABike not found");
                 return null;
               }
+
+              JsonObject abikeJson = abikeJsonOptional.get();
               JsonObject location = abikeJson.getJsonObject("location");
               P2d loc = new P2d(location.getDouble("x"), location.getDouble("y"));
               ABikeState state = ABikeState.valueOf(abikeJson.getString("state"));

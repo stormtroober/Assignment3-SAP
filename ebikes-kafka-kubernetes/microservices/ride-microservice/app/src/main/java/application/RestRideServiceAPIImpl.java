@@ -2,68 +2,72 @@ package application;
 
 import application.ports.*;
 import domain.model.*;
+import domain.model.repository.EBikeRepository;
+import domain.model.repository.RideRepository;
+import domain.model.repository.RideRepositoryImpl;
+import domain.model.repository.UserRepository;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class RestRideServiceAPIImpl implements RestRideServiceAPI {
   private final RideRepository rideRepository;
   private final Vertx vertx;
-  private final EbikeCommunicationPort ebikeCommunicationAdapter;
   private final MapCommunicationPort mapCommunicationAdapter;
-  private final UserCommunicationPort userCommunicationAdapter;
+  private final EBikeRepository bikeRepository;
+    private final UserRepository userRepository;
+    private final EbikeCommunicationPort ebikeCommunicationAdapter;
 
   public RestRideServiceAPIImpl(
       EventPublisher publisher,
       Vertx vertx,
-      EbikeCommunicationPort ebikeCommunicationAdapter,
+      EBikeRepository ebikeRepository,
+        UserRepository userRepository,
       MapCommunicationPort mapCommunicationAdapter,
-      UserCommunicationPort userCommunicationAdapter) {
+      EbikeCommunicationPort ebikeCommunicationAdapter) {
     this.rideRepository = new RideRepositoryImpl(vertx, publisher);
     this.vertx = vertx;
-    this.ebikeCommunicationAdapter = ebikeCommunicationAdapter;
+    this.bikeRepository = ebikeRepository;
+    this.userRepository = userRepository;
     this.mapCommunicationAdapter = mapCommunicationAdapter;
-    this.userCommunicationAdapter = userCommunicationAdapter;
-    this.ebikeCommunicationAdapter.init();
-    this.mapCommunicationAdapter.init();
-    this.userCommunicationAdapter.init();
+    this.ebikeCommunicationAdapter = ebikeCommunicationAdapter;
   }
 
-  private CompletableFuture<EBike> checkEbike(String bikeId) {
-    System.out.println("Checking ebike: " + bikeId);
-    return ebikeCommunicationAdapter
-        .getEbike(bikeId)
-        .thenApply(
-            ebikeJson -> {
-              if (ebikeJson == null) {
-                System.err.println("EBike not found");
-                return null;
-              }
+    private CompletableFuture<EBike> checkEbike(String bikeId) {
+        System.out.println("Checking ebike: " + bikeId);
+        return bikeRepository
+                .findById(bikeId)
+                .thenApply(
+                        ebikeJsonOptional -> {
+                            if (ebikeJsonOptional.isEmpty()) {
+                                System.err.println("EBike not found");
+                                return null;
+                            }
 
-              JsonObject location = ebikeJson.getJsonObject("location");
-              return new EBike(
-                  ebikeJson.getString("id"),
-                  location.getDouble("x"), // Get x from location object
-                  location.getDouble("y"), // Get y from location object
-                  EBikeState.valueOf(ebikeJson.getString("state")),
-                  ebikeJson.getInteger("batteryLevel"));
-            });
-  }
+                            JsonObject ebikeJson = ebikeJsonOptional.get();
+                            JsonObject location = ebikeJson.getJsonObject("location");
+                            return new EBike(
+                                    ebikeJson.getString("id"),
+                                    location.getDouble("x"),
+                                    location.getDouble("y"),
+                                    EBikeState.valueOf(ebikeJson.getString("state")),
+                                    ebikeJson.getInteger("batteryLevel"));
+                        });
+    }
 
-  private CompletableFuture<User> checkUser(String userId) {
-    System.out.println("Checking user: " + userId);
-    return userCommunicationAdapter
-        .getUser(userId)
-        .thenApply(
-            userJson -> {
-              if (userJson == null) {
-                System.err.println("User not found");
-                return null;
-              }
+    private CompletableFuture<User> checkUser(String userId) {
+        System.out.println("Checking user: " + userId);
 
-              return new User(userJson.getString("username"), userJson.getInteger("credit"));
-            });
-  }
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isPresent()) {
+            return CompletableFuture.completedFuture(user.get());
+        } else {
+            System.err.println("User not found");
+            return CompletableFuture.completedFuture(null);
+        }
+    }
 
   @Override
   public CompletableFuture<Void> startRide(String userId, String bikeId) {

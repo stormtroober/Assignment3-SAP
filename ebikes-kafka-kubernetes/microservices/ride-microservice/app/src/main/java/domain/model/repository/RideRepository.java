@@ -1,4 +1,7 @@
-package domain.model;
+package domain.model.repository;
+
+import domain.model.Ride;
+import domain.model.RideSimulation;
 
 public interface RideRepository {
   void addRide(Ride ride);

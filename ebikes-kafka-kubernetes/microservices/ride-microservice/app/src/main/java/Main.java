@@ -1,8 +1,14 @@
 import application.RestRideServiceAPIImpl;
 import application.ports.*;
+import domain.model.repository.EBikeRepository;
+import domain.model.repository.InMemoryEBikeRepository;
+import domain.model.repository.InMemoryUserRepository;
+import domain.model.repository.UserRepository;
+import infrastructure.adapter.ebike.BikeConsumerAdapter;
 import infrastructure.adapter.ebike.EBikeCommunicationAdapter;
 import infrastructure.adapter.map.MapCommunicationAdapter;
 import infrastructure.adapter.user.UserCommunicationAdapter;
+import infrastructure.adapter.user.UserConsumerAdapter;
 import infrastructure.adapter.web.RideServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.EventPublisherImpl;
@@ -19,17 +25,37 @@ public class Main {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
               EbikeCommunicationPort ebikeCommunicationAdapter =
                   new EBikeCommunicationAdapter(vertx);
+              ebikeCommunicationAdapter.init();
               MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
+                mapCommunicationAdapter.init();
               UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
-              RestRideServiceAPI service =
-                  new RestRideServiceAPIImpl(
-                      new EventPublisherImpl(vertx),
-                      vertx,
-                      ebikeCommunicationAdapter,
-                      mapCommunicationAdapter,
-                      userCommunicationAdapter);
-              RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, vertx);
+              userCommunicationAdapter.init();
+
+                RestRideServiceAPI service = getRestRideServiceAPI(vertx, ebikeCommunicationAdapter, mapCommunicationAdapter);
+                RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, vertx);
               rideServiceVerticle.init();
             });
   }
+
+    private static RestRideServiceAPI getRestRideServiceAPI(Vertx vertx, EbikeCommunicationPort ebikeCommunicationAdapter, MapCommunicationPort mapCommunicationAdapter) {
+        EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
+
+        BikeConsumerAdapter bikeConsumerAdapter =
+            new BikeConsumerAdapter(ebikeRepository);
+        bikeConsumerAdapter.init();
+
+        UserRepository userRepository = new InMemoryUserRepository();
+
+        UserConsumerAdapter userConsumerAdapter =
+            new UserConsumerAdapter(userRepository);
+        userConsumerAdapter.init();
+
+        return new RestRideServiceAPIImpl(
+            new EventPublisherImpl(vertx),
+                vertx,
+            ebikeRepository,
+              userRepository,
+                mapCommunicationAdapter,
+                ebikeCommunicationAdapter);
+    }
 }

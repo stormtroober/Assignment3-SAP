@@ -24,8 +24,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RideCommunicationAdapter extends AbstractVerticle {
-  private static final Logger logger = LoggerFactory.getLogger(RideCommunicationAdapter.class);
+public class RideConsumerAdapter extends AbstractVerticle {
+  private static final Logger logger = LoggerFactory.getLogger(RideConsumerAdapter.class);
   private final UserServiceAPI userService;
   private final int port;
   private final Vertx vertx;
@@ -33,7 +33,7 @@ public class RideCommunicationAdapter extends AbstractVerticle {
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
 
-  public RideCommunicationAdapter(UserServiceAPI userService, Vertx vertx) {
+  public RideConsumerAdapter(UserServiceAPI userService, Vertx vertx) {
     this.userService = userService;
     this.port = ServiceConfiguration.getInstance(vertx).getRideAdapterConfig().getInteger("port");
     this.vertx = vertx;

@@ -1,7 +1,8 @@
 import application.UserServiceImpl;
 import application.ports.UserEventPublisher;
 import application.ports.UserServiceAPI;
-import infrastructure.adapters.ride.RideCommunicationAdapter;
+import infrastructure.adapters.ride.RideConsumerAdapter;
+import infrastructure.adapters.ride.RideProducerAdapter;
 import infrastructure.adapters.web.RESTUserAdapter;
 import infrastructure.adapters.web.UserVerticle;
 import infrastructure.config.ServiceConfiguration;
@@ -29,9 +30,12 @@ public class Main {
               UserServiceAPI service = new UserServiceImpl(repository, UserEventPublisher);
               RESTUserAdapter controller = new RESTUserAdapter(service, vertx);
               UserVerticle userVerticle = new UserVerticle(controller, vertx);
-              RideCommunicationAdapter rideAdapter = new RideCommunicationAdapter(service, vertx);
+              RideConsumerAdapter rideAdapter = new RideConsumerAdapter(service, vertx);
               userVerticle.init();
               rideAdapter.init();
+
+                RideProducerAdapter rideProducerAdapter =
+                    new RideProducerAdapter(vertx);
             });
   }
 }

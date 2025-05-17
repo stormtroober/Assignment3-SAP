@@ -21,26 +21,19 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
-              // Initialize the adapters
-//              BikeCommunicationPort ebikeCommunicationAdapter =
-//                  new EBikeCommunicationAdapter(vertx);
-//              BikeCommunicationPort abikeCommunicationAdapter =
-//                  new ABikeCommunicationAdapter(vertx);
+
               MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
               UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
+              BikeCommunicationPort bikeCommunicationAdapter = new BikeCommunicationAdapter(vertx);
 
-//              ebikeCommunicationAdapter.init();
-//              abikeCommunicationAdapter.init();
-
-                BikeCommunicationPort bikeCommunicationAdapter = new BikeCommunicationAdapter(vertx);
-                bikeCommunicationAdapter.init();
-
+              bikeCommunicationAdapter.init();
               mapCommunicationAdapter.init();
               userCommunicationAdapter.init();
 
               UserRepository userRepository = new InMemoryUserRepository();
               ABikeRepository abikeRepository = new InMemoryABikeRepository();
               EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
+
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
 
               RestSimpleRideService service =
@@ -51,15 +44,16 @@ public class Main {
                       ebikeRepository,
                       bikeCommunicationAdapter,
                       mapCommunicationAdapter);
+
               RestAutonomousRideService autonomousRideService =
                   new RestAutonomousRideServiceImpl(
                       eventPublisher,
                       vertx,
-                        bikeCommunicationAdapter,
+                      bikeCommunicationAdapter,
                       mapCommunicationAdapter,
                       userCommunicationAdapter,
-                        abikeRepository,
-                        userRepository);
+                      abikeRepository,
+                      userRepository);
 
               RideServiceVerticle rideServiceVerticle =
                   new RideServiceVerticle(service, autonomousRideService, vertx);

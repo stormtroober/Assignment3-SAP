@@ -1,7 +1,6 @@
 package application.ports;
 
 import io.vertx.core.json.JsonObject;
-import java.util.concurrent.CompletableFuture;
 
 /** Port for communicating with the ebike microservice adapter. */
 public interface BikeCommunicationPort {

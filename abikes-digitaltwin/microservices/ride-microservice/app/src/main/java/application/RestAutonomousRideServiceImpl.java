@@ -92,31 +92,32 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                 AutonomousRideSimulation autonomousSim =
                         new AutonomousRideSimulation(ride, vertx, eventPublisher, userLocation);
 
-                // For the normal simulation, we'll need to create a transformed ride
-                // This ride will be created only when the autonomous simulation finishes
-                // and we transition to the normal simulation
                 NormalRideSimulation normalSim = new NormalRideSimulation(ride, vertx, eventPublisher);
 
-                // Create the sequential simulation that will run both in sequence
-                List<RideSimulation> simulations = new ArrayList<>();
-                simulations.add(autonomousSim);
-                simulations.add(normalSim);
+                // Update the dispatchBikeToUser method to use the new builder pattern
+                SequentialRideSimulation sequentialSim = SequentialRideSimulation.builder(
+                                rideId,
+                                vertx,
+                                eventPublisher)
+                        .addStage(
+                                autonomousSim,
+                                (completedSim, nextSim) -> {
+                                    // This runs when the autonomous simulation completes
 
-                // Create the sequential simulation
-                SequentialRideSimulation sequentialSim = new SequentialRideSimulation(
-                        rideId,
-                        simulations,
-                        vertx,
-                        eventPublisher,
-                        // This lambda handles the transition between simulations
-                        prevRide -> {
-                            // Notify the user that the autonomous part is complete
-//                            mapCommunicationAdapter.notifyArrivedAtUser(
-//                                    bikeId, bike.getType(), userId);
+                                    // Notify the user that the autonomous part is complete
+//                                    mapCommunicationAdapter.notifyArrivedAtUser(
+//                                            bike.getId(), bike.getType(), userId);
 
-                            return prevRide; // Return the same ride to continue with normal simulation
-                        }
-                );
+                                    // Set bike state for next simulation
+                                    bike.setState(ABikeState.IN_USE);
+                                })
+                        .addStage(
+                                normalSim,
+                                (completedSim, nextSim) -> {
+
+                                })
+                        .build();
+
 
                 // Add the sequential simulation to the repository
                 rideRepository.addRide(ride, SimulationType.AUTONOMOUS_SIM, Optional.of(userLocation));

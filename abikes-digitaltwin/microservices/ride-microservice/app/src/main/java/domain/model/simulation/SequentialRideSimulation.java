@@ -11,55 +11,115 @@ import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A simulation that executes multiple ride simulations in sequence.
- * Each simulation is executed when the previous one completes.
+ * Each simulation has an associated completion handler that runs when it finishes.
  */
 public class SequentialRideSimulation implements RideSimulation, Service {
     private static final Logger log = LoggerFactory.getLogger(SequentialRideSimulation.class);
 
     private final String id;
-    private final List<RideSimulation> simulations;
+    private final List<SimulationStage> stages;
     private final Vertx vertx;
     private final EventPublisher publisher;
-    private int currentSimulationIndex = -1;
+    private int currentStageIndex = -1;
     private volatile boolean stopped = false;
     private CompletableFuture<Void> future;
-    private final Function<Ride, Ride> rideTransformer;
 
     /**
-     * Creates a sequential simulation with the given simulations.
+     * Represents a stage in the sequential simulation with its simulation and completion handler.
+     */
+    public static class SimulationStage {
+        private final RideSimulation simulation;
+        private final BiConsumer<RideSimulation, RideSimulation> completionHandler;
+
+        public SimulationStage(
+                RideSimulation simulation,
+                BiConsumer<RideSimulation, RideSimulation> completionHandler) {
+            this.simulation = simulation;
+            this.completionHandler = completionHandler;
+        }
+
+        public RideSimulation getSimulation() {
+            return simulation;
+        }
+
+        public BiConsumer<RideSimulation, RideSimulation> getCompletionHandler() {
+            return completionHandler;
+        }
+    }
+
+    /**
+     * Creates a sequential simulation with the given simulation stages.
      *
      * @param id The ID for this sequential simulation
-     * @param simulations The list of simulations to execute in sequence
+     * @param stages The list of simulation stages to execute in sequence
      * @param vertx The Vertx instance
      * @param publisher The event publisher
-     * @param rideTransformer Function to transform the ride between simulation transitions
      */
     public SequentialRideSimulation(
             String id,
-            List<RideSimulation> simulations,
+            List<SimulationStage> stages,
             Vertx vertx,
-            EventPublisher publisher,
-            Function<Ride, Ride> rideTransformer) {
+            EventPublisher publisher) {
         this.id = id;
-        this.simulations = new ArrayList<>(simulations);
+        this.stages = new ArrayList<>(stages);
         this.vertx = vertx;
         this.publisher = publisher;
-        this.rideTransformer = rideTransformer;
+    }
+
+    /**
+     * Builder method to create a sequential simulation with stages.
+     */
+    public static Builder builder(String id, Vertx vertx, EventPublisher publisher) {
+        return new Builder(id, vertx, publisher);
+    }
+
+    /**
+     * Builder for creating SequentialRideSimulation with stages.
+     */
+    public static class Builder {
+        private final String id;
+        private final Vertx vertx;
+        private final EventPublisher publisher;
+        private final List<SimulationStage> stages = new ArrayList<>();
+
+        private Builder(String id, Vertx vertx, EventPublisher publisher) {
+            this.id = id;
+            this.vertx = vertx;
+            this.publisher = publisher;
+        }
+
+        /**
+         * Adds a simulation stage to the sequence.
+         *
+         * @param simulation The simulation to run
+         * @param completionHandler Handler that runs when simulation completes
+         * @return This builder
+         */
+        public Builder addStage(
+                RideSimulation simulation,
+                BiConsumer<RideSimulation, RideSimulation> completionHandler) {
+            stages.add(new SimulationStage(simulation, completionHandler));
+            return this;
+        }
+
+        public SequentialRideSimulation build() {
+            return new SequentialRideSimulation(id, stages, vertx, publisher);
+        }
     }
 
     @Override
     public Ride getRide() {
-        if (currentSimulationIndex < 0 || currentSimulationIndex >= simulations.size()) {
+        if (currentStageIndex < 0 || currentStageIndex >= stages.size()) {
             // Return the ride from the first simulation as default
-            return simulations.getFirst().getRide();
+            return stages.getFirst().getSimulation().getRide();
         }
-        return simulations.get(currentSimulationIndex).getRide();
+        return stages.get(currentStageIndex).getSimulation().getRide();
     }
 
     @Override
@@ -67,7 +127,7 @@ public class SequentialRideSimulation implements RideSimulation, Service {
         log.info("Starting sequential simulation {}", id);
         future = new CompletableFuture<>();
 
-        if (simulations.isEmpty()) {
+        if (stages.isEmpty()) {
             log.warn("No simulations to run in sequential simulation {}", id);
             future.complete(null);
             return future;
@@ -86,57 +146,54 @@ public class SequentialRideSimulation implements RideSimulation, Service {
             return;
         }
 
-        currentSimulationIndex++;
+        // First, run completion handler for previous simulation if needed
+        if (currentStageIndex >= 0) {
+            SimulationStage currentStage = stages.get(currentStageIndex);
+            SimulationStage nextStage = (currentStageIndex + 1 < stages.size()) ?
+                    stages.get(currentStageIndex + 1) : null;
 
-        if (currentSimulationIndex >= simulations.size()) {
+            RideSimulation currentSim = currentStage.getSimulation();
+            RideSimulation nextSim = nextStage != null ? nextStage.getSimulation() : null;
+
+            try {
+                currentStage.getCompletionHandler().accept(currentSim, nextSim);
+                publishRideUpdateAfterTransition(currentSim.getRide());
+            } catch (Exception e) {
+                log.error("Error in completion handler for stage {}: {}",
+                        currentStageIndex, e.getMessage(), e);
+            }
+        }
+
+        currentStageIndex++;
+
+        if (currentStageIndex >= stages.size()) {
             log.info("All simulations completed in sequential simulation {}", id);
             future.complete(null);
             return;
         }
 
-        RideSimulation currentSim = simulations.get(currentSimulationIndex);
+        SimulationStage currentStage = stages.get(currentStageIndex);
+        RideSimulation currentSim = currentStage.getSimulation();
+
         log.info("Starting simulation {} of {} in sequential simulation {}",
-                currentSimulationIndex + 1, simulations.size(), id);
-
-        // If not the first simulation, transform the ride from previous to current
-        if (currentSimulationIndex > 0) {
-            // Get the previous simulation's ride
-            Ride previousRide = simulations.get(currentSimulationIndex - 1).getRide();
-
-            // Transform the ride for the new simulation phase
-            if (rideTransformer != null) {
-                Ride transformedRide = rideTransformer.apply(previousRide);
-
-                // Update bike states appropriately for transition
-                if (transformedRide.getBike() instanceof ABike) {
-                    ((ABike) transformedRide.getBike()).setState(ABikeState.IN_USE);
-                } else if (transformedRide.getBike() instanceof EBike) {
-                    ((EBike) transformedRide.getBike()).setState(EBikeState.IN_USE);
-                }
-
-                // Publish update for the transformed bike and user
-                publishBikeUpdate(transformedRide);
-                publisher.publishUserUpdate(
-                        transformedRide.getUser().getId(), transformedRide.getUser().getCredit());
-            }
-        }
+                currentStageIndex + 1, stages.size(), id);
 
         // Start the current simulation
         currentSim.startSimulation()
                 .whenComplete((result, error) -> {
                     if (error != null) {
-                        log.error("Error in simulation {}: {}", currentSimulationIndex, error.getMessage());
+                        log.error("Error in simulation {}: {}", currentStageIndex, error.getMessage());
                         future.completeExceptionally(error);
                     } else {
-                        log.info("Simulation {} completed, moving to next", currentSimulationIndex);
+                        log.info("Simulation {} completed, moving to next", currentStageIndex);
                         // Schedule the next simulation on the event loop
                         vertx.runOnContext(v -> startNextSimulation());
                     }
                 });
     }
 
-    // Helper to publish appropriate bike update based on bike type
-    private void publishBikeUpdate(Ride ride) {
+    // Helper to publish appropriate updates after a transition
+    private void publishRideUpdateAfterTransition(Ride ride) {
         if (ride.getBike() instanceof ABike bike) {
             publisher.publishABikeUpdate(
                     bike.getId(),
@@ -154,6 +211,10 @@ public class SequentialRideSimulation implements RideSimulation, Service {
                     bike.getBatteryLevel()
             );
         }
+
+        publisher.publishUserUpdate(
+                ride.getUser().getId(),
+                ride.getUser().getCredit());
     }
 
     @Override
@@ -163,8 +224,8 @@ public class SequentialRideSimulation implements RideSimulation, Service {
             stopped = true;
 
             // Stop the current simulation if any
-            if (currentSimulationIndex >= 0 && currentSimulationIndex < simulations.size()) {
-                simulations.get(currentSimulationIndex).stopSimulation();
+            if (currentStageIndex >= 0 && currentStageIndex < stages.size()) {
+                stages.get(currentStageIndex).getSimulation().stopSimulation();
             }
 
             // Complete the future if not already completed
@@ -179,8 +240,8 @@ public class SequentialRideSimulation implements RideSimulation, Service {
         log.info("Manually stopping sequential simulation {}", id);
 
         // Stop the current simulation if any
-        if (currentSimulationIndex >= 0 && currentSimulationIndex < simulations.size()) {
-            simulations.get(currentSimulationIndex).stopSimulationManually();
+        if (currentStageIndex >= 0 && currentStageIndex < stages.size()) {
+            stages.get(currentStageIndex).getSimulation().stopSimulationManually();
         }
 
         stopped = true;

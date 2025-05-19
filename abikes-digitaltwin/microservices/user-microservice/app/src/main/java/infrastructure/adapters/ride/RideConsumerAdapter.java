@@ -68,8 +68,9 @@ public class RideConsumerAdapter {
             try {
               JsonObject message = new JsonObject(record.value());
               if (record.topic().equals(Topics.RIDE_BIKE_DISPATCH.getTopicName())) {
+                String userId = record.key();
                 logger.info("Received dispatch message: {}", message);
-                processBikeDispatch(message);
+                processBikeDispatch(userId, message);
               } else if (record.topic().equals(RIDE_USER_UPDATE.getTopicName())) {
                 logger.info("Received user update from Kafka: {}", message);
                 processUserUpdate(message);
@@ -124,18 +125,8 @@ public class RideConsumerAdapter {
     }
   }
 
-  //{
-  //
-  //  "userId" : "ale",
-  //
-  //  "positionX" : 1.0,
-  //
-  //  "positionY" : 50.0
-  //
-  //}
-  private void processBikeDispatch(JsonObject message) {
+  private void processBikeDispatch(String username, JsonObject message) {
     logger.info("Dispatching bike to user: {}", message);
-    String username = message.getString("userId");
     if (username != null && !username.isBlank()) {
       vertx.eventBus().publish(username, message.encode());
     } else {

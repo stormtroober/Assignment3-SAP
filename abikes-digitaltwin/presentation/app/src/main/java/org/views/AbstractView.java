@@ -97,10 +97,19 @@ public abstract class AbstractView extends JFrame {
         vertx.eventBus().consumer(
                 "user.bike.dispatch." + actualUser.username(),
                 message -> {
+                    System.out.println("Received dispatch: " + message.body());
                     JsonObject json = (JsonObject) message.body();
-                    // build a view‐model and add it
-                    DispatchViewModel d = DispatchViewModel.fromJson(json);
-                    pendingDispatches.add(d);
+                    if(json.getString("status").equals("dispatch")){
+                        DispatchViewModel d = DispatchViewModel.fromJson(json);
+                        pendingDispatches.add(d);
+                    }
+                    else if(json.getString("status").equals("arrived")){
+                        String bikeId = json.getString("bikeId");
+                        pendingDispatches.removeIf(d -> d.getBikeId().equals(bikeId));
+                    }
+                    else{
+                        System.out.println("[AbstractView] Invalid dispatch data: " + message.body());
+                    }
                     updateVisualizerPanel();
                 }
         );

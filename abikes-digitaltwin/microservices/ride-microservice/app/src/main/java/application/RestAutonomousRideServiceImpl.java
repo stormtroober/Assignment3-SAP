@@ -9,13 +9,10 @@ import domain.model.bike.BikeType;
 import domain.model.repository.*;
 import domain.model.simulation.AutonomousRideSimulation;
 import domain.model.simulation.NormalRideSimulation;
-import domain.model.simulation.RideSimulation;
 import domain.model.simulation.SequentialRideSimulation;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
@@ -75,14 +72,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                 return CompletableFuture.failedFuture(new RuntimeException("ABike has no battery"));
               }
 
-              JsonObject userJson = new JsonObject();
-              userJson.put("userId", user.getId());
-              userJson.put("bikeId", bikeId);
-              userJson.put("positionX", userLocation.x());
-              userJson.put("positionY", userLocation.y());
-              logger.info("Dispatch for user: {}", userJson.encodePrettily());
               // To have the dot of user in the map
-              userCommunicationAdapter.sendDispatchToRide(userJson);
+              userCommunicationAdapter.addDispatch(user, bike.getId(), userLocation);
 
                 // Create the base ride
                 String rideId = "ride-" + userId + "-" + bikeId + "-combined";
@@ -103,12 +94,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                 autonomousSim,
                                 (completedSim, nextSim) -> {
                                     // This runs when the autonomous simulation completes
-
-                                    // Notify the user that the autonomous part is complete
-//                                    mapCommunicationAdapter.notifyArrivedAtUser(
-//                                            bike.getId(), bike.getType(), userId);
-
-                                    // Set bike state for next simulation
+                                    userCommunicationAdapter.removeDispatch(user, bike.getId(), userLocation);
                                     bike.setState(ABikeState.IN_USE);
                                 })
                         .addStage(

@@ -1,7 +1,8 @@
 package application.ports;
 
+import domain.model.P2d;
+import domain.model.User;
 import io.vertx.core.json.JsonObject;
-import java.util.concurrent.CompletableFuture;
 
 /** Port for communicating with the user microservice adapter. */
 public interface UserCommunicationPort {
@@ -16,18 +17,13 @@ public interface UserCommunicationPort {
   /**
    * Sends a dispatch request for ride.
    *
-   * @param dispatchPayload a JsonObject containing the dispatch information.
-   * @return a CompletableFuture indicating the completion of the operation.
+   * @param user a JsonObject representing the user.
    */
-  CompletableFuture<Void> sendDispatchToRide(JsonObject dispatchPayload);
+  void addDispatch(User user, String bikeId, P2d position);
 
-  /**
-   * Retrieves the information of a user by their ID.
-   *
-   * @param id the ID of the user to retrieve.
-   * @return a CompletableFuture containing the user information as a JsonObject.
-   */
-  CompletableFuture<JsonObject> getUser(String id);
+  // Add this to UserCommunicationPort.java
+  void removeDispatch(User user, String bikeId, P2d position);
+
 
   /** Initializes the communication port. */
   void init();

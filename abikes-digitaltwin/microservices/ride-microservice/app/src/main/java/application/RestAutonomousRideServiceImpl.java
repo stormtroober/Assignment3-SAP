@@ -7,9 +7,15 @@ import domain.model.bike.ABikeFactory;
 import domain.model.bike.ABikeState;
 import domain.model.bike.BikeType;
 import domain.model.repository.*;
+import domain.model.simulation.AutonomousRideSimulation;
+import domain.model.simulation.NormalRideSimulation;
 import domain.model.simulation.RideSimulation;
+import domain.model.simulation.SequentialRideSimulation;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
@@ -20,10 +26,12 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
   private final Logger logger = LoggerFactory.getLogger(RestAutonomousRideServiceImpl.class);
   private final RideRepository rideRepository;
   private final BikeCommunicationPort bikeCommunicationAdapter;
+  private EventPublisher eventPublisher;
   private final MapCommunicationPort mapCommunicationAdapter;
   private final UserCommunicationPort userCommunicationAdapter;
   private final ABikeRepository abikeRepository;
   private final UserRepository userRepository;
+  private final Vertx vertx;
 
   public RestAutonomousRideServiceImpl(
       EventPublisher publisher,
@@ -33,6 +41,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
       UserCommunicationPort userCommunicationAdapter,
       ABikeRepository abikeRepository,
       UserRepository userRepository) {
+    this.vertx = vertx;
+    this.eventPublisher = publisher;
     this.rideRepository = new RideRepositoryImpl(vertx, publisher);
     this.bikeCommunicationAdapter = bikeCommunicationAdapter;
     this.mapCommunicationAdapter = mapCommunicationAdapter;
@@ -73,33 +83,66 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
               logger.info("Dispatch for user: {}", userJson.encodePrettily());
               // To have the dot of user in the map
               userCommunicationAdapter.sendDispatchToRide(userJson);
-              // create ride and simulation
-              Ride ride =
-                  new Ride(
-                      "ride-" + userId + "-" + bikeId + "-" + SimulationType.AUTONOMOUS_SIM,
-                      user,
-                      bike);
-              rideRepository.addRide(
-                  ride, SimulationType.AUTONOMOUS_SIM, Optional.of(userLocation));
 
-              RideSimulation sim = rideRepository.getRideSimulation(ride.getId());
-              // start simulation and notify on completion
-              sim.startSimulation()
-                  .whenComplete(
-                      (res, err) -> {
-                        if (err == null) {
-                          mapCommunicationAdapter.notifyStopRideToUser(
-                              bikeId, bike.getType(), userId);
-                          rideRepository.removeRide(ride);
-                        } else {
-                          System.err.println(
-                              "Error during autonomous simulation: " + err.getMessage());
+                // Create the base ride
+                String rideId = "ride-" + userId + "-" + bikeId + "-combined";
+                Ride ride = new Ride(rideId, user, bike);
+
+                // Create both simulations
+                AutonomousRideSimulation autonomousSim =
+                        new AutonomousRideSimulation(ride, vertx, eventPublisher, userLocation);
+
+                // For the normal simulation, we'll need to create a transformed ride
+                // This ride will be created only when the autonomous simulation finishes
+                // and we transition to the normal simulation
+                NormalRideSimulation normalSim = new NormalRideSimulation(ride, vertx, eventPublisher);
+
+                // Create the sequential simulation that will run both in sequence
+                List<RideSimulation> simulations = new ArrayList<>();
+                simulations.add(autonomousSim);
+                simulations.add(normalSim);
+
+                // Create the sequential simulation
+                SequentialRideSimulation sequentialSim = new SequentialRideSimulation(
+                        rideId,
+                        simulations,
+                        vertx,
+                        eventPublisher,
+                        // This lambda handles the transition between simulations
+                        prevRide -> {
+                            // Notify the user that the autonomous part is complete
+//                            mapCommunicationAdapter.notifyArrivedAtUser(
+//                                    bikeId, bike.getType(), userId);
+
+                            return prevRide; // Return the same ride to continue with normal simulation
                         }
-                      });
+                );
 
-              mapCommunicationAdapter.notifyStartRideToUser(bikeId, bike.getType(), userId);
+                // Add the sequential simulation to the repository
+                rideRepository.addRide(ride, SimulationType.AUTONOMOUS_SIM, Optional.of(userLocation));
 
-              return CompletableFuture.completedFuture(null);
+                // Store the sequential simulation in the repository
+                rideRepository.setRideSimulation(ride.getId(), sequentialSim);
+
+                // Start the sequential simulation
+                sequentialSim.startSimulation()
+                        .whenComplete(
+                                (res, err) -> {
+                                    if (err == null) {
+                                        // When all simulations are complete, clean up
+                                        mapCommunicationAdapter.notifyStopRideToUser(
+                                                bikeId, bike.getType(), userId);
+                                        rideRepository.removeRide(ride);
+                                    } else {
+                                        logger.error(
+                                                "Error during sequential simulation: " + err.getMessage(), err);
+                                    }
+                                });
+
+                // Notify that the bike is starting its journey to the user
+                mapCommunicationAdapter.notifyStartRideToUser(bikeId, bike.getType(), userId);
+
+                return CompletableFuture.completedFuture(null);
             });
   }
 

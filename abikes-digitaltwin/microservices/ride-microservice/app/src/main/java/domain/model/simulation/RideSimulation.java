@@ -1,16 +1,16 @@
-package domain.model.simulation;
+  package domain.model.simulation;
 
-import domain.model.Ride;
-import java.util.concurrent.CompletableFuture;
+  import domain.model.Ride;
+  import java.util.concurrent.CompletableFuture;
 
-public interface RideSimulation {
-  Ride getRide();
+  public interface RideSimulation {
+    Ride getRide();
 
-  CompletableFuture<Void> startSimulation();
+    CompletableFuture<Void> startSimulation();
 
-  void stopSimulation();
+    void stopSimulation();
 
-  void stopSimulationManually();
+    void stopSimulationManually();
 
-  String getId();
-}
+    String getId();
+  }

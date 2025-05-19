@@ -5,8 +5,7 @@ import ddd.Service;
 import domain.model.Ride;
 import domain.model.User;
 import domain.model.V2d;
-import domain.model.bike.EBike;
-import domain.model.bike.EBikeState;
+import domain.model.bike.*;
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
 
@@ -60,7 +59,7 @@ public class NormalRideSimulation implements RideSimulation, Service {
     User user = ride.getUser();
 
     synchronized (ride.getBike()) {
-      EBike bike = (EBike) ride.getBike();
+      Bike bike = ride.getBike();
       if (bike.getBatteryLevel() == 0) {
         System.out.println("Bike has no battery");
         ride.end();
@@ -71,7 +70,11 @@ public class NormalRideSimulation implements RideSimulation, Service {
       if (user.getCredit() == 0) {
         ride.end();
         stopSimulation();
-        bike.setState(EBikeState.AVAILABLE);
+          if (bike instanceof EBike) {
+              bike.setState(EBikeState.AVAILABLE);
+          } else {
+              bike.setState(ABikeState.AVAILABLE);
+          }
         completeSimulation();
       }
 
@@ -97,23 +100,15 @@ public class NormalRideSimulation implements RideSimulation, Service {
       bike.decreaseBattery(BATTERY_DECREASE);
       user.decreaseCredit(CREDIT_DECREASE);
 
-      publisher.publishEBikeUpdate(
-          bike.getId(),
-          bike.getLocation().x(),
-          bike.getLocation().y(),
-          bike.getState().toString(),
-          bike.getBatteryLevel());
+      publishBikeUpdate(bike);
+
       publisher.publishUserUpdate(user.getId(), user.getCredit());
     }
   }
 
+
   private void completeSimulation() {
-    publisher.publishEBikeUpdate(
-        ride.getBike().getId(),
-        ride.getBike().getLocation().x(),
-        ride.getBike().getLocation().y(),
-        ride.getBike().getState().toString(),
-        ride.getBike().getBatteryLevel());
+    publishBikeUpdate(ride.getBike());
     publisher.publishUserUpdate(ride.getUser().getId(), ride.getUser().getCredit());
   }
 
@@ -134,4 +129,24 @@ public class NormalRideSimulation implements RideSimulation, Service {
   public String getId() {
     return id;
   }
+
+  private void publishBikeUpdate(Bike bike) {
+    if (bike instanceof EBike) {
+      publisher.publishEBikeUpdate(
+              bike.getId(),
+              bike.getLocation().x(),
+              bike.getLocation().y(),
+              bike.getState().toString(),
+              bike.getBatteryLevel());
+    }
+    else if (bike instanceof ABike) {
+      publisher.publishABikeUpdate(
+              bike.getId(),
+              bike.getLocation().x(),
+              bike.getLocation().y(),
+              bike.getState().toString(),
+              bike.getBatteryLevel());;
+    }
+  }
+
 }

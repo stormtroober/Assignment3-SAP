@@ -11,7 +11,14 @@ public interface RideRepository {
 
   void removeRide(Ride ride);
 
-  Ride getRide(String rideId);
+  /**
+   * Sets a specific simulation for a ride.
+   * This is useful when using custom or compound simulations.
+   *
+   * @param rideId The ride ID
+   * @param simulation The simulation to set
+   */
+  void setRideSimulation(String rideId, RideSimulation simulation);
 
   RideSimulation getRideSimulation(String rideId);
 

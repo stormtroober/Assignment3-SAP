@@ -9,16 +9,22 @@ import domain.model.simulation.NormalRideSimulation;
 import domain.model.simulation.RideSimulation;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ConcurrentHashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RideRepositoryImpl implements RideRepository, Repository {
 
-  private final ConcurrentHashSet<RideSimulation> rides;
+  private static final Logger logger = LoggerFactory.getLogger(RideRepositoryImpl.class);
+  private final Map<String, RideSimulation> simulations = new ConcurrentHashMap<>();
+  private final Map<String, String> userRideMap = new ConcurrentHashMap<>();
   private final Vertx vertx;
   private final EventPublisher publisher;
 
   public RideRepositoryImpl(Vertx vertx, EventPublisher publisher) {
-    this.rides = new ConcurrentHashSet<>();
     this.vertx = vertx;
     this.publisher = publisher;
   }
@@ -26,6 +32,9 @@ public class RideRepositoryImpl implements RideRepository, Repository {
   @Override
   public void addRide(Ride ride, SimulationType type, Optional<P2d> destination) {
     RideSimulation sim;
+
+    String rideId = ride.getId();
+    String userId = ride.getUser().getId();
     switch (type) {
       case AUTONOMOUS_SIM:
         if (destination.isPresent()) {
@@ -40,36 +49,46 @@ public class RideRepositoryImpl implements RideRepository, Repository {
         sim = new NormalRideSimulation(ride, vertx, publisher);
         break;
     }
-    rides.add(sim);
+
+    simulations.put(rideId, sim);
+    userRideMap.put(userId, rideId);
+    logger.info("Added ride {} of type {} for user {}", rideId, type, userId);
   }
 
   @Override
   public void removeRide(Ride ride) {
-    rides.removeIf(sim -> sim.getRide().getId().equals(ride.getId()));
+    String rideId = ride.getId();
+    String userId = ride.getUser().getId();
+
+    simulations.remove(rideId);
+    userRideMap.remove(userId);
+
+    logger.info("Removed ride {} for user {}", rideId, userId);
   }
 
   @Override
-  public Ride getRide(String rideId) {
-    return rides.stream()
-        .filter(sim -> sim.getRide().getId().equals(rideId))
-        .findFirst()
-        .map(RideSimulation::getRide)
-        .orElse(null);
+  public void setRideSimulation(String rideId, RideSimulation simulation) {
+    if(simulation == null) {
+      throw new IllegalArgumentException("Simulation cannot be null");
+    }
+    simulations.put(rideId, simulation);
+    String userId = simulation.getRide().getUser().getId();
+    userRideMap.put(userId, rideId);
+
+    logger.info("Set custom simulation for ride {} and user {}", rideId, userId);
   }
 
   @Override
   public RideSimulation getRideSimulation(String rideId) {
-    return rides.stream()
-        .filter(sim -> sim.getRide().getId().equals(rideId))
-        .findFirst()
-        .orElse(null);
+    return simulations.get(rideId);
   }
 
   @Override
   public RideSimulation getRideSimulationByUserId(String userId) {
-    return rides.stream()
-        .filter(sim -> sim.getRide().getUser().getId().equals(userId))
-        .findFirst()
-        .orElse(null);
+    String rideId = userRideMap.get(userId);
+    if (rideId != null) {
+      return simulations.get(rideId);
+    }
+    return null;
   }
 }

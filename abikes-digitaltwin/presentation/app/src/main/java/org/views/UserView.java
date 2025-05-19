@@ -18,7 +18,7 @@ public class UserView extends AbstractView {
     private JButton rideButton;
     private JButton callABike;
     private boolean isRiding = false;
-
+    private CallABikeStatus isCallingABike = CallABikeStatus.CALL_ABIKE;
 
     public UserView(UserViewModel user, Vertx vertx) {
         super("User View", user);
@@ -42,14 +42,8 @@ public class UserView extends AbstractView {
         buttonPanel.add(rideButton);
 
         callABike = new JButton("Call ABike");
+        callABike.addActionListener(e -> toggleCallABike());
         buttonPanel.add(callABike);
-
-        callABike.addActionListener(e -> {
-            SwingUtilities.invokeLater(() -> {
-                org.dialogs.user.CallBikeDialog dialog = new org.dialogs.user.CallBikeDialog(UserView.this, vertx, actualUser);
-                dialog.setVisible(true);
-            });
-        });
 
         addTopPanelButton("Recharge Credit", e -> {
             SwingUtilities.invokeLater(() -> {
@@ -68,9 +62,69 @@ public class UserView extends AbstractView {
         }
     }
 
+    private void toggleCallABike() {
+        SwingUtilities.invokeLater(() -> {
+            switch (isCallingABike) {
+                case CALL_ABIKE:
+                    // Open the call bike dialog (existing functionality)
+                    org.dialogs.user.CallBikeDialog dialog = new org.dialogs.user.CallBikeDialog(UserView.this, vertx, actualUser);
+                    dialog.setVisible(true);
+                    break;
+
+                case STOP_CALL_ABIKE:
+                    // Cancel the call
+                    JsonObject cancelDetails = new JsonObject().put("username", actualUser.username());
+                    vertx.eventBus().request("user.ride.cancelCall." + actualUser.username(), cancelDetails, ar -> {
+                        if (ar.succeeded()) {
+                            JOptionPane.showMessageDialog(this, "Call canceled");
+                            setCallingABike(CallABikeStatus.CALL_ABIKE);
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Error canceling call: " +
+                                (ar.cause() != null ? ar.cause().getMessage() : "Unknown error"));
+                        }
+                    });
+                    break;
+
+                case STOP_RIDE_ABIKE:
+                    // Stop the autonomous ride
+                    JsonObject stopRideDetails = new JsonObject().put("username", actualUser.username());
+                    vertx.eventBus().request("user.ride.stopARide." + actualUser.username(), stopRideDetails, ar -> {
+                        if (ar.succeeded()) {
+                            JOptionPane.showMessageDialog(this, "Autonomous ride stopped");
+                            setCallingABike(CallABikeStatus.CALL_ABIKE);
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Error stopping autonomous ride: " +
+                                (ar.cause() != null ? ar.cause().getMessage() : "Unknown error"));
+                        }
+                    });
+                    break;
+            }
+            refreshView();
+        });
+    }
+
     public void setRiding(boolean isRiding) {
         this.isRiding = isRiding;
         updateRideButtonState();
+    }
+
+    public void setCallingABike(CallABikeStatus status) {
+        this.isCallingABike = status;
+        updateCallABikeButtonState();
+    }
+
+    private void updateCallABikeButtonState() {
+        switch (isCallingABike) {
+            case CALL_ABIKE:
+                callABike.setText("Call ABike");
+                break;
+            case STOP_CALL_ABIKE:
+                callABike.setText("Cancel Call");
+                break;
+            case STOP_RIDE_ABIKE:
+                callABike.setText("Stop A-Ride");
+                break;
+        }
     }
 
     private void updateRideButtonState() {

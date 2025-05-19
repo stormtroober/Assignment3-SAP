@@ -149,6 +149,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   private void completeSimulation() {
     ABike bike = (ABike) ride.getBike();
     P2d loc = bike.getLocation();
+    bike.setState(ABikeState.IN_USE);
     log.info(
         "Completing simulation for ride {} at final location {}, battery={}",
         ride.getId(),

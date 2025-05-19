@@ -2,7 +2,9 @@
 
         import io.vertx.core.Vertx;
         import io.vertx.core.json.JsonObject;
+        import org.models.CallABikeStatus;
         import org.models.UserViewModel;
+        import org.views.UserView;
 
         import javax.swing.*;
         import java.awt.*;
@@ -61,9 +63,11 @@
                 vertx.eventBus().request("user.ride.callBike." + user.username(), callDetails, ar -> {
                     SwingUtilities.invokeLater(() -> {
                         if (ar.succeeded()) {
+                            ((UserView) parent).setCallingABike(CallABikeStatus.STOP_CALL_ABIKE);
                             JOptionPane.showMessageDialog(this, "Bike called successfully");
                             dispose();
                         } else {
+                            ((UserView) parent).setCallingABike(CallABikeStatus.CALL_ABIKE);
                             JOptionPane.showMessageDialog(this, "Error calling bike: " + ar.cause().getMessage());
                         }
                     });

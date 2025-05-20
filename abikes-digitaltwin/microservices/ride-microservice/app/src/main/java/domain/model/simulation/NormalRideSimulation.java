@@ -120,8 +120,10 @@ public class NormalRideSimulation implements RideSimulation, Service {
   public void stopSimulationManually() {
     System.out.println("Stopping simulation manually");
     ride.end();
-    if (ride.getBike().getState() == EBikeState.IN_USE) {
+    if (ride.getBike() instanceof EBike) {
       ride.getBike().setState(EBikeState.AVAILABLE);
+    } else if (ride.getBike() instanceof ABike) {
+      ride.getBike().setState(ABikeState.AVAILABLE);
     }
     stopped = true;
   }

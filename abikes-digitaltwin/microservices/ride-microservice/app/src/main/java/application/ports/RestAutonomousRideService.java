@@ -14,4 +14,12 @@ public interface RestAutonomousRideService {
    * @return a CompletableFuture that completes when the dispatch is started
    */
   CompletableFuture<Void> dispatchBikeToUser(String userId, String bikeId, P2d userLocation);
+
+  /**
+   * Stops an ongoing autonomous ride for the specified user.
+   *
+   * @param userId the user ID whose ride should be stopped
+   * @return a CompletableFuture that completes when the ride is stopped
+   */
+  CompletableFuture<Void> stopAutonomousRide(String userId);
 }

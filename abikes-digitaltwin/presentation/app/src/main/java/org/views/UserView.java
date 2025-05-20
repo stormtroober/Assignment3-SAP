@@ -31,6 +31,7 @@ public class UserView extends AbstractView {
         observeRideUpdate();
         observeStations();
         observeDispatches();
+        observeCallABikeStatus();
         refreshView();
     }
 
@@ -66,7 +67,7 @@ public class UserView extends AbstractView {
         SwingUtilities.invokeLater(() -> {
             switch (isCallingABike) {
                 case CALL_ABIKE:
-                    // Open the call bike dialog (existing functionality)
+                    // Open the call bike dialog
                     org.dialogs.user.CallBikeDialog dialog = new org.dialogs.user.CallBikeDialog(UserView.this, vertx, actualUser);
                     dialog.setVisible(true);
                     break;
@@ -225,6 +226,18 @@ public class UserView extends AbstractView {
     private void observeDispatches(){
         observeDispatchesToList(vertx);
         refreshView();
+    }
+
+    private void observeCallABikeStatus() {
+        vertx.eventBus().consumer("user.bike.statusUpdate." + actualUser.username(), message -> {
+            JsonObject update = (JsonObject) message.body();
+            String status = update.getString("callABikeStatus");
+            if (status != null) {
+                SwingUtilities.invokeLater(() -> {
+                    setCallingABike(CallABikeStatus.valueOf(status));
+                });
+            }
+        });
     }
 
     public void observeUser(){

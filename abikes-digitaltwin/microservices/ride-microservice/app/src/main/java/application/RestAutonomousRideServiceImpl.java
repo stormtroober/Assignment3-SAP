@@ -95,7 +95,6 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                 (completedSim, nextSim) -> {
                                     // This runs when the autonomous simulation completes
                                     userCommunicationAdapter.removeDispatch(user, bike.getId(), userLocation);
-                                    bike.setState(ABikeState.IN_USE);
                                 })
                         .addStage(
                                 normalSim,
@@ -132,6 +131,31 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                 return CompletableFuture.completedFuture(null);
             });
   }
+
+    @Override
+    public CompletableFuture<Void> stopAutonomousRide(String userId) {
+        return CompletableFuture.supplyAsync(() -> rideRepository.getRideSimulationByUserId(userId))
+                .thenCompose(
+                        rideSimulation -> {
+                            if (rideSimulation != null) {
+                                logger.info("Stopping autonomous ride for user: {}", userId);
+                                rideSimulation.stopSimulationManually();
+
+                                Ride ride = rideSimulation.getRide();
+                                bikeCommunicationAdapter.sendUpdateABike(
+                                        new JsonObject()
+                                                .put("id", ride.getBike().getId())
+                                                .put("state", ride.getBike().getState().toString()));
+                                mapCommunicationAdapter.notifyEndRide(
+                                        rideSimulation.getRide().getBike().getId(), BikeType.AUTONOMOUS, userId);
+                                rideRepository.removeRide(ride);
+
+                            } else {
+                                logger.warn("No active ride found for user: {}", userId);
+                            }
+                            return CompletableFuture.completedFuture(null);
+                        });
+    }
 
   private CompletableFuture<User> checkUser(String userId) {
     System.out.println("Checking user: " + userId);

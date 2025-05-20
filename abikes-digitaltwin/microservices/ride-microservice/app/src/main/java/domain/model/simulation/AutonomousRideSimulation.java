@@ -25,6 +25,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   private static final int BATTERY_DECREASE = 1;
   private static final int CREDIT_DECREASE = 1;
   private static final double ARRIVAL_THRESHOLD = 1.5; // distance to consider arrived
+  private volatile boolean manuallyStoppedFlag = false;
 
   public AutonomousRideSimulation(
       Ride ride, Vertx vertx, EventPublisher publisher, P2d destination) {
@@ -52,17 +53,20 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
     }
 
     vertx.setPeriodic(
-        100,
-        timerId -> {
-          log.debug("Timer tick for ride {}: stopped={}", ride.getId(), stopped);
-          if (stopped) {
-            vertx.cancelTimer(timerId);
-            completeSimulation();
-            future.complete(null);
-          } else {
-            updateMovement();
-          }
-        });
+            100,
+            timerId -> {
+              log.debug("Timer tick for ride {}: stopped={}", ride.getId(), stopped);
+              if (stopped) {
+                vertx.cancelTimer(timerId);
+                // Only call completeSimulation if not manually stopped
+                if (!manuallyStoppedFlag) {
+                  completeSimulation();
+                }
+                future.complete(null);
+              } else {
+                updateMovement();
+              }
+            });
 
     return future;
   }
@@ -170,9 +174,19 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   public void stopSimulationManually() {
     log.info("Manually stopping simulation for ride {}", ride.getId());
     ride.end();
-    if (ride.getBike().getState() == ABikeState.IN_USE) {
+    if (ride.getBike().getState() == ABikeState.MOVING_TO_USER) {
       ((ABike) ride.getBike()).setState(ABikeState.AVAILABLE);
     }
+    // Set the manually stopped flag
+    manuallyStoppedFlag = true;
+
+    // Publish updates directly when manually stopped
+    ABike bike = (ABike) ride.getBike();
+    P2d loc = bike.getLocation();
+    publisher.publishABikeUpdate(
+            bike.getId(), loc.x(), loc.y(), bike.getState().toString(), bike.getBatteryLevel());
+    publisher.publishUserUpdate(ride.getUser().getId(), ride.getUser().getCredit());
+
     stopSimulation();
   }
 

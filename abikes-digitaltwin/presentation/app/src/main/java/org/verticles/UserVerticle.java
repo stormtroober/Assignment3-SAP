@@ -7,6 +7,7 @@ import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.core.json.JsonObject;
+import org.models.CallABikeStatus;
 
 public class UserVerticle extends AbstractVerticle {
 
@@ -80,15 +81,6 @@ public class UserVerticle extends AbstractVerticle {
         }
     }
 
-    //{
-    //
-    //  "userId" : "ale",
-    //
-    //  "positionX" : 1.0,
-    //
-    //  "positionY" : 50.0
-    //
-    //}
     private void handleBikeDispatch(String message) {
         JsonObject dispatch = new JsonObject(message);
         // publish on the user’s address so their view sees it
@@ -96,6 +88,15 @@ public class UserVerticle extends AbstractVerticle {
                 "user.bike.dispatch." + username,
                 dispatch
         );
+
+        // Check if this is an "arrived" status and update the CallABikeStatus
+        if (dispatch.getString("status", "").equals("arrived")) {
+            // Publish a specific message to update the CallABikeStatus
+            vertx.eventBus().publish(
+                    "user.bike.statusUpdate." + username,
+                    new JsonObject().put("callABikeStatus", "STOP_RIDE_ABIKE")
+            );
+        }
     }
 
     //{"username":"ale","type":"USER","credit":38398}
@@ -166,6 +167,48 @@ public class UserVerticle extends AbstractVerticle {
                                     ? ar.result().bodyAsString()
                                     : (ar.cause() != null ? ar.cause().getMessage() : "Unknown error");
                             message.fail(500, "Failed to call bike: " + errorMsg);
+                        }
+                    });
+        });
+
+        vertx.eventBus().consumer("user.ride.cancelCall." + username, message -> {
+            JsonObject cancelDetails = (JsonObject) message.body();
+            webClient.post(PORT, ADDRESS, "/RIDE-MICROSERVICE/stopRideToUser")
+                    .sendJsonObject(cancelDetails, ar -> {
+                        if (ar.succeeded() && ar.result().statusCode() == 200) {
+                            message.reply(ar.result().bodyAsString());
+
+                            // Publish a status update to reset the UI state
+                            vertx.eventBus().publish(
+                                    "user.bike.statusUpdate." + username,
+                                    new JsonObject().put("callABikeStatus", CallABikeStatus.CALL_ABIKE)
+                            );
+                        } else {
+                            String errorMsg = ar.succeeded() && ar.result() != null
+                                    ? ar.result().bodyAsString()
+                                    : (ar.cause() != null ? ar.cause().getMessage() : "Unknown error");
+                            message.fail(500, "Failed to cancel bike call: " + errorMsg);
+                        }
+                    });
+        });
+
+        vertx.eventBus().consumer("user.ride.stopARide." + username, message -> {
+            JsonObject cancelDetails = (JsonObject) message.body();
+            webClient.post(PORT, ADDRESS, "/RIDE-MICROSERVICE/stopRideToUser")
+                    .sendJsonObject(cancelDetails, ar -> {
+                        if (ar.succeeded() && ar.result().statusCode() == 200) {
+                            message.reply(ar.result().bodyAsString());
+
+                            // Publish a status update to reset the UI state
+                            vertx.eventBus().publish(
+                                    "user.bike.statusUpdate." + username,
+                                    new JsonObject().put("callABikeStatus", CallABikeStatus.CALL_ABIKE)
+                            );
+                        } else {
+                            String errorMsg = ar.succeeded() && ar.result() != null
+                                    ? ar.result().bodyAsString()
+                                    : (ar.cause() != null ? ar.cause().getMessage() : "Unknown error");
+                            message.fail(500, "Failed to cancel bike call: " + errorMsg);
                         }
                     });
         });

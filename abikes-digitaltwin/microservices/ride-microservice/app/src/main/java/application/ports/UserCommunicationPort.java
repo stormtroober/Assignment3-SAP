@@ -17,12 +17,12 @@ public interface UserCommunicationPort {
   /**
    * Sends a dispatch request for ride.
    *
-   * @param user a JsonObject representing the user.
+   * @param  a JsonObject representing the user.
    */
-  void addDispatch(User user, String bikeId, P2d position);
+  void addDispatch(String userId, String bikeId, P2d position);
 
   // Add this to UserCommunicationPort.java
-  void removeDispatch(User user, String bikeId, P2d position);
+  void removeDispatch(String userId, String bikeId, P2d position);
 
 
   /** Initializes the communication port. */

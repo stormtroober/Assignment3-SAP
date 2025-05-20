@@ -4,6 +4,7 @@ import application.ports.EventPublisher;
 import application.ports.UserCommunicationPort;
 import domain.model.P2d;
 import domain.model.User;
+import domain.model.repository.UserRepository;
 import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.Vertx;
@@ -17,9 +18,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 public class UserCommunicationAdapter implements UserCommunicationPort {
   private final Vertx vertx;
   private Producer<String, String> producer;
+    private final UserRepository userRepository;
 
-  public UserCommunicationAdapter(Vertx vertx) {
+  public UserCommunicationAdapter(Vertx vertx, UserRepository userRepository) {
     this.vertx = vertx;
+    this.userRepository = userRepository;
   }
 
   public void init() {
@@ -53,13 +56,23 @@ public class UserCommunicationAdapter implements UserCommunicationPort {
   }
 
     @Override
-    public void addDispatch(User user, String bikeId, P2d userPosition) {
-        sendDispatchMessage(user, bikeId, userPosition, "dispatch");
+    public void addDispatch(String userId, String bikeId, P2d userPosition) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            sendDispatchMessage(user, bikeId, userPosition, "dispatch");
+        } else {
+            System.err.println("User not found for dispatch: " + userId);
+        }
     }
 
     @Override
-    public void removeDispatch(User user, String bikeId, P2d userPosition) {
-        sendDispatchMessage(user, bikeId, userPosition, "arrived");
+    public void removeDispatch(String userId, String bikeId, P2d userPosition) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            sendDispatchMessage(user, bikeId, userPosition, "arrived");
+        } else {
+            System.err.println("User not found for removing dispatch: " + userId);
+        }
     }
 
     private void sendDispatchMessage(User user, String bikeId, P2d userPosition, String status) {

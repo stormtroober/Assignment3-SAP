@@ -23,16 +23,19 @@ public class Main {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
 
               MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
-              UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
               BikeCommunicationPort bikeCommunicationAdapter = new BikeCommunicationAdapter(vertx);
 
               bikeCommunicationAdapter.init();
               mapCommunicationAdapter.init();
-              userCommunicationAdapter.init();
 
               UserRepository userRepository = new InMemoryUserRepository();
               ABikeRepository abikeRepository = new InMemoryABikeRepository();
               EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
+              DispatchRepository dispatchRepository = new InMemoryDispatchRepository();
+
+                UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx, userRepository);
+
+                userCommunicationAdapter.init();
 
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
 
@@ -53,7 +56,8 @@ public class Main {
                       mapCommunicationAdapter,
                       userCommunicationAdapter,
                       abikeRepository,
-                      userRepository);
+                      userRepository,
+                          dispatchRepository);
 
               RideServiceVerticle rideServiceVerticle =
                   new RideServiceVerticle(service, autonomousRideService, vertx);

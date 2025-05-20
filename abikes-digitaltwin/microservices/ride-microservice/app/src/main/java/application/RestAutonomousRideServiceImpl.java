@@ -28,6 +28,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
   private final UserCommunicationPort userCommunicationAdapter;
   private final ABikeRepository abikeRepository;
   private final UserRepository userRepository;
+    private final DispatchRepository dispatchRepository;
   private final Vertx vertx;
 
   public RestAutonomousRideServiceImpl(
@@ -37,7 +38,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
       MapCommunicationPort mapCommunicationAdapter,
       UserCommunicationPort userCommunicationAdapter,
       ABikeRepository abikeRepository,
-      UserRepository userRepository) {
+      UserRepository userRepository,
+      DispatchRepository dispatchRepository) {
     this.vertx = vertx;
     this.eventPublisher = publisher;
     this.rideRepository = new RideRepositoryImpl(vertx, publisher);
@@ -46,6 +48,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
     this.userCommunicationAdapter = userCommunicationAdapter;
     this.abikeRepository = abikeRepository;
     this.userRepository = userRepository;
+    this.dispatchRepository = dispatchRepository;
   }
 
   @Override
@@ -72,8 +75,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                 return CompletableFuture.failedFuture(new RuntimeException("ABike has no battery"));
               }
 
-              // To have the dot of user in the map
-              userCommunicationAdapter.addDispatch(user, bike.getId(), userLocation);
+              dispatchRepository.saveDispatchPosition(userId, bikeId, userLocation);
+              userCommunicationAdapter.addDispatch(user.getId(), bike.getId(), userLocation);
 
                 // Create the base ride
                 String rideId = "ride-" + userId + "-" + bikeId + "-combined";
@@ -94,7 +97,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                 autonomousSim,
                                 (completedSim, nextSim) -> {
                                     // This runs when the autonomous simulation completes
-                                    userCommunicationAdapter.removeDispatch(user, bike.getId(), userLocation);
+                                    userCommunicationAdapter.removeDispatch(user.getId(), bike.getId(), userLocation);
                                 })
                         .addStage(
                                 normalSim,
@@ -147,7 +150,14 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                                 .put("id", ride.getBike().getId())
                                                 .put("state", ride.getBike().getState().toString()));
                                 mapCommunicationAdapter.notifyEndRide(
-                                        rideSimulation.getRide().getBike().getId(), BikeType.AUTONOMOUS, userId);
+                                        ride.getBike().getId(), BikeType.AUTONOMOUS, userId);
+                                P2d position = dispatchRepository.getDispatchPosition(userId, ride.getBike().getId());
+                                if (position != null) {
+                                    //TODO: is very ugly to do 2 all the time, should be integrated in the adapter
+                                    //It works, but think at another way to make it work
+                                    userCommunicationAdapter.removeDispatch(userId, ride.getBike().getId(), position);
+                                    dispatchRepository.removeDispatchPosition(userId, ride.getBike().getId());
+                                }
                                 rideRepository.removeRide(ride);
 
                             } else {

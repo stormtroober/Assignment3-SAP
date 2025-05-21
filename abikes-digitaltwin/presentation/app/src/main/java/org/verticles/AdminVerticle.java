@@ -90,7 +90,7 @@ public class AdminVerticle extends AbstractVerticle {
                     });
         });
 
-        vertx.eventBus().consumer("admin.bike.recharge", message -> {
+        vertx.eventBus().consumer("admin.ebike.recharge", message -> {
             JsonObject rechargeDetails = (JsonObject) message.body();
             String bikeId = rechargeDetails.getString("bikeId");
             webClient.put(PORT, ADDRESS, "/EBIKE-MICROSERVICE/api/ebikes/" + bikeId + "/recharge")
@@ -102,6 +102,20 @@ public class AdminVerticle extends AbstractVerticle {
                             (ar.cause() != null ? ar.cause().getMessage() : "Unknown error"));
                     }
                 });
+        });
+
+        vertx.eventBus().consumer("admin.abike.recharge", message -> {
+            JsonObject rechargeDetails = (JsonObject) message.body();
+            String bikeId = rechargeDetails.getString("bikeId");
+            webClient.put(PORT, ADDRESS, "/ABIKE-MICROSERVICE/api/abikes/" + bikeId + "/recharge")
+                    .sendJsonObject(rechargeDetails, ar -> {
+                        if (ar.succeeded() && ar.result().statusCode() == 200) {
+                            message.reply(ar.result().bodyAsJsonObject());
+                        } else {
+                            message.fail(500, "Failed to recharge bike: " +
+                                    (ar.cause() != null ? ar.cause().getMessage() : "Unknown error"));
+                        }
+                    });
         });
     }
 

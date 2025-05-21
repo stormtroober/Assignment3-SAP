@@ -5,7 +5,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.dialogs.admin.AddABikeDialog;
 import org.dialogs.admin.AddEBikeDialog;
-import org.dialogs.admin.RechargeBikeDialog;
+import org.dialogs.admin.RechargeABikeDialog;
+import org.dialogs.admin.RechargeEBikeDialog;
 import org.models.*;
 import org.verticles.AdminVerticle;
 
@@ -42,20 +43,26 @@ public class AdminView extends AbstractView {
         });
         topPanel.add(addABikeButton);
 
-        JButton addBikeButton = new JButton("Add Bike");
+        JButton addBikeButton = new JButton("Add E-Bike");
         addBikeButton.addActionListener(e -> {
             AddEBikeDialog addEBikeDialog = new AddEBikeDialog(AdminView.this, vertx);
             addEBikeDialog.setVisible(true);
         });
         topPanel.add(addBikeButton);
 
-        JButton rechargeBikeButton = new JButton("Recharge Bike");
+        JButton rechargeBikeButton = new JButton("Recharge E-Bike");
         rechargeBikeButton.addActionListener(e -> {
-            RechargeBikeDialog rechargeBikeDialog = new RechargeBikeDialog(AdminView.this, vertx);
-            rechargeBikeDialog.setVisible(true);
+            RechargeEBikeDialog rechargeEBikeDialog = new RechargeEBikeDialog(AdminView.this, vertx);
+            rechargeEBikeDialog.setVisible(true);
         });
         topPanel.add(rechargeBikeButton);
 
+        JButton rechargeABikeButton = new JButton("Recharge A-Bike");
+        rechargeABikeButton.addActionListener(e -> {
+            RechargeABikeDialog rechargeABikeDialog = new RechargeABikeDialog(AdminView.this, vertx);
+            rechargeABikeDialog.setVisible(true);
+        });
+        topPanel.add(rechargeABikeButton);
     }
 
     private void observeAllBikes() {

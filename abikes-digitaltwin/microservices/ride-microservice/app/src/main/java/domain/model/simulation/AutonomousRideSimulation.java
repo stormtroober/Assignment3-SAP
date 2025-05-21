@@ -24,7 +24,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   private static final double SPEED = 2.5; // units per tick
   private static final int BATTERY_DECREASE = 1;
   private static final int CREDIT_DECREASE = 1;
-  private static final double ARRIVAL_THRESHOLD = 1.5; // distance to consider arrived
+  private static final double ARRIVAL_THRESHOLD = 0.5; // distance to consider arrived
   private volatile boolean manuallyStoppedFlag = false;
 
   public AutonomousRideSimulation(
@@ -82,11 +82,11 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
       double distance = Math.hypot(dx, dy);
 
       log.debug(
-          "Ride {} movement update: current={}, destination={}, distance={}",
-          ride.getId(),
-          current,
-          destination,
-          distance);
+              "Ride {} movement update: current={}, destination={}, distance={}",
+              ride.getId(),
+              current,
+              destination,
+              distance);
 
       // check arrival
       if (distance <= ARRIVAL_THRESHOLD) {
@@ -97,18 +97,25 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
         return;
       }
 
-      // compute normalized direction with slight randomness
+      // compute normalized direction with reduced randomness when approaching destination
       double nx = dx / distance;
       double ny = dy / distance;
       V2d dir = new V2d(nx, ny);
-      double randomAngleDeg = (Math.random() - 0.5) * 10; // ±5° variation
+
+      // Reduce randomness as we approach destination
+      double proximityFactor = Math.min(1.0, distance / 10.0);
+      double randomAngleDeg = (Math.random() - 0.5) * 10 * proximityFactor;
       dir = dir.rotate(randomAngleDeg);
 
-      // move bike
-      V2d movement = dir.mul(SPEED);
+      // Adjust speed when close to destination to avoid overshooting
+      double moveDistance = Math.min(SPEED, distance * 0.8);
+
+      // move bike with adjusted speed
+      V2d movement = dir.mul(moveDistance);
       P2d newPos = current.sum(movement);
       bike.setLocation(newPos);
 
+      // Rest of the method remains unchanged
       bike.decreaseBattery(BATTERY_DECREASE);
 
       if (bike.getBatteryLevel() <= 0) {

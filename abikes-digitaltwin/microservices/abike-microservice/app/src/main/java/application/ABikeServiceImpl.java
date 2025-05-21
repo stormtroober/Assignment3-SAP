@@ -19,7 +19,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
   private final CommunicationPort bikeCommunicationAdapter;
   private final StationServiceAPI stationService;
   private final Random random = new Random();
-  public static final Integer MAX_BATTERY = 100;
+  public static final Integer MAX_BATTERY = 150;
   private static final Logger logger = LoggerFactory.getLogger(ABikeServiceImpl.class);
 
   public ABikeServiceImpl(
@@ -96,7 +96,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
             optionalABike -> {
               if (optionalABike.isPresent()) {
                 JsonObject abike = optionalABike.get();
-                abike.put("batteryLevel", 100).put("state", "AVAILABLE");
+                abike.put("batteryLevel", MAX_BATTERY).put("state", ABikeState.AVAILABLE);
                 bikeCommunicationAdapter.sendUpdate(abike);
                 return repository.update(abike).thenApply(v -> abike);
               }

@@ -7,13 +7,13 @@ import org.dialogs.AbstractDialog;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class RechargeBikeDialog extends AbstractDialog {
+public class RechargeEBikeDialog extends AbstractDialog {
 
     private JTextField idField;
     private final Vertx vertx;
 
-    public RechargeBikeDialog(JFrame parent, Vertx vertx) {
-        super(parent, "Recharge Bike");
+    public RechargeEBikeDialog(JFrame parent, Vertx vertx) {
+        super(parent, "Recharge E-Bike");
         this.vertx = vertx;
         setupDialog();
     }
@@ -32,7 +32,7 @@ public class RechargeBikeDialog extends AbstractDialog {
             JsonObject rechargeDetails = new JsonObject()
                     .put("bikeId", id);
 
-            vertx.eventBus().request("admin.bike.recharge", rechargeDetails, reply -> {
+            vertx.eventBus().request("admin.ebike.recharge", rechargeDetails, reply -> {
                 if (reply.succeeded()) {
                     JOptionPane.showMessageDialog(this, "E-Bike recharged successfully");
                 } else {

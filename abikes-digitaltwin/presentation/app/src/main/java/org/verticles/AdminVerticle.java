@@ -46,7 +46,7 @@ public class AdminVerticle extends AbstractVerticle {
             .onSuccess(ws -> {
                 bikeWebSocket = ws;
                 ws.textMessageHandler(message -> {
-                    System.out.println("bike Admin UPD: " + message);
+                    //System.out.println("bike Admin UPD: " + message);
                     vertx.eventBus().publish("admin.bike.update", new JsonArray(message));
                 });
             });

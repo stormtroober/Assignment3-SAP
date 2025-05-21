@@ -157,8 +157,6 @@ public class RideServiceVerticle extends AbstractVerticle {
                         // metricsManager.recordError(timer, "rideToUser", ex);
                         return null;
                       });
-              // autonomousRideService.dispatchBikeToUser
-
             });
 
       router

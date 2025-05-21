@@ -171,7 +171,7 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
                 eBikeRepository
                     .getAvailableBikes()
                     .thenAccept(eventPublisher::publishUserAvailableEBikesUpdate);
-                eventPublisher.publishStopRide(username);
+                eventPublisher.publishStopRide(username, bikeType);
               });
     } else if (bikeType == BikeType.AUTONOMOUS) {
       return aBikeRepository
@@ -182,7 +182,7 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
                 aBikeRepository
                     .getAvailableBikes()
                     .thenAccept(eventPublisher::publishUserAvailableABikesUpdate);
-                eventPublisher.publishStopRide(username);
+                eventPublisher.publishStopRide(username, bikeType);
               });
     } else {
       return CompletableFuture.failedFuture(

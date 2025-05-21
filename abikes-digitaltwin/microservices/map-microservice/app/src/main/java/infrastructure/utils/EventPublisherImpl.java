@@ -2,6 +2,7 @@ package infrastructure.utils;
 
 import application.ports.EventPublisher;
 import domain.model.ABike;
+import domain.model.BikeType;
 import domain.model.EBike;
 import domain.model.Station;
 import io.vertx.core.Vertx;
@@ -59,9 +60,14 @@ public class EventPublisherImpl implements EventPublisher {
   }
 
   @Override
-  public void publishStopRide(String username) {
+  public void publishStopRide(String username, BikeType bikeType) {
     JsonObject json = new JsonObject();
-    json.put("rideStatus", "stopped");
+    if(bikeType == BikeType.NORMAL){
+      json.put("rideStatus", "stopped");
+    }
+    else if(bikeType == BikeType.AUTONOMOUS){
+        json.put("autonomousRideStatus", "stopped");
+    }
     vertx.eventBus().publish("ride.stop." + username, json.encode());
   }
 

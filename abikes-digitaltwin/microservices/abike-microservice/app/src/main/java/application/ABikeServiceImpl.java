@@ -19,7 +19,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
   private final CommunicationPort bikeCommunicationAdapter;
   private final StationServiceAPI stationService;
   private final Random random = new Random();
-  public static final Integer MAX_BATTERY = 300;
+  public static final Integer MAX_BATTERY = 100;
   private static final Logger logger = LoggerFactory.getLogger(ABikeServiceImpl.class);
 
   public ABikeServiceImpl(

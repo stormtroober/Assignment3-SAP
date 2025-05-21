@@ -1,6 +1,7 @@
 package application.ports;
 
 import domain.model.ABike;
+import domain.model.BikeType;
 import domain.model.EBike;
 import domain.model.Station;
 import java.util.List;
@@ -45,8 +46,10 @@ public interface EventPublisher {
    * Publishes an event to notify a user that his ride has been forced to stop.
    *
    * @param username the username of the user whose ride is to be stopped.
+   * @param bikeType
    */
-  void publishStopRide(String username);
+  void publishStopRide(String username, BikeType bikeType);
+
 
   /**
    * Publishes an update for a list of stations.

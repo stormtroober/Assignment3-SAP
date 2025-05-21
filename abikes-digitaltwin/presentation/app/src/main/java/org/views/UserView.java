@@ -78,7 +78,7 @@ public class UserView extends AbstractView {
                     vertx.eventBus().request("user.ride.cancelCall." + actualUser.username(), cancelDetails, ar -> {
                         if (ar.succeeded()) {
                             JOptionPane.showMessageDialog(this, "Call canceled");
-                            setCallingABike(CallABikeStatus.CALL_ABIKE);
+                            //setCallingABike(CallABikeStatus.CALL_ABIKE);
                         } else {
                             JOptionPane.showMessageDialog(this, "Error canceling call: " +
                                 (ar.cause() != null ? ar.cause().getMessage() : "Unknown error"));
@@ -92,7 +92,7 @@ public class UserView extends AbstractView {
                     vertx.eventBus().request("user.ride.stopARide." + actualUser.username(), stopRideDetails, ar -> {
                         if (ar.succeeded()) {
                             JOptionPane.showMessageDialog(this, "Autonomous ride stopped");
-                            setCallingABike(CallABikeStatus.CALL_ABIKE);
+                            //setCallingABike(CallABikeStatus.CALL_ABIKE);
                         } else {
                             JOptionPane.showMessageDialog(this, "Error stopping autonomous ride: " +
                                 (ar.cause() != null ? ar.cause().getMessage() : "Unknown error"));
@@ -159,11 +159,19 @@ public class UserView extends AbstractView {
 
     private void observeRideUpdate() {
         vertx.eventBus().consumer("user.ride.update." + actualUser.username(), message -> {
+            System.out.println("Ride update: " + message.body());
             JsonObject update = (JsonObject) message.body();
             if (update.containsKey("rideStatus")) {
                 String status = update.getString("rideStatus");
                 if(status.equals("stopped")){
                     setRiding(false);
+                }
+                refreshView();
+            }
+            if(update.containsKey("autonomousRideStatus")){
+                String status = update.getString("autonomousRideStatus");
+                if(status.equals("stopped")){
+                    setCallingABike(CallABikeStatus.CALL_ABIKE);
                 }
                 refreshView();
             }

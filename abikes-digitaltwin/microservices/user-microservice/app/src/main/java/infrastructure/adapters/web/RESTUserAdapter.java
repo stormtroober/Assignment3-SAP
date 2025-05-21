@@ -194,9 +194,7 @@ public class RESTUserAdapter {
                         .eventBus()
                         .consumer(
                             username,
-                            message -> {
-                              webSocket.writeTextMessage(message.body().toString());
-                            });
+                            message -> webSocket.writeTextMessage(message.body().toString()));
 
                 webSocket.closeHandler(v -> consumer.unregister());
                 webSocket.exceptionHandler(err -> consumer.unregister());

@@ -6,6 +6,7 @@ import domain.model.P2d;
 import domain.model.User;
 import domain.model.repository.UserRepository;
 import infrastructure.adapter.kafkatopic.Topics;
+import infrastructure.repository.DispatchRepository;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -19,10 +20,12 @@ public class UserCommunicationAdapter implements UserCommunicationPort {
   private final Vertx vertx;
   private Producer<String, String> producer;
     private final UserRepository userRepository;
+    private final DispatchRepository dispatchRepository;
 
-  public UserCommunicationAdapter(Vertx vertx, UserRepository userRepository) {
+  public UserCommunicationAdapter(Vertx vertx, UserRepository userRepository, DispatchRepository dispatchRepository) {
     this.vertx = vertx;
     this.userRepository = userRepository;
+    this.dispatchRepository = dispatchRepository;
   }
 
   public void init() {
@@ -59,6 +62,7 @@ public class UserCommunicationAdapter implements UserCommunicationPort {
     public void addDispatch(String userId, String bikeId, P2d userPosition) {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
+            dispatchRepository.saveDispatchPosition(userId, bikeId, userPosition); // Save dispatch
             sendDispatchMessage(user, bikeId, userPosition, "dispatch");
         } else {
             System.err.println("User not found for dispatch: " + userId);
@@ -66,10 +70,19 @@ public class UserCommunicationAdapter implements UserCommunicationPort {
     }
 
     @Override
-    public void removeDispatch(String userId, String bikeId, P2d userPosition) {
+    public void removeDispatch(String userId, String bikeId, boolean arrived) {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
-            sendDispatchMessage(user, bikeId, userPosition, "arrived");
+            P2d userPosition = dispatchRepository.getDispatchPosition(userId, bikeId);
+            dispatchRepository.removeDispatchPosition(userId, bikeId);
+            if (userPosition != null) {
+                if(arrived){
+                    sendDispatchMessage(user, bikeId, userPosition, "arrived");
+                }
+                else {
+                    sendDispatchMessage(user, bikeId, userPosition, "notArrived");
+                }
+            }
         } else {
             System.err.println("User not found for removing dispatch: " + userId);
         }

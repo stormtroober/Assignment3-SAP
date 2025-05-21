@@ -1,4 +1,4 @@
-package domain.model.repository;
+package infrastructure.repository;
 
 import domain.model.P2d;
 

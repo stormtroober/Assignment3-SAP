@@ -232,10 +232,9 @@ public class UserView extends AbstractView {
         vertx.eventBus().consumer("user.bike.statusUpdate." + actualUser.username(), message -> {
             JsonObject update = (JsonObject) message.body();
             String status = update.getString("callABikeStatus");
+            System.out.println("CallABikeStatus: " + status);
             if (status != null) {
-                SwingUtilities.invokeLater(() -> {
-                    setCallingABike(CallABikeStatus.valueOf(status));
-                });
+                SwingUtilities.invokeLater(() -> setCallingABike(CallABikeStatus.valueOf(status)));
             }
         });
     }

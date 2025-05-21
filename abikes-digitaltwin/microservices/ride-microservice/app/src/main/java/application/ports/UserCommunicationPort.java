@@ -1,7 +1,6 @@
 package application.ports;
 
 import domain.model.P2d;
-import domain.model.User;
 import io.vertx.core.json.JsonObject;
 
 /** Port for communicating with the user microservice adapter. */
@@ -22,7 +21,7 @@ public interface UserCommunicationPort {
   void addDispatch(String userId, String bikeId, P2d position);
 
   // Add this to UserCommunicationPort.java
-  void removeDispatch(String userId, String bikeId, P2d position);
+  void removeDispatch(String userId, String bikeId, boolean arrived);
 
 
   /** Initializes the communication port. */

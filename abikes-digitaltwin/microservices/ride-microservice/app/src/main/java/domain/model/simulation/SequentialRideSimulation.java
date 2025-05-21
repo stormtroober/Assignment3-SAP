@@ -252,6 +252,13 @@ public class SequentialRideSimulation implements RideSimulation, Service {
         }
     }
 
+    public RideSimulation getCurrentSimulation() {
+        if (currentStageIndex >= 0 && currentStageIndex < stages.size()) {
+            return stages.get(currentStageIndex).getSimulation();
+        }
+        return null;
+    }
+
     @Override
     public String getId() {
         return id;

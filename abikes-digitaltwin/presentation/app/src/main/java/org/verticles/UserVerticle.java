@@ -94,7 +94,14 @@ public class UserVerticle extends AbstractVerticle {
             // Publish a specific message to update the CallABikeStatus
             vertx.eventBus().publish(
                     "user.bike.statusUpdate." + username,
-                    new JsonObject().put("callABikeStatus", "STOP_RIDE_ABIKE")
+                    new JsonObject().put("callABikeStatus", CallABikeStatus.STOP_RIDE_ABIKE)
+            );
+        }
+        if (dispatch.getString("status", "").equals("notArrived")) {
+            // Publish a specific message to update the CallABikeStatus
+            vertx.eventBus().publish(
+                    "user.bike.statusUpdate." + username,
+                    new JsonObject().put("callABikeStatus", CallABikeStatus.CALL_ABIKE)
             );
         }
     }

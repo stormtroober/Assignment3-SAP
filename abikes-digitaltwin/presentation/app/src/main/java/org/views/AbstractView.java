@@ -107,6 +107,10 @@ public abstract class AbstractView extends JFrame {
                         String bikeId = json.getString("bikeId");
                         pendingDispatches.removeIf(d -> d.getBikeId().equals(bikeId));
                     }
+                    else if(json.getString("status").equals("notArrived")){
+                        String bikeId = json.getString("bikeId");
+                        pendingDispatches.removeIf(d -> d.getBikeId().equals(bikeId));
+                    }
                     else{
                         System.out.println("[AbstractView] Invalid dispatch data: " + message.body());
                     }

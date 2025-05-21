@@ -9,7 +9,9 @@ import domain.model.bike.BikeType;
 import domain.model.repository.*;
 import domain.model.simulation.AutonomousRideSimulation;
 import domain.model.simulation.NormalRideSimulation;
+import domain.model.simulation.RideSimulation;
 import domain.model.simulation.SequentialRideSimulation;
+import infrastructure.repository.DispatchRepository;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
@@ -75,7 +77,6 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                 return CompletableFuture.failedFuture(new RuntimeException("ABike has no battery"));
               }
 
-              dispatchRepository.saveDispatchPosition(userId, bikeId, userLocation);
               userCommunicationAdapter.addDispatch(user.getId(), bike.getId(), userLocation);
 
                 // Create the base ride
@@ -97,7 +98,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                 autonomousSim,
                                 (completedSim, nextSim) -> {
                                     // This runs when the autonomous simulation completes
-                                    userCommunicationAdapter.removeDispatch(user.getId(), bike.getId(), userLocation);
+                                    userCommunicationAdapter.removeDispatch(user.getId(), bike.getId(), true);
                                 })
                         .addStage(
                                 normalSim,
@@ -142,22 +143,27 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                         rideSimulation -> {
                             if (rideSimulation != null) {
                                 logger.info("Stopping autonomous ride for user: {}", userId);
-                                rideSimulation.stopSimulationManually();
 
                                 Ride ride = rideSimulation.getRide();
+
+                                if (rideSimulation instanceof SequentialRideSimulation sequentialSim) {
+                                    RideSimulation currentSim = sequentialSim.getCurrentSimulation();
+                                    if (currentSim instanceof AutonomousRideSimulation) {
+                                        userCommunicationAdapter.removeDispatch(userId, ride.getBike().getId(), false);
+                                    } else if (currentSim instanceof NormalRideSimulation) {
+                                        userCommunicationAdapter.removeDispatch(userId, ride.getBike().getId(), true);
+                                    }
+                                }
+
+                                rideSimulation.stopSimulationManually();
+
                                 bikeCommunicationAdapter.sendUpdateABike(
                                         new JsonObject()
                                                 .put("id", ride.getBike().getId())
                                                 .put("state", ride.getBike().getState().toString()));
                                 mapCommunicationAdapter.notifyEndRide(
                                         ride.getBike().getId(), BikeType.AUTONOMOUS, userId);
-                                P2d position = dispatchRepository.getDispatchPosition(userId, ride.getBike().getId());
-                                if (position != null) {
-                                    //TODO: is very ugly to do 2 all the time, should be integrated in the adapter
-                                    //It works, but think at another way to make it work
-                                    userCommunicationAdapter.removeDispatch(userId, ride.getBike().getId(), position);
-                                    dispatchRepository.removeDispatchPosition(userId, ride.getBike().getId());
-                                }
+
                                 rideRepository.removeRide(ride);
 
                             } else {

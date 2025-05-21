@@ -21,7 +21,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   private final P2d destination;
   private volatile boolean stopped = false;
   private CompletableFuture<Void> future;
-  private static final double SPEED = 1.0; // units per tick
+  private static final double SPEED = 2.5; // units per tick
   private static final int BATTERY_DECREASE = 1;
   private static final int CREDIT_DECREASE = 1;
   private static final double ARRIVAL_THRESHOLD = 1.5; // distance to consider arrived

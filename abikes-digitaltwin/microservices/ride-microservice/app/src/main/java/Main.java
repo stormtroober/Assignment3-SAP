@@ -9,6 +9,8 @@ import infrastructure.adapter.user.UserCommunicationAdapter;
 import infrastructure.adapter.user.UserConsumerAdapter;
 import infrastructure.adapter.web.RideServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
+import infrastructure.repository.DispatchRepository;
+import infrastructure.repository.InMemoryDispatchRepository;
 import infrastructure.utils.EventPublisherImpl;
 import io.vertx.core.Vertx;
 
@@ -33,7 +35,7 @@ public class Main {
               EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
               DispatchRepository dispatchRepository = new InMemoryDispatchRepository();
 
-                UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx, userRepository);
+                UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx, userRepository, dispatchRepository);
 
                 userCommunicationAdapter.init();
 

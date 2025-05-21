@@ -103,11 +103,8 @@ public abstract class AbstractView extends JFrame {
                         DispatchViewModel d = DispatchViewModel.fromJson(json);
                         pendingDispatches.add(d);
                     }
-                    else if(json.getString("status").equals("arrived")){
-                        String bikeId = json.getString("bikeId");
-                        pendingDispatches.removeIf(d -> d.getBikeId().equals(bikeId));
-                    }
-                    else if(json.getString("status").equals("notArrived")){
+                    else if (json.getString("status").equals("arrived")
+                            || json.getString("status").equals("notArrived")) {
                         String bikeId = json.getString("bikeId");
                         pendingDispatches.removeIf(d -> d.getBikeId().equals(bikeId));
                     }

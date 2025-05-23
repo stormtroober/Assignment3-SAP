@@ -128,35 +128,30 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
                 });
     }
 
-  @Override
-  public CompletableFuture<Void> notifyStartRide(
-      String username, String bikeName, BikeType bikeType) {
-      return eBikeRepository
-          .getBike(bikeName)
-          .thenCompose(bike -> eBikeRepository.assignBikeToUser(username, bike))
-          .thenAccept(
-              v ->
-                  eBikeRepository
-                      .getAvailableBikes()
-                      .thenAccept(eventPublisher::publishUserAvailableEBikesUpdate));
-  }
-
     @Override
-    public CompletableFuture<Void> notifyStartRideToUser(String username, String bikeName, BikeType bikeType) {
-        // This method handles autonomous bikes
-        if (bikeType != BikeType.AUTONOMOUS) {
+    public CompletableFuture<Void> notifyStartRide(String username, String bikeName, BikeType bikeType) {
+        if (bikeType == BikeType.NORMAL) {
+            return eBikeRepository
+                    .getBike(bikeName)
+                    .thenCompose(bike -> eBikeRepository.assignBikeToUser(username, bike))
+                    .thenAccept(v -> {
+                        eBikeRepository
+                                .getAvailableBikes()
+                                .thenAccept(eventPublisher::publishUserAvailableEBikesUpdate);
+                    });
+        } else if (bikeType == BikeType.AUTONOMOUS) {
+            return aBikeRepository
+                    .getBike(bikeName)
+                    .thenCompose(bike -> aBikeRepository.assignBikeToUser(username, bike))
+                    .thenAccept(v -> {
+                        aBikeRepository
+                                .getAvailableBikes()
+                                .thenAccept(eventPublisher::publishUserAvailableABikesUpdate);
+                    });
+        } else {
             return CompletableFuture.failedFuture(
-                    new IllegalArgumentException("Only autonomous bikes supported for autonomous dispatch"));
+                    new IllegalArgumentException("Unsupported bike type: " + bikeType));
         }
-        System.out.println("Starting notifyStartRideToUser for bike: " + bikeName);
-        return aBikeRepository.getBike(bikeName)
-                .thenCompose(bike -> aBikeRepository.assignBikeToUser(username, bike))
-                .thenAccept(v -> {
-                    // Update available bikes for all users
-                    aBikeRepository
-                            .getAvailableBikes()
-                            .thenAccept(eventPublisher::publishUserAvailableABikesUpdate);
-                });
     }
 
     @Override

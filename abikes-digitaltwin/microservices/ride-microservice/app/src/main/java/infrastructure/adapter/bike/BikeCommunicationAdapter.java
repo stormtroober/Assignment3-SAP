@@ -63,12 +63,12 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
   @Override
   public void sendUpdateABike(JsonObject aBike) {
     String topicName = Topics.ABIKE_RIDE_UPDATE.getTopicName();
-    System.out.println("Sending ABike update to Kafka topic: " + topicName);
+    //System.out.println("Sending ABike update to Kafka topic: " + topicName);
     producer.send(
         new ProducerRecord<>(topicName, aBike.getString("id"), aBike.encode()),
         (metadata, exception) -> {
           if (exception == null) {
-            System.out.println("ABike update sent successfully");
+            //System.out.println("ABike update sent successfully");
           } else {
             System.err.println("Failed to send EBike update: " + exception.getMessage());
           }

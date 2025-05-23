@@ -111,35 +111,14 @@ public class RideUpdateAdapter {
         notifyStopRide(username, bikeName, bikeType);
         break;
       case "user_start":
-        // notifyStartRide could be used single
-        notifyStartRideToUser(username, bikeName, bikeType);
+        notifyStartRide(username, bikeName, bikeType);
+        break;
       case "user_stop":
         notifyStopRide(username, bikeName, bikeType);
         break;
       default:
         logger.error("Unknown action in ride update: {}", action);
     }
-  }
-
-  private void notifyStartRideToUser(String username, String bikeName, BikeType bikeType) {
-    metricsManager.incrementMethodCounter("notifyStartRideToUser");
-    var timer = metricsManager.startTimer();
-
-    logger.info("Processing autonomous bike dispatch for user: {} and bike: {}", username, bikeName);
-
-    bikeMapService
-            .notifyStartRideToUser(username, bikeName, bikeType)
-            .thenAccept(
-                    v -> {
-                      logger.info("Autonomous bike dispatch processed successfully");
-                      metricsManager.recordTimer(timer, "notifyStartRideToUser");
-                    })
-            .exceptionally(
-                    ex -> {
-                      logger.error("Error processing autonomous bike dispatch: {}", ex.getMessage());
-                      metricsManager.recordError(timer, "notifyStartRideToUser", ex);
-                      return null;
-                    });
   }
 
   private void notifyStartRide(String username, String bikeName, BikeType bikeType) {

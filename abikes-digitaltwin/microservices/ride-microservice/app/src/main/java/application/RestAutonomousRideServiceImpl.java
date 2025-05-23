@@ -107,8 +107,6 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                 })
                         .build();
 
-
-                // Add the sequential simulation to the repository
                 rideRepository.addRide(ride, SimulationType.AUTONOMOUS_SIM, Optional.of(userLocation));
 
                 // Store the sequential simulation in the repository
@@ -120,8 +118,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                 (res, err) -> {
                                     if (err == null) {
                                         // When all simulations are complete, clean up
-                                        mapCommunicationAdapter.notifyStopRideToUser(
-                                                bikeId, bike.getType(), userId);
+                                        mapCommunicationAdapter.notifyEndRide(
+                                                bikeId, bike.getType(), userId);;
                                         rideRepository.removeRide(ride);
                                     } else {
                                         logger.error(
@@ -129,8 +127,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                     }
                                 });
 
-                // Notify that the bike is starting its journey to the user
-                mapCommunicationAdapter.notifyStartRideToUser(bikeId, bike.getType(), userId);
+                mapCommunicationAdapter.notifyStartRide(bikeId, bike.getType(), userId);
 
                 return CompletableFuture.completedFuture(null);
             });

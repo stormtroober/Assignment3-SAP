@@ -66,17 +66,6 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
     sendNotification(bikeId, type, userId, "stop", "end ride");
   }
 
-  @Override
-  public void notifyStartRideToUser(String bikeId, BikeType type, String userId) {
-    logger.info("Sending start ride to user: {} for bike: {}, type: {}", userId, bikeId, type);
-    sendNotification(bikeId, type, userId, "user_start", "start ride to user");
-  }
-
-  @Override
-  public void notifyStopRideToUser(String bikeId, BikeType type, String userId) {
-    sendNotification(bikeId, type, userId, "user_stop", "stop ride to user");
-  }
-
   // Method to close the producer when shutting down
   public void close() {
     if (producer != null) {

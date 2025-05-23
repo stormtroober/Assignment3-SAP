@@ -83,7 +83,7 @@ public class BikeConsumerAdapter {
   private void processABikeUpdate(JsonObject abikeJson) {
     try {
       String id = abikeJson.getString("id");
-      logger.info("Received ABike update: id={}", id);
+      //logger.info("Received ABike update: id={}", id);
 
       abikeRepository
           .findById(id)

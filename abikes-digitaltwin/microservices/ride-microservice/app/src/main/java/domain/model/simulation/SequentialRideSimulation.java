@@ -28,6 +28,7 @@ public class SequentialRideSimulation implements RideSimulation, Service {
     private final EventPublisher publisher;
     private int currentStageIndex = -1;
     private volatile boolean stopped = false;
+    private volatile boolean stoppedManually = false;
     private CompletableFuture<Void> future;
 
     /**
@@ -244,6 +245,7 @@ public class SequentialRideSimulation implements RideSimulation, Service {
             stages.get(currentStageIndex).getSimulation().stopSimulationManually();
         }
 
+        stoppedManually = true;
         stopped = true;
 
         // Complete the future if not already completed
@@ -257,6 +259,15 @@ public class SequentialRideSimulation implements RideSimulation, Service {
             return stages.get(currentStageIndex).getSimulation();
         }
         return null;
+    }
+
+    /**
+     * Checks if the simulation was stopped manually.
+     *
+     * @return true if the simulation was stopped manually, false otherwise
+     */
+    public boolean isStoppedManually() {
+        return stoppedManually;
     }
 
     @Override

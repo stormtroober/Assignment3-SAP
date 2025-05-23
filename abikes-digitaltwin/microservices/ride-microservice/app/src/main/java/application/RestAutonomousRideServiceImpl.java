@@ -112,22 +112,26 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                 // Store the sequential simulation in the repository
                 rideRepository.setRideSimulation(ride.getId(), sequentialSim);
 
+                mapCommunicationAdapter.notifyStartRide(bikeId, bike.getType(), userId);
+
                 // Start the sequential simulation
                 sequentialSim.startSimulation()
                         .whenComplete(
                                 (res, err) -> {
                                     if (err == null) {
-                                        // When all simulations are complete, clean up
-                                        mapCommunicationAdapter.notifyEndRide(
-                                                bikeId, bike.getType(), userId);;
-                                        rideRepository.removeRide(ride);
+                                        logger.info("Sequential simulation completed successfully");
+                                        if(!sequentialSim.isStoppedManually()){
+                                            mapCommunicationAdapter.notifyEndRide(
+                                                    bikeId, bike.getType(), userId);;
+                                            rideRepository.removeRide(ride);
+                                        }
+
                                     } else {
                                         logger.error(
                                                 "Error during sequential simulation: " + err.getMessage(), err);
                                     }
                                 });
 
-                mapCommunicationAdapter.notifyStartRide(bikeId, bike.getType(), userId);
 
                 return CompletableFuture.completedFuture(null);
             });

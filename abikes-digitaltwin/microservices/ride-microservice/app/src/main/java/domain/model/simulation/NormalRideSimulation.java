@@ -7,6 +7,8 @@ import domain.model.User;
 import domain.model.V2d;
 import domain.model.bike.*;
 import io.vertx.core.Vertx;
+
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class NormalRideSimulation implements RideSimulation, Service {
@@ -30,10 +32,15 @@ public class NormalRideSimulation implements RideSimulation, Service {
     return ride;
   }
 
-  public CompletableFuture<Void> startSimulation() {
+  public CompletableFuture<Void> startSimulation(Optional<BikeState> startingState) {
     CompletableFuture<Void> future = new CompletableFuture<>();
 
-    ride.start();
+    if(startingState.isPresent()) {
+      ride.start((ABikeState) startingState.get());
+    }
+    else {
+      ride.start();
+    }
 
     if (ride.isOngoing()) {
       vertx.setPeriodic(

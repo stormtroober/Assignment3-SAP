@@ -73,6 +73,11 @@ public class EBike implements Bike, Aggregate<String> {
   }
 
   @Override
+  public void startRide(BikeState state) {
+    setState(state);
+  }
+
+  @Override
   public String toString() {
     return String.format(
         "EBike{id='%s', location=%s, batteryLevel=%d%%, state='%s'}",

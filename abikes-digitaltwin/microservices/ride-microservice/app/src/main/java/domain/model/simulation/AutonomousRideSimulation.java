@@ -8,7 +8,10 @@ import domain.model.User;
 import domain.model.V2d;
 import domain.model.bike.ABike;
 import domain.model.bike.ABikeState;
+import domain.model.bike.BikeState;
 import io.vertx.core.Vertx;
+
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +44,15 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   }
 
   @Override
-  public CompletableFuture<Void> startSimulation() {
+  public CompletableFuture<Void> startSimulation(Optional<BikeState> startingState) {
     log.info("Starting simulation for ride {}", ride.getId());
     future = new CompletableFuture<>();
-    ride.start();
+    if(startingState.isPresent()) {
+      ride.start((ABikeState) startingState.get());
+    }
+    else {
+      ride.start();
+    }
 
     if (!ride.isOngoing()) {
       log.warn("Ride {} not ongoing, completing immediately", ride.getId());

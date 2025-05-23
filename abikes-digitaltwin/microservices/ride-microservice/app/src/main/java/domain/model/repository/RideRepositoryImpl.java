@@ -67,15 +67,15 @@ public class RideRepositoryImpl implements RideRepository, Repository {
   }
 
   @Override
-  public void setRideSimulation(String rideId, RideSimulation simulation) {
+  public void addRideWithSimulation(Ride ride, RideSimulation simulation) {
     if(simulation == null) {
       throw new IllegalArgumentException("Simulation cannot be null");
     }
-    simulations.put(rideId, simulation);
+    simulations.put(ride.getId(), simulation);
     String userId = simulation.getRide().getUser().getId();
-    userRideMap.put(userId, rideId);
+    userRideMap.put(userId, ride.getId());
 
-    logger.info("Set custom simulation for ride {} and user {}", rideId, userId);
+    logger.info("Set custom simulation for ride {} and user {}", ride.getId(), userId);
   }
 
   @Override

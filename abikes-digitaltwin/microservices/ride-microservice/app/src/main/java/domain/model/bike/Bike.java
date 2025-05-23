@@ -23,4 +23,6 @@ public interface Bike {
   void setState(BikeState state);
 
   void startRide();
+
+  void startRide(BikeState state);
 }

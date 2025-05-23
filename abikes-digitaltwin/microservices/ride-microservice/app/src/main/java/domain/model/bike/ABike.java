@@ -78,6 +78,11 @@ public class ABike implements Bike, Aggregate<String>, Serializable {
   }
 
   @Override
+  public void startRide(BikeState state) {
+      setState(state);
+  }
+
+  @Override
   public synchronized String toString() {
     return String.format(
             "ABike{id='%s', location=%s, batteryLevel=%d%%, state='%s', type='%s'}",

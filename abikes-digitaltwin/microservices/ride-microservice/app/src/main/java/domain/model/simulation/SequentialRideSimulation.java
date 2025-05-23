@@ -3,13 +3,11 @@ package domain.model.simulation;
 import application.ports.EventPublisher;
 import ddd.Service;
 import domain.model.Ride;
-import domain.model.bike.ABike;
-import domain.model.bike.ABikeState;
-import domain.model.bike.EBike;
-import domain.model.bike.EBikeState;
+import domain.model.bike.*;
 import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
@@ -124,7 +122,7 @@ public class SequentialRideSimulation implements RideSimulation, Service {
     }
 
     @Override
-    public CompletableFuture<Void> startSimulation() {
+    public CompletableFuture<Void> startSimulation(Optional<BikeState> startingState) {
         log.info("Starting sequential simulation {}", id);
         future = new CompletableFuture<>();
 
@@ -180,7 +178,7 @@ public class SequentialRideSimulation implements RideSimulation, Service {
                 currentStageIndex + 1, stages.size(), id);
 
         // Start the current simulation
-        currentSim.startSimulation()
+        currentSim.startSimulation(Optional.empty())
                 .whenComplete((result, error) -> {
                     if (error != null) {
                         log.error("Error in simulation {}: {}", currentStageIndex, error.getMessage());

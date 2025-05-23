@@ -2,10 +2,7 @@ package application;
 
 import application.ports.*;
 import domain.model.*;
-import domain.model.bike.ABike;
-import domain.model.bike.ABikeFactory;
-import domain.model.bike.ABikeState;
-import domain.model.bike.BikeType;
+import domain.model.bike.*;
 import domain.model.repository.*;
 import domain.model.simulation.AutonomousRideSimulation;
 import domain.model.simulation.NormalRideSimulation;
@@ -107,15 +104,12 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                 })
                         .build();
 
-                rideRepository.addRide(ride, SimulationType.AUTONOMOUS_SIM, Optional.of(userLocation));
-
-                // Store the sequential simulation in the repository
-                rideRepository.setRideSimulation(ride.getId(), sequentialSim);
+                rideRepository.addRideWithSimulation(ride, sequentialSim);
 
                 mapCommunicationAdapter.notifyStartRide(bikeId, bike.getType(), userId);
 
                 // Start the sequential simulation
-                sequentialSim.startSimulation()
+                sequentialSim.startSimulation(Optional.of(ABikeState.MOVING_TO_USER))
                         .whenComplete(
                                 (res, err) -> {
                                     if (err == null) {
@@ -174,7 +168,56 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                         });
     }
 
-  private CompletableFuture<User> checkUser(String userId) {
+    private CompletableFuture<Void> dispatchBikeToStation(String userId, String bikeId, P2d stationLocation) {
+        CompletableFuture<ABike> bikeFuture = checkABike(bikeId);
+        CompletableFuture<User> userFuture = checkUser(userId);
+
+        return CompletableFuture.allOf(bikeFuture, userFuture)
+                .thenCompose(
+                        v -> {
+                            ABike bike = bikeFuture.join();
+                            User user = userFuture.join();
+
+                            if (bike == null || user == null) {
+                                return CompletableFuture.failedFuture(
+                                        new RuntimeException("ABike or User not found"));
+                            } else if (bike.getState() != ABikeState.AVAILABLE) {
+                                return CompletableFuture.failedFuture(
+                                        new RuntimeException("ABike is not available"));
+                            } else if (user.getCredit() == 0) {
+                                return CompletableFuture.failedFuture(new RuntimeException("User has no credit"));
+                            } else if (bike.getBatteryLevel() == 0) {
+                                return CompletableFuture.failedFuture(new RuntimeException("ABike has no battery"));
+                            }
+
+                            // Create the base ride
+                            String rideId = "ride-" + userId + "-" + bikeId + "-station";
+                            Ride ride = new Ride(rideId, user, bike);
+
+                            AutonomousRideSimulation autonomousSim =
+                                    new AutonomousRideSimulation(ride, vertx, eventPublisher, stationLocation);
+
+                            rideRepository.addRideWithSimulation(ride, autonomousSim);
+
+                            autonomousSim.startSimulation(Optional.of(ABikeState.MOVING_TO_STATION)).whenComplete(
+                                    (res, err) -> {
+                                        if (err == null) {
+                                            logger.info("Autonomous simulation completed successfully");
+//                                            mapCommunicationAdapter.notifyEndRide(
+//                                                    bikeId, bike.getType(), userId);
+                                            rideRepository.removeRide(ride);
+                                        } else {
+                                            logger.error(
+                                                    "Error during autonomous simulation: " + err.getMessage(), err);
+                                        }
+                                    });
+
+                            return CompletableFuture.completedFuture(null);
+                        });
+    }
+
+
+    private CompletableFuture<User> checkUser(String userId) {
     System.out.println("Checking user: " + userId);
 
     Optional<User> user = userRepository.findById(userId);

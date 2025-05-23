@@ -107,7 +107,7 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                 rideRepository.addRide(ride, SimulationType.NORMAL_SIM, Optional.empty());
                 rideRepository
                     .getRideSimulation(ride.getId())
-                    .startSimulation()
+                    .startSimulation(Optional.empty())
                     .whenComplete(
                         (result, throwable) -> {
                           if (throwable == null) {

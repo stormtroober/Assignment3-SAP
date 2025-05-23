@@ -1,6 +1,7 @@
 package domain.model;
 
 import ddd.Aggregate;
+import domain.model.bike.ABikeState;
 import domain.model.bike.Bike;
 import java.util.Date;
 import java.util.Optional;
@@ -38,6 +39,11 @@ public class Ride implements Aggregate<String> {
   public void start() {
     this.ongoing = true;
     this.bike.startRide();
+  }
+
+  public void start(ABikeState state) {
+    this.ongoing = true;
+    this.bike.startRide(state);
   }
 
   public void end() {

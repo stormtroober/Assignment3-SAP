@@ -66,6 +66,35 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
     sendNotification(bikeId, type, userId, "stop", "end ride");
   }
 
+  @Override
+  public void notifyStartPublicRide(String bikeId, BikeType type) {
+    sendPublicRideNotification(bikeId, type, "public_start");
+  }
+
+  @Override
+  public void notifyEndPublicRide(String bikeId, BikeType type) {
+    sendPublicRideNotification(bikeId, type, "public_end");
+  }
+
+  private void sendPublicRideNotification(String bikeId, BikeType type, String action) {
+    JsonObject message = new JsonObject()
+            .put("bikeName", bikeId)
+            .put("bikeType", type)
+            .put("action", action);
+
+    String topicName = Topics.RIDE_MAP_UPDATE.getTopicName();
+
+    producer.send(
+            new ProducerRecord<>(topicName, bikeId, message.encode()),
+            (metadata, exception) -> {
+              if (exception == null) {
+                logger.info("Notification for {} public ride sent successfully.", action);
+              } else {
+                logger.error("Failed to send notification for {} public ride", action);
+              }
+            });
+  }
+
   // Method to close the producer when shutting down
   public void close() {
     if (producer != null) {

@@ -206,6 +206,12 @@ public class MapServiceVerticle extends AbstractVerticle {
                                     metricsManager.incrementMethodCounter("observeUserBikes_abike_message_sent");
                             });
 
+                            var publicABikesConsumer =
+                                vertx.eventBus().consumer("public_abikes", message -> {
+                                    webSocket.writeTextMessage(message.body().toString());
+                                    metricsManager.incrementMethodCounter("observeUserBikes_public_abike_message_sent");
+                            });
+
                           bikeMapService.registerUser(username);
                           bikeMapService.getAllBikes(username);
 
@@ -220,6 +226,7 @@ public class MapServiceVerticle extends AbstractVerticle {
                                 stopRideConsumer.unregister();
                                 userABikeConsumer.unregister();
                                 availableABikesConsumer.unregister();
+                                publicABikesConsumer.unregister();
                               });
 
                           webSocket.exceptionHandler(
@@ -233,6 +240,7 @@ public class MapServiceVerticle extends AbstractVerticle {
                                 stopRideConsumer.unregister();
                                 userABikeConsumer.unregister();
                                 availableABikesConsumer.unregister();
+                                publicABikesConsumer.unregister();
                               });
                         } else {
                           metricsManager.incrementMethodCounter(

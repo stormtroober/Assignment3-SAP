@@ -221,12 +221,15 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
                             rideRepository.addRideWithSimulation(ride, autonomousSim);
 
+                            //mapCommunicationAdapter.notifyStartRide(bikeId, bike.getType(), userId);
+                            mapCommunicationAdapter.notifyStartPublicRide(bikeId, bike.getType());
+
                             autonomousSim.startSimulation(Optional.of(ABikeState.MOVING_TO_STATION)).whenComplete(
                                     (res, err) -> {
                                         if (err == null) {
                                             logger.info("Autonomous simulation completed successfully");
-//                                            mapCommunicationAdapter.notifyEndRide(
-//                                                    bikeId, bike.getType(), userId);
+                                            mapCommunicationAdapter.notifyEndPublicRide(
+                                                    bikeId, bike.getType());
                                             rideRepository.removeRide(ride);
                                         } else {
                                             logger.error(

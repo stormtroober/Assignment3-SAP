@@ -72,6 +72,14 @@ public class EventPublisherImpl implements EventPublisher {
   }
 
   @Override
+  public void publishPublicABikesUpdate(List<ABike> bikes) {
+    JsonArray bikesJson = new JsonArray();
+    bikes.forEach(bike -> bikesJson.add(convertABikeToJson(bike)));
+    vertx.eventBus().publish("public_abikes", bikesJson.encode());
+  }
+
+
+  @Override
   public void publishStationsUpdate(List<Station> stations) {
     JsonArray stationsJson = new JsonArray();
     stations.forEach(station -> stationsJson.add(convertStationToJson(station)));

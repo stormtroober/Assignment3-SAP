@@ -87,7 +87,7 @@ public class RideUpdateAdapter {
     String bikeName = rideUpdate.getString("bikeName");
     String bikeTypeStr = rideUpdate.getString("bikeType");
 
-    if (action == null || username == null || bikeName == null || bikeTypeStr == null) {
+    if (action == null || bikeName == null || bikeTypeStr == null) {
       logger.error("Incomplete ride update data: {}", rideUpdate);
       return;
     }
@@ -110,9 +110,57 @@ public class RideUpdateAdapter {
       case "stop":
         notifyStopRide(username, bikeName, bikeType);
         break;
+      case "public_start":
+        notifyStartPublicRide(bikeName, bikeType);
+        break;
+      case "public_stop":
+        notifyStopPublicRide(bikeName, bikeType);
+        break;
       default:
         logger.error("Unknown action in ride update: {}", action);
     }
+  }
+
+  private void notifyStartPublicRide(String bikeName, BikeType bikeType) {
+    metricsManager.incrementMethodCounter("notifyStartPublicRide");
+    var timer = metricsManager.startTimer();
+
+    logger.info("Processing public start ride notification for bike: {}", bikeName);
+
+    bikeMapService
+        .notifyStartPublicRide(bikeName, bikeType)
+        .thenAccept(
+            v -> {
+              logger.info("Public start ride notification processed successfully");
+              metricsManager.recordTimer(timer, "notifyStartPublicRide");
+            })
+        .exceptionally(
+            ex -> {
+              logger.error("Error processing public start ride notification: {}", ex.getMessage());
+              metricsManager.recordError(timer, "notifyStartPublicRide", ex);
+              return null;
+            });
+  }
+
+  private void notifyStopPublicRide(String bikeName, BikeType bikeType) {
+    metricsManager.incrementMethodCounter("notifyStopPublicRide");
+    var timer = metricsManager.startTimer();
+
+    logger.info("Processing public stop ride notification for bike: {}", bikeName);
+
+    bikeMapService
+        .notifyStopPublicRide(bikeName, bikeType)
+        .thenAccept(
+            v -> {
+              logger.info("Public stop ride notification processed successfully");
+              metricsManager.recordTimer(timer, "notifyStopPublicRide");
+            })
+        .exceptionally(
+            ex -> {
+              logger.error("Error processing public stop ride notification: {}", ex.getMessage());
+              metricsManager.recordError(timer, "notifyStopPublicRide", ex);
+              return null;
+            });
   }
 
   private void notifyStartRide(String username, String bikeName, BikeType bikeType) {

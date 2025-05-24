@@ -50,6 +50,7 @@ public interface EventPublisher {
    */
   void publishStopRide(String username, BikeType bikeType);
 
+  void publishPublicABikesUpdate(List<ABike> bikes);
 
   /**
    * Publishes an update for a list of stations.

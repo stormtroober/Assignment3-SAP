@@ -21,6 +21,10 @@ public interface MapCommunicationPort {
    */
   void notifyEndRide(String bikeId, BikeType type, String userId);
 
+  void notifyStartPublicRide(String bikeId, BikeType type);
+
+  void notifyEndPublicRide(String bikeId, BikeType type);
+
   /** Initializes the communication port. */
   void init();
 }

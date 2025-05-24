@@ -79,13 +79,13 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
                         v -> {
                             System.out.println("Successfully saved ABike: " + bike.getId());
 
-                            // publish full fleet update
+                            // publish full fleet update to ADMIN channel
                             aBikeRepository.getAllBikes().thenAccept(bikes -> {
                                 System.out.println("Publishing full ABike fleet update with " + bikes.size() + " bikes");
                                 eventPublisher.publishABikesUpdate(bikes);
                             });
 
-                            // publish per-user assigned + available bikes
+                            // publish per-user assigned + available bikes (USER channel)
                             aBikeRepository
                                     .getUsersWithAssignedAndAvailableBikes()
                                     .thenAccept(
@@ -120,6 +120,16 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
                                                             });
                                                 }
                                             });
+
+                            // publish PUBLIC channel update (all USERS) channel
+                            aBikeRepository.getPublicBikes().thenAccept(publicBikes -> {
+                                if (!publicBikes.isEmpty()) {
+                                    System.out.println("Publishing public ABikes update with " + publicBikes.size() + " bikes");
+                                    eventPublisher.publishPublicABikesUpdate(publicBikes);
+                                } else {
+                                    System.out.println("No public ABikes to publish.");
+                                }
+                            });
                         })
                 .exceptionally(ex -> {
                     System.err.println("Error in updateABike: " + ex.getMessage());
@@ -127,6 +137,8 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
                     return null;
                 });
     }
+
+
 
     @Override
     public CompletableFuture<Void> notifyStartRide(String username, String bikeName, BikeType bikeType) {
@@ -184,6 +196,30 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
           new IllegalArgumentException("Unsupported bike type: " + bikeType));
     }
   }
+
+    @Override
+    public CompletableFuture<Void> notifyStartPublicRide(String bikeName, BikeType bikeType) {
+         if (bikeType == BikeType.AUTONOMOUS) {
+            return aBikeRepository
+                    .getBike(bikeName)
+                    .thenCompose(aBikeRepository::assignBikeToPublic);
+        } else {
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Unsupported bike type: " + bikeType));
+        }
+    }
+
+    @Override
+    public CompletableFuture<Void> notifyStopPublicRide(String bikeName, BikeType bikeType) {
+        if (bikeType == BikeType.AUTONOMOUS) {
+            return aBikeRepository
+                    .getBike(bikeName)
+                    .thenCompose(aBikeRepository::unassignBikeFromPublic);
+        } else {
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Unsupported bike type: " + bikeType));
+        }
+    }
 
   @Override
   public void getAllBikes() {

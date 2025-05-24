@@ -42,6 +42,10 @@ public interface BikeMapServiceAPI {
    */
   CompletableFuture<Void> notifyStopRide(String username, String bikeName, BikeType bikeType);
 
+  CompletableFuture<Void> notifyStartPublicRide(String bikeName, BikeType bikeType);
+
+  CompletableFuture<Void> notifyStopPublicRide(String bikeName, BikeType bikeType);
+
   /** Retrieves all e-bikes for admin users. */
   void getAllBikes();
 

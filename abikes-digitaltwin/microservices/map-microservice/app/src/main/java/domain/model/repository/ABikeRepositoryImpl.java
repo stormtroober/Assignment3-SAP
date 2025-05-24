@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -62,6 +63,45 @@ public class ABikeRepositoryImpl implements ABikeRepository, Repository {
           bikeAssignments.remove(username);
         });
   }
+
+   @Override
+    public CompletableFuture<Void> assignBikeToPublic(ABike bike) {
+        return CompletableFuture.runAsync(() -> {
+            if (!bikes.containsKey(bike.getId())) {
+                throw new IllegalArgumentException("Bike not found in repository");
+            }
+            if (bikeAssignments.containsValue(bike.getId())) {
+                throw new IllegalStateException("Bike is already assigned");
+            }
+            logger.info("Assigning bike {} to PUBLIC", bike);
+            bikeAssignments.put("PUBLIC", bike.getId());
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> unassignBikeFromPublic(ABike bike) {
+        return CompletableFuture.runAsync(() -> {
+            if (!bikeAssignments.containsKey("PUBLIC")) {
+                throw new IllegalArgumentException("No bike assigned to PUBLIC");
+            }
+            if (!bikeAssignments.get("PUBLIC").equals(bike.getId())) {
+                throw new IllegalArgumentException("This bike is not assigned to PUBLIC");
+            }
+            logger.info("Unassigning bike {} from PUBLIC", bike);
+            bikeAssignments.remove("PUBLIC");
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<ABike>> getPublicBikes() {
+    return CompletableFuture.supplyAsync(
+        () ->
+            bikeAssignments.entrySet().stream()
+                .filter(e -> "PUBLIC".equals(e.getKey()))
+                .map(e -> bikes.get(e.getValue()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()));
+    }
 
   @Override
   public CompletableFuture<List<ABike>> getAvailableBikes() {

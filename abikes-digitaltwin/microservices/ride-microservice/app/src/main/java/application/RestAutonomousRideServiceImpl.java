@@ -161,6 +161,29 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
                                 rideRepository.removeRide(ride);
 
+                                // Poll every 500ms to check if the ABike came back available from ABike-Service
+                                vertx.setPeriodic(500, id -> {
+                                    abikeRepository.findById(ride.getBike().getId()).thenAccept(abikeJsonOpt -> {
+                                        if (abikeJsonOpt.isPresent()) {
+                                            JsonObject abikeJson = abikeJsonOpt.get();
+                                            ABikeState state = ABikeState.valueOf(abikeJson.getString("state"));
+                                            if (state == ABikeState.AVAILABLE) {
+                                                vertx.cancelTimer(id);
+                                                // Replace with actual station location
+                                                P2d stationLocation = new P2d(0, 0); // Example location
+                                                dispatchBikeToStation(userId, ride.getBike().getId(), stationLocation).whenComplete(
+                                                        (res, err) -> {
+                                                    if (err != null) {
+                                                        logger.error("Error dispatching bike to station: " + err.getMessage(), err);
+                                                    } else {
+                                                        logger.info("Bike dispatched to station successfully");
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+                                });
+
                             } else {
                                 logger.warn("No active ride found for user: {}", userId);
                             }
@@ -190,7 +213,6 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                 return CompletableFuture.failedFuture(new RuntimeException("ABike has no battery"));
                             }
 
-                            // Create the base ride
                             String rideId = "ride-" + userId + "-" + bikeId + "-station";
                             Ride ride = new Ride(rideId, user, bike);
 

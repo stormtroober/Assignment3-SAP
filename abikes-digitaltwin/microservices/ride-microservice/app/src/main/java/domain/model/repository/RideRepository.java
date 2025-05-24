@@ -7,13 +7,13 @@ import java.util.Optional;
 
 public interface RideRepository {
 
-  void addRide(Ride ride, SimulationType type, Optional<P2d> destination);
+  void addNormalRide(Ride ride, SimulationType type, Optional<P2d> destination);
 
   void removeRide(Ride ride);
 
   /**
    * Adds a ride with a simulation to the repository.
-   * Alternative to the addRide method
+   * Alternative to the addNormalRide method
    * @param ride
    * @param simulation
    */

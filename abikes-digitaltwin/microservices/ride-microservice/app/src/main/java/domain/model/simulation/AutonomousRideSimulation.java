@@ -29,13 +29,15 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   private static final int CREDIT_DECREASE = 1;
   private static final double ARRIVAL_THRESHOLD = 0.5; // distance to consider arrived
   private volatile boolean manuallyStoppedFlag = false;
+  private final AutonomousRideType rideType;
 
   public AutonomousRideSimulation(
-      Ride ride, Vertx vertx, EventPublisher publisher, P2d destination) {
+      Ride ride, Vertx vertx, EventPublisher publisher, P2d destination, AutonomousRideType rideType) {
     this.ride = ride;
     this.vertx = vertx;
     this.publisher = publisher;
     this.destination = destination;
+    this.rideType = rideType;
   }
 
   @Override
@@ -83,6 +85,31 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
     User user = ride.getUser();
     synchronized (ride.getBike()) {
       ABike bike = (ABike) ride.getBike();
+
+      if (bike.getBatteryLevel() <= 0) {
+        log.info("Battery depleted for ride {}", ride.getId());
+        ride.end();
+        stopSimulation();
+        publisher.publishABikeUpdate(
+                bike.getId(), ride.getBike().getLocation().x(), ride.getBike().getLocation().y(),
+                bike.getState().toString(), bike.getBatteryLevel());
+        scheduleCompletion();
+        return;
+      }
+
+      if (user.getCredit() == 0) {
+        log.info("User {} has no credit, ending ride {}", user.getId(), ride.getId());
+        ride.end();
+        stopSimulation();
+        bike.setState(ABikeState.AVAILABLE);
+        publisher.publishABikeUpdate(
+                bike.getId(), ride.getBike().getLocation().x(), ride.getBike().getLocation().y(),
+                bike.getState().toString(), bike.getBatteryLevel());
+        scheduleCompletion();
+        return;
+      }
+
+
       P2d current = bike.getLocation();
       V2d toDest = destination.sub(current);
       double dx = toDest.x();
@@ -126,22 +153,8 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
       // Rest of the method remains unchanged
       bike.decreaseBattery(BATTERY_DECREASE);
 
-      if (bike.getBatteryLevel() <= 0) {
-        log.info("Battery depleted for ride {}, at location {}", ride.getId(), newPos);
-        ride.end();
-        stopSimulation();
-        scheduleCompletion();
-        return;
-      }
-
-      user.decreaseCredit(CREDIT_DECREASE);
-      if (user.getCredit() == 0) {
-        log.info("User {} has no credit, ending ride {}", user.getId(), ride.getId());
-        ride.end();
-        stopSimulation();
-        bike.setState(ABikeState.AVAILABLE);
-        scheduleCompletion();
-        return;
+      if(rideType == AutonomousRideType.TO_USER) {
+        user.decreaseCredit(CREDIT_DECREASE);
       }
 
       log.debug(
@@ -166,16 +179,22 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   }
 
   private void completeSimulation() {
-    ABike bike = (ABike) ride.getBike();
-    P2d loc = bike.getLocation();
-    bike.setState(ABikeState.IN_USE);
-    log.info(
-        "Completing simulation for ride {} at final location {}, battery={}",
-        ride.getId(),
-        loc,
-        bike.getBatteryLevel());
-    publisher.publishABikeUpdate(
-        bike.getId(), loc.x(), loc.y(), bike.getState().toString(), bike.getBatteryLevel());
+      ABike bike = (ABike) ride.getBike();
+      P2d loc = bike.getLocation();
+      if(rideType == AutonomousRideType.TO_USER && bike.getBatteryLevel() > 0) {
+        bike.setState(ABikeState.IN_USE);
+      }
+      else if(rideType == AutonomousRideType.TO_STATION && bike.getBatteryLevel() > 0) {
+        bike.setState(ABikeState.AVAILABLE);
+      }
+      log.info(
+              "Completing simulation for ride {} at final location {}, battery={}",
+              ride.getId(),
+              loc,
+              bike.getBatteryLevel());
+      publisher.publishABikeUpdate(
+              bike.getId(), loc.x(), loc.y(), bike.getState().toString(), bike.getBatteryLevel());
+
     publisher.publishUserUpdate(ride.getUser().getId(), ride.getUser().getCredit());
   }
 

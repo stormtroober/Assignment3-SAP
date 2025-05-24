@@ -30,25 +30,12 @@ public class RideRepositoryImpl implements RideRepository, Repository {
   }
 
   @Override
-  public void addRide(Ride ride, SimulationType type, Optional<P2d> destination) {
+  public void addNormalRide(Ride ride, SimulationType type, Optional<P2d> destination) {
     RideSimulation sim;
 
     String rideId = ride.getId();
     String userId = ride.getUser().getId();
-    switch (type) {
-      case AUTONOMOUS_SIM:
-        if (destination.isPresent()) {
-          sim = new AutonomousRideSimulation(ride, vertx, publisher, destination.get());
-          break;
-        } else {
-          throw new IllegalArgumentException(
-              "Destination must be provided for autonomous simulation");
-        }
-      case NORMAL_SIM:
-      default:
-        sim = new NormalRideSimulation(ride, vertx, publisher);
-        break;
-    }
+    sim = new NormalRideSimulation(ride, vertx, publisher);
 
     simulations.put(rideId, sim);
     userRideMap.put(userId, rideId);

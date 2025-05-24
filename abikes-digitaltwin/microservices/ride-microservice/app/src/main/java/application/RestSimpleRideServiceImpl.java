@@ -104,7 +104,7 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                         "ride-" + userId + "-" + bikeId + "-" + SimulationType.NORMAL_SIM,
                         user,
                         ebike);
-                rideRepository.addRide(ride, SimulationType.NORMAL_SIM, Optional.empty());
+                rideRepository.addNormalRide(ride, SimulationType.NORMAL_SIM, Optional.empty());
                 rideRepository
                     .getRideSimulation(ride.getId())
                     .startSimulation(Optional.empty())

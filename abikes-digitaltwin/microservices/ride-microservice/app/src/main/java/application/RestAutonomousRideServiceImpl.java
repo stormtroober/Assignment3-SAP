@@ -4,10 +4,7 @@ import application.ports.*;
 import domain.model.*;
 import domain.model.bike.*;
 import domain.model.repository.*;
-import domain.model.simulation.AutonomousRideSimulation;
-import domain.model.simulation.NormalRideSimulation;
-import domain.model.simulation.RideSimulation;
-import domain.model.simulation.SequentialRideSimulation;
+import domain.model.simulation.*;
 import infrastructure.repository.DispatchRepository;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -82,7 +79,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
                 // Create both simulations
                 AutonomousRideSimulation autonomousSim =
-                        new AutonomousRideSimulation(ride, vertx, eventPublisher, userLocation);
+                        new AutonomousRideSimulation(ride, vertx, eventPublisher, userLocation, AutonomousRideType.TO_USER);
 
                 NormalRideSimulation normalSim = new NormalRideSimulation(ride, vertx, eventPublisher);
 
@@ -152,10 +149,10 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
                                 rideSimulation.stopSimulationManually();
 
-                                bikeCommunicationAdapter.sendUpdateABike(
-                                        new JsonObject()
-                                                .put("id", ride.getBike().getId())
-                                                .put("state", ride.getBike().getState().toString()));
+//                                bikeCommunicationAdapter.sendUpdateABike(
+//                                        new JsonObject()
+//                                                .put("id", ride.getBike().getId())
+//                                                .put("state", ride.getBike().getState().toString()));
                                 mapCommunicationAdapter.notifyEndRide(
                                         ride.getBike().getId(), BikeType.AUTONOMOUS, userId);
 
@@ -217,11 +214,10 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                             Ride ride = new Ride(rideId, user, bike);
 
                             AutonomousRideSimulation autonomousSim =
-                                    new AutonomousRideSimulation(ride, vertx, eventPublisher, stationLocation);
+                                    new AutonomousRideSimulation(ride, vertx, eventPublisher, stationLocation, AutonomousRideType.TO_STATION);
 
                             rideRepository.addRideWithSimulation(ride, autonomousSim);
 
-                            //mapCommunicationAdapter.notifyStartRide(bikeId, bike.getType(), userId);
                             mapCommunicationAdapter.notifyStartPublicRide(bikeId, bike.getType());
 
                             autonomousSim.startSimulation(Optional.of(ABikeState.MOVING_TO_STATION)).whenComplete(

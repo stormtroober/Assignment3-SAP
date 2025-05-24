@@ -110,12 +110,6 @@ public class RideUpdateAdapter {
       case "stop":
         notifyStopRide(username, bikeName, bikeType);
         break;
-      case "user_start":
-        notifyStartRide(username, bikeName, bikeType);
-        break;
-      case "user_stop":
-        notifyStopRide(username, bikeName, bikeType);
-        break;
       default:
         logger.error("Unknown action in ride update: {}", action);
     }

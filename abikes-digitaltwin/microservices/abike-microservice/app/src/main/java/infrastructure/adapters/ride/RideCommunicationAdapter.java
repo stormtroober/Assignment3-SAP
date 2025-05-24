@@ -182,7 +182,7 @@ public class RideCommunicationAdapter extends AbstractVerticle {
 //            return;
 //        }
 
-        if(action.equals("user_start")){
+        if(action.equals("start")){
             stationService.deassignBikeFromStation(bikeName);
         }
     }

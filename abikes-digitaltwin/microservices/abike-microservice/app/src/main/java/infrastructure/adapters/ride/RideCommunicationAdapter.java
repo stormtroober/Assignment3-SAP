@@ -162,22 +162,27 @@ public class RideCommunicationAdapter extends AbstractVerticle {
     }
 
     private void processRideUpdate(JsonObject rideUpdate) {
-        String action = rideUpdate.getString("action");
-        String username = rideUpdate.getString("username");
         String bikeId = rideUpdate.getString("bikeName");
-        String bikeTypeStr = rideUpdate.getString("bikeType");
 
-        if (action == null  || bikeId == null || bikeTypeStr == null) {
+        if (bikeId == null) {
             logger.error("Incomplete ride update data: {}", rideUpdate);
             return;
         }
 
         //Here we should receive also the arrived station id and bikeid
         //so we can assign the bike to the station
-        if(action.equals("start")){
-            stationService.deassignBikeFromStation(bikeId);
+        if(rideUpdate.containsKey("action")){
+            String action = rideUpdate.getString("action");
+            if(action.equals("start")){
+                stationService.deassignBikeFromStation(bikeId);
+            }
         }
-    }
+        if(rideUpdate.containsKey("stationId")){
+            String stationId = rideUpdate.getString("stationId");
+            stationService.assignBikeToStation(stationId, bikeId);
+        }
+        }
+
 
     private void getABike(RoutingContext ctx) {
         metricsManager.incrementMethodCounter("getABike");

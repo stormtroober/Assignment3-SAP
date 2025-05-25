@@ -38,12 +38,11 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
             EventPublisher.RIDE_UPDATE_ADDRESS_ABIKE_STATION,
             message -> {
                 if (message.body() instanceof JsonObject update) {
-                    if (update.containsKey("id")) {
-                        String bikeId = update.getString("id");
-                        String stationId = update.getString("stationId");
-                        System.out.println("Sending ABike station update for bike: " + bikeId + " to station: " + stationId);
+                    System.out.println("Received ABike station update: " + update.encode());
+                    if (update.containsKey("bikeName") && update.containsKey("stationId")) {
+                        String bikeId = update.getString("bikeName");
                         producer.send(
-                            new ProducerRecord<>(Topics.RIDE_MAP_UPDATE.getTopicName(), bikeId, stationId),
+                            new ProducerRecord<>(Topics.RIDE_MAP_UPDATE.getTopicName(), bikeId, update.encode()),
                             (metadata, exception) -> {
                                 if (exception == null) {
                                     System.out.println("ABike station update sent successfully");

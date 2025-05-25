@@ -101,26 +101,27 @@ public class RideCommunicationAdapter extends AbstractVerticle {
                             processRideUpdate(payload);
                         }
                         else if(record.topic().equals(Topics.ABIKE_RIDE_UPDATE.getTopicName())) {
-                            try {
-                                JsonObject updateJson = new JsonObject(record.value());
-                                aBikeService
-                                        .updateABike(updateJson)
-                                        .thenAccept(
-                                                updated ->
-                                                        logger.info(
-                                                                "ABike {} updated successfully via Kafka consumer",
-                                                                updateJson.getString("id")))
-                                        .exceptionally(
-                                                e -> {
-                                                    logger.error(
-                                                            "Failed to update ABike {}: {}",
-                                                            updateJson.getString("id"),
-                                                            e.getMessage());
-                                                    return null;
-                                                });
-                            } catch (Exception e) {
-                                logger.error("Invalid ABike data from Kafka: {}", e.getMessage());
-                            }
+                            JsonObject updateJson = new JsonObject(record.value());
+                                try {
+                                    aBikeService
+                                            .updateABike(updateJson)
+                                            .thenAccept(
+                                                    updated ->
+                                                            logger.info(
+                                                                    "ABike {} updated successfully via Kafka consumer",
+                                                                    updateJson.getString("id")))
+                                            .exceptionally(
+                                                    e -> {
+                                                        logger.error(
+                                                                "Failed to update ABike {}: {}",
+                                                                updateJson.getString("id"),
+                                                                e.getMessage());
+                                                        return null;
+                                                    });
+                                } catch (Exception e) {
+                                    logger.error("Invalid ABike data from Kafka: {}", e.getMessage());
+                                }
+
                         }
                     }
                     consumer.commitAsync(
@@ -163,27 +164,18 @@ public class RideCommunicationAdapter extends AbstractVerticle {
     private void processRideUpdate(JsonObject rideUpdate) {
         String action = rideUpdate.getString("action");
         String username = rideUpdate.getString("username");
-        String bikeName = rideUpdate.getString("bikeName");
+        String bikeId = rideUpdate.getString("bikeName");
         String bikeTypeStr = rideUpdate.getString("bikeType");
 
-        if (action == null || username == null || bikeName == null || bikeTypeStr == null) {
+        if (action == null  || bikeId == null || bikeTypeStr == null) {
             logger.error("Incomplete ride update data: {}", rideUpdate);
             return;
         }
 
-//        BikeType bikeType;
-//        try {
-//            bikeType = BikeType.valueOf(bikeTypeStr.toUpperCase());
-//        } catch (IllegalArgumentException e) {
-//            logger.error(
-//                    "Invalid bike type: {}. Must be one of: {}",
-//                    bikeTypeStr,
-//                    Arrays.stream(BikeType.values()).map(Enum::name).collect(Collectors.joining(", ")));
-//            return;
-//        }
-
+        //Here we should receive also the arrived station id and bikeid
+        //so we can assign the bike to the station
         if(action.equals("start")){
-            stationService.deassignBikeFromStation(bikeName);
+            stationService.deassignBikeFromStation(bikeId);
         }
     }
 

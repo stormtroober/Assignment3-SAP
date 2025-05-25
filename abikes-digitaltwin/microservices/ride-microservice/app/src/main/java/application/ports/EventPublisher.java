@@ -5,6 +5,7 @@ public interface EventPublisher {
   String RIDE_UPDATE_ADDRESS_EBIKE = "ride.updates.ebike";
   String RIDE_UPDATE_ADDRESS_USER = "ride.updates.user";
   String RIDE_UPDATE_ADDRESS_ABIKE = "ride.updates.abike";
+  String RIDE_UPDATE_ADDRESS_ABIKE_STATION = "ride.updates.abike.station";
 
   /**
    * Publishes an update for an autonomous bike.
@@ -27,6 +28,8 @@ public interface EventPublisher {
    * @param batteryLevel the battery level of the e-bike.
    */
   void publishEBikeUpdate(String id, double x, double y, String state, int batteryLevel);
+
+  void publishABikeStationUpdate(String bikeId, String stationId);
 
   /**
    * Publishes an update for a user.

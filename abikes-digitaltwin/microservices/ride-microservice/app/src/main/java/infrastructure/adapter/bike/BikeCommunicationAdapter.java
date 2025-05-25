@@ -35,6 +35,31 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
     vertx
         .eventBus()
         .consumer(
+            EventPublisher.RIDE_UPDATE_ADDRESS_ABIKE_STATION,
+            message -> {
+                if (message.body() instanceof JsonObject update) {
+                    if (update.containsKey("id")) {
+                        String bikeId = update.getString("id");
+                        String stationId = update.getString("stationId");
+                        System.out.println("Sending ABike station update for bike: " + bikeId + " to station: " + stationId);
+                        producer.send(
+                            new ProducerRecord<>(Topics.RIDE_MAP_UPDATE.getTopicName(), bikeId, stationId),
+                            (metadata, exception) -> {
+                                if (exception == null) {
+                                    System.out.println("ABike station update sent successfully");
+                                } else {
+                                    System.err.println("Failed to send ABike station update: " + exception.getMessage());
+                                }
+                            });
+                    }
+                }
+            }
+        );
+
+
+    vertx
+        .eventBus()
+        .consumer(
             EventPublisher.RIDE_UPDATE_ADDRESS_EBIKE,
             message -> {
               if (message.body() instanceof JsonObject update) {
@@ -68,7 +93,7 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
         new ProducerRecord<>(topicName, aBike.getString("id"), aBike.encode()),
         (metadata, exception) -> {
           if (exception == null) {
-            //System.out.println("ABike update sent successfully");
+            System.out.println("ABike update sent successfully");
           } else {
             System.err.println("Failed to send EBike update: " + exception.getMessage());
           }

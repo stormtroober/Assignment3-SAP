@@ -18,6 +18,13 @@ public class EventPublisherImpl implements EventPublisher {
   }
 
   @Override
+  public void publishABikeStationUpdate(String bikeId, String stationId) {
+    JsonObject message =
+        new JsonObject().put("stationId", stationId);
+    vertx.eventBus().publish(RIDE_UPDATE_ADDRESS_ABIKE, message);
+  }
+
+  @Override
   public synchronized void publishABikeUpdate(
       String id, double x, double y, String state, int batteryLevel) {
     publishUpdate(RIDE_UPDATE_ADDRESS_ABIKE, id, x, y, state, batteryLevel);

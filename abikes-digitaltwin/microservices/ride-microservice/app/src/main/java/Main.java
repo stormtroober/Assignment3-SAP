@@ -5,6 +5,7 @@ import domain.model.repository.*;
 import infrastructure.adapter.bike.BikeCommunicationAdapter;
 import infrastructure.adapter.bike.BikeConsumerAdapter;
 import infrastructure.adapter.map.MapCommunicationAdapter;
+import infrastructure.adapter.station.StationConsumerAdapter;
 import infrastructure.adapter.user.UserCommunicationAdapter;
 import infrastructure.adapter.user.UserConsumerAdapter;
 import infrastructure.adapter.web.RideServiceVerticle;
@@ -34,10 +35,10 @@ public class Main {
               ABikeRepository abikeRepository = new InMemoryABikeRepository();
               EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
               DispatchRepository dispatchRepository = new InMemoryDispatchRepository();
+                StationRepository stationRepository = new InMemoryStationRepository();
 
-                UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx, userRepository, dispatchRepository);
-
-                userCommunicationAdapter.init();
+              UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx, userRepository, dispatchRepository);
+              userCommunicationAdapter.init();
 
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
 
@@ -54,24 +55,28 @@ public class Main {
                   new RestAutonomousRideServiceImpl(
                       eventPublisher,
                       vertx,
-                      bikeCommunicationAdapter,
-                      mapCommunicationAdapter,
+                          mapCommunicationAdapter,
                       userCommunicationAdapter,
                       abikeRepository,
                       userRepository,
-                          dispatchRepository);
+                          stationRepository
+                  );
 
               RideServiceVerticle rideServiceVerticle =
                   new RideServiceVerticle(service, autonomousRideService, vertx);
               rideServiceVerticle.init();
 
-              // TODO: we need the port here
+              // TODO: we need ports here
               UserConsumerAdapter userConsumerAdapter = new UserConsumerAdapter(userRepository);
               userConsumerAdapter.init();
 
               BikeConsumerAdapter bikeConsumerAdapter =
                   new BikeConsumerAdapter(abikeRepository, ebikeRepository);
               bikeConsumerAdapter.init();
+
+                StationConsumerAdapter stationConsumerAdapter =
+                    new StationConsumerAdapter(stationRepository);
+                stationConsumerAdapter.init();
             });
   }
 }

@@ -100,7 +100,7 @@ public class RideCommunicationAdapter extends AbstractVerticle {
                             JsonObject payload = new JsonObject(record.value());
                             processRideUpdate(payload);
                         }
-                        else {
+                        else if(record.topic().equals(Topics.ABIKE_RIDE_UPDATE.getTopicName())) {
                             try {
                                 JsonObject updateJson = new JsonObject(record.value());
                                 aBikeService

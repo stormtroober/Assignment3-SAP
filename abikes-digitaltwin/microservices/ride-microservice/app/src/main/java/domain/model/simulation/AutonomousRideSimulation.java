@@ -127,6 +127,8 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
       if (distance <= ARRIVAL_THRESHOLD) {
         log.info("Ride {} has arrived at destination {}", ride.getId(), current);
         ride.end();
+//        publisher.publishStationUpdate(
+//            ride.getBike().getId(), destination.x(), destination.y(), bike.getState().toString(), bike.getBatteryLevel());
         stopSimulation();
         scheduleCompletion();
         return;

@@ -8,6 +8,7 @@ public enum Topics {
   USER_UPDATE("user-update"),
   ABIKE_UPDATES("abike-update"),
   EBIKE_UPDATES("ebike-update"),
+  STATION_UPDATES("station-update"),
   RIDE_MAP_UPDATE("ride-map-update");
 
   private final String topicName;

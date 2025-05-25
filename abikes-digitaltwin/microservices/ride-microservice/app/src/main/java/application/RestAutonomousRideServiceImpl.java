@@ -5,7 +5,6 @@ import domain.model.*;
 import domain.model.bike.*;
 import domain.model.repository.*;
 import domain.model.simulation.*;
-import infrastructure.repository.DispatchRepository;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
@@ -18,33 +17,30 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
   private final Logger logger = LoggerFactory.getLogger(RestAutonomousRideServiceImpl.class);
   private final RideRepository rideRepository;
-  private final BikeCommunicationPort bikeCommunicationAdapter;
-  private EventPublisher eventPublisher;
+    private final EventPublisher eventPublisher;
   private final MapCommunicationPort mapCommunicationAdapter;
   private final UserCommunicationPort userCommunicationAdapter;
   private final ABikeRepository abikeRepository;
   private final UserRepository userRepository;
-    private final DispatchRepository dispatchRepository;
-  private final Vertx vertx;
+    private final Vertx vertx;
+    private final StationRepository stationRepository;
 
   public RestAutonomousRideServiceImpl(
       EventPublisher publisher,
       Vertx vertx,
-      BikeCommunicationPort bikeCommunicationAdapter,
       MapCommunicationPort mapCommunicationAdapter,
       UserCommunicationPort userCommunicationAdapter,
       ABikeRepository abikeRepository,
       UserRepository userRepository,
-      DispatchRepository dispatchRepository) {
+      StationRepository stationRepository) {
     this.vertx = vertx;
     this.eventPublisher = publisher;
     this.rideRepository = new RideRepositoryImpl(vertx, publisher);
-    this.bikeCommunicationAdapter = bikeCommunicationAdapter;
-    this.mapCommunicationAdapter = mapCommunicationAdapter;
+      this.mapCommunicationAdapter = mapCommunicationAdapter;
     this.userCommunicationAdapter = userCommunicationAdapter;
     this.abikeRepository = abikeRepository;
     this.userRepository = userRepository;
-    this.dispatchRepository = dispatchRepository;
+    this.stationRepository = stationRepository;
   }
 
   @Override
@@ -149,15 +145,18 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
 
                                 rideSimulation.stopSimulationManually();
 
-//                                bikeCommunicationAdapter.sendUpdateABike(
-//                                        new JsonObject()
-//                                                .put("id", ride.getBike().getId())
-//                                                .put("state", ride.getBike().getState().toString()));
                                 mapCommunicationAdapter.notifyEndRide(
                                         ride.getBike().getId(), BikeType.AUTONOMOUS, userId);
 
                                 rideRepository.removeRide(ride);
 
+                                P2d bikePosition = ride.getBike().getLocation();
+                                P2d closestStationLocation = stationRepository.findClosestStation(bikePosition)
+                                        .thenApply(stationOpt -> stationOpt.map(station -> new P2d(
+                                                station.getJsonObject("location").getDouble("x"),
+                                                station.getJsonObject("location").getDouble("y")))
+                                                .orElse(new P2d(0, 0))) // Default to (0,0) if no station found
+                                        .join();
                                 // Poll every 500ms to check if the ABike came back available from ABike-Service
                                 vertx.setPeriodic(500, id -> {
                                     abikeRepository.findById(ride.getBike().getId()).thenAccept(abikeJsonOpt -> {
@@ -166,9 +165,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                             ABikeState state = ABikeState.valueOf(abikeJson.getString("state"));
                                             if (state == ABikeState.AVAILABLE) {
                                                 vertx.cancelTimer(id);
-                                                // Replace with actual station location
-                                                P2d stationLocation = new P2d(0, 0); // Example location
-                                                dispatchBikeToStation(userId, ride.getBike().getId(), stationLocation).whenComplete(
+                                                dispatchBikeToStation(userId, ride.getBike().getId(), closestStationLocation).whenComplete(
                                                         (res, err) -> {
                                                     if (err != null) {
                                                         logger.error("Error dispatching bike to station: " + err.getMessage(), err);

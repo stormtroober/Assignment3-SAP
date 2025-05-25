@@ -30,6 +30,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   private static final double ARRIVAL_THRESHOLD = 0.5; // distance to consider arrived
   private volatile boolean manuallyStoppedFlag = false;
   private final AutonomousRideType rideType;
+  private boolean destinationReached = false;
 
   public AutonomousRideSimulation(
       Ride ride, Vertx vertx, EventPublisher publisher, P2d destination, AutonomousRideType rideType) {
@@ -127,9 +128,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
       if (distance <= ARRIVAL_THRESHOLD) {
         log.info("Ride {} has arrived at destination {}", ride.getId(), current);
         ride.end();
-        //publisher.publishABikeStationUpdate(bike.getId(), ride.getStation().getId());
-//        publisher.publishStationUpdate(
-//            ride.getBike().getId(), destination.x(), destination.y(), bike.getState().toString(), bike.getBatteryLevel());
+        destinationReached = true;
         stopSimulation();
         scheduleCompletion();
         return;
@@ -199,6 +198,10 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
               bike.getId(), loc.x(), loc.y(), bike.getState().toString(), bike.getBatteryLevel());
 
     publisher.publishUserUpdate(ride.getUser().getId(), ride.getUser().getCredit());
+  }
+
+  public boolean isDestinationReached() {
+    return destinationReached;
   }
 
   @Override

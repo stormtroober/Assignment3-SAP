@@ -188,19 +188,27 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
     private CompletableFuture<Void> dispatchBikeToStation(String userId, String bikeId, P2d stationLocation) {
         CompletableFuture<ABike> bikeFuture = checkABike(bikeId);
         CompletableFuture<User> userFuture = checkUser(userId);
+        CompletableFuture<String> stationIdFuture = stationRepository.findClosestStation(stationLocation)
+                .thenApply(stationOpt -> stationOpt.map(station -> station.getString("id"))
+                        .orElse("unknown-station"));
 
         return CompletableFuture.allOf(bikeFuture, userFuture)
                 .thenCompose(
                         v -> {
                             ABike bike = bikeFuture.join();
                             User user = userFuture.join();
+                            String stationId = stationIdFuture.join();
 
-                            if (bike == null || user == null) {
+                            if (bike == null || user == null || stationId == null) {
                                 return CompletableFuture.failedFuture(
                                         new RuntimeException("ABike or User not found"));
                             } else if (bike.getState() != ABikeState.AVAILABLE) {
                                 return CompletableFuture.failedFuture(
                                         new RuntimeException("ABike is not available"));
+                            }
+                            else if (stationId.equals("unknown-station")) {
+                                return CompletableFuture.failedFuture(
+                                        new RuntimeException("No station found near the bike"));
                             } else if (user.getCredit() == 0) {
                                 return CompletableFuture.failedFuture(new RuntimeException("User has no credit"));
                             } else if (bike.getBatteryLevel() == 0) {
@@ -224,6 +232,13 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                             mapCommunicationAdapter.notifyEndPublicRide(
                                                     bikeId, bike.getType());
                                             rideRepository.removeRide(ride);
+
+                                            if(autonomousSim.isDestinationReached()){
+                                                eventPublisher.publishABikeStationUpdate(bikeId, stationId);
+                                            }
+                                            else{
+                                                logger.info("Autonomous simulation did not make it to destination");
+                                            }
                                         } else {
                                             logger.error(
                                                     "Error during autonomous simulation: " + err.getMessage(), err);

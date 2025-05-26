@@ -62,11 +62,10 @@ public class EventPublisherImpl implements EventPublisher {
   @Override
   public void publishStopRide(String username, BikeType bikeType) {
     JsonObject json = new JsonObject();
-    if(bikeType == BikeType.NORMAL){
+    if (bikeType == BikeType.NORMAL) {
       json.put("rideStatus", "stopped");
-    }
-    else if(bikeType == BikeType.AUTONOMOUS){
-        json.put("autonomousRideStatus", "stopped");
+    } else if (bikeType == BikeType.AUTONOMOUS) {
+      json.put("autonomousRideStatus", "stopped");
     }
     vertx.eventBus().publish("ride.stop." + username, json.encode());
   }
@@ -77,7 +76,6 @@ public class EventPublisherImpl implements EventPublisher {
     bikes.forEach(bike -> bikesJson.add(convertABikeToJson(bike)));
     vertx.eventBus().publish("public_abikes", bikesJson.encode());
   }
-
 
   @Override
   public void publishStationsUpdate(List<Station> stations) {

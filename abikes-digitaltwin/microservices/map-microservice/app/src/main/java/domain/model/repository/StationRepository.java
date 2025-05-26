@@ -10,23 +10,23 @@ public interface StationRepository {
   /**
    * Saves a station to the repository.
    *
-   * @param station the station to save.
-   * @return a CompletableFuture that completes when the station is saved.
+   * @param station the station to save
+   * @return a future that completes when the station is stored
    */
   CompletableFuture<Void> saveStation(Station station);
 
   /**
-   * Retrieves a station from the repository by its id.
+   * Retrieves a station by its identifier.
    *
-   * @param stationId the id of the station to retrieve.
-   * @return a CompletableFuture containing the retrieved station.
+   * @param stationId unique identifier of the station
+   * @return a future containing the station or completing exceptionally if not found
    */
   CompletableFuture<Station> getStation(String stationId);
 
   /**
-   * Retrieves a list of all stations.
+   * Retrieves all stations.
    *
-   * @return a CompletableFuture containing a list of all stations.
+   * @return a future with a list of all stations
    */
   CompletableFuture<List<Station>> getAllStations();
 }

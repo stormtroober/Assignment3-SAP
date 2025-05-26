@@ -1,4 +1,4 @@
-package infrastructure.adapter.ebike;
+package infrastructure.adapter.bike;
 
 import application.ports.BikeMapServiceAPI;
 import domain.model.*;
@@ -46,36 +46,34 @@ public class BikeUpdateAdapter {
           ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
           for (ConsumerRecord<String, String> record : records) {
 
-              JsonObject body = new JsonObject(record.value());
-              String topic = record.topic();
+            JsonObject body = new JsonObject(record.value());
+            String topic = record.topic();
 
-              if (Topics.EBIKE_UPDATES.getTopicName().equals(topic)) {
-                EBike bike = createEBikeFromJson(body);
-                bikeMapServiceAPI
-                    .updateEBike(bike)
-                    .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
-                    .exceptionally(
-                        ex -> {
-                          logger.error(
-                              "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
-                          return null;
-                        });
-              } else if (Topics.ABIKE_UPDATES.getTopicName().equals(topic)) {
-                ABike bike = createABikeFromJson(body);
-                bikeMapServiceAPI
-                    .updateABike(bike)
-                    .thenAccept(v -> logger.info("ABike {} updated successfully", bike.getId()))
-                    .exceptionally(
-                        ex -> {
-                          logger.error(
-                              "Failed to update ABike {}: {}", bike.getId(), ex.getMessage());
-                          return null;
-                        });
-              } else {
-                logger.warn("Received message from unknown topic: {}", topic);
-              }
-
-
+            if (Topics.EBIKE_UPDATES.getTopicName().equals(topic)) {
+              EBike bike = createEBikeFromJson(body);
+              bikeMapServiceAPI
+                  .updateEBike(bike)
+                  .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
+                  .exceptionally(
+                      ex -> {
+                        logger.error(
+                            "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
+                        return null;
+                      });
+            } else if (Topics.ABIKE_UPDATES.getTopicName().equals(topic)) {
+              ABike bike = createABikeFromJson(body);
+              bikeMapServiceAPI
+                  .updateABike(bike)
+                  .thenAccept(v -> logger.info("ABike {} updated successfully", bike.getId()))
+                  .exceptionally(
+                      ex -> {
+                        logger.error(
+                            "Failed to update ABike {}: {}", bike.getId(), ex.getMessage());
+                        return null;
+                      });
+            } else {
+              logger.warn("Received message from unknown topic: {}", topic);
+            }
           }
 
           consumer.commitAsync(

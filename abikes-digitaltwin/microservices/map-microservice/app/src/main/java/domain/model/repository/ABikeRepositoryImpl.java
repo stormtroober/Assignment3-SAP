@@ -3,9 +3,6 @@ package domain.model.repository;
 import ddd.Repository;
 import domain.model.ABike;
 import domain.model.ABikeState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +10,11 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ABikeRepositoryImpl implements ABikeRepository, Repository {
-    Logger logger = LoggerFactory.getLogger(ABikeRepositoryImpl.class);
+  Logger logger = LoggerFactory.getLogger(ABikeRepositoryImpl.class);
   private final ConcurrentHashMap<String, ABike> bikes = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, String> bikeAssignments = new ConcurrentHashMap<>();
 
@@ -45,7 +44,7 @@ public class ABikeRepositoryImpl implements ABikeRepository, Repository {
           if (bikeAssignments.containsValue(bike.getId())) {
             throw new IllegalStateException("Bike is already assigned");
           }
-            logger.info("Assigning bike {} to user {}", bike, username);
+          logger.info("Assigning bike {} to user {}", bike, username);
           bikeAssignments.put(username, bike.getId());
         });
   }
@@ -64,36 +63,38 @@ public class ABikeRepositoryImpl implements ABikeRepository, Repository {
         });
   }
 
-   @Override
-    public CompletableFuture<Void> assignBikeToPublic(ABike bike) {
-        return CompletableFuture.runAsync(() -> {
-            if (!bikes.containsKey(bike.getId())) {
-                throw new IllegalArgumentException("Bike not found in repository");
-            }
-            if (bikeAssignments.containsValue(bike.getId())) {
-                throw new IllegalStateException("Bike is already assigned");
-            }
-            logger.info("Assigning bike {} to PUBLIC", bike);
-            bikeAssignments.put("PUBLIC", bike.getId());
+  @Override
+  public CompletableFuture<Void> assignBikeToPublic(ABike bike) {
+    return CompletableFuture.runAsync(
+        () -> {
+          if (!bikes.containsKey(bike.getId())) {
+            throw new IllegalArgumentException("Bike not found in repository");
+          }
+          if (bikeAssignments.containsValue(bike.getId())) {
+            throw new IllegalStateException("Bike is already assigned");
+          }
+          logger.info("Assigning bike {} to PUBLIC", bike);
+          bikeAssignments.put("PUBLIC", bike.getId());
         });
-    }
+  }
 
-    @Override
-    public CompletableFuture<Void> unassignBikeFromPublic(ABike bike) {
-        return CompletableFuture.runAsync(() -> {
-            if (!bikeAssignments.containsKey("PUBLIC")) {
-                throw new IllegalArgumentException("No bike assigned to PUBLIC");
-            }
-            if (!bikeAssignments.get("PUBLIC").equals(bike.getId())) {
-                throw new IllegalArgumentException("This bike is not assigned to PUBLIC");
-            }
-            logger.info("Unassigning bike {} from PUBLIC", bike);
-            bikeAssignments.remove("PUBLIC");
+  @Override
+  public CompletableFuture<Void> unassignBikeFromPublic(ABike bike) {
+    return CompletableFuture.runAsync(
+        () -> {
+          if (!bikeAssignments.containsKey("PUBLIC")) {
+            throw new IllegalArgumentException("No bike assigned to PUBLIC");
+          }
+          if (!bikeAssignments.get("PUBLIC").equals(bike.getId())) {
+            throw new IllegalArgumentException("This bike is not assigned to PUBLIC");
+          }
+          logger.info("Unassigning bike {} from PUBLIC", bike);
+          bikeAssignments.remove("PUBLIC");
         });
-    }
+  }
 
-    @Override
-    public CompletableFuture<List<ABike>> getPublicBikes() {
+  @Override
+  public CompletableFuture<List<ABike>> getPublicBikes() {
     return CompletableFuture.supplyAsync(
         () ->
             bikeAssignments.entrySet().stream()
@@ -101,7 +102,7 @@ public class ABikeRepositoryImpl implements ABikeRepository, Repository {
                 .map(e -> bikes.get(e.getValue()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
-    }
+  }
 
   @Override
   public CompletableFuture<List<ABike>> getAvailableBikes() {

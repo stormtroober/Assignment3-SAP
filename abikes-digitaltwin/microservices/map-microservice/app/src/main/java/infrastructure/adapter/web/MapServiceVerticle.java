@@ -102,11 +102,16 @@ public class MapServiceVerticle extends AbstractVerticle {
                                         metricsManager.incrementMethodCounter(
                                             "observeAllBikes_message_sent");
                                       });
-                            var abikeConsumer = vertx.eventBus().consumer("abikes.update", message -> {
-
-                                webSocket.writeTextMessage(message.body().toString());
-                                metricsManager.incrementMethodCounter("observeAllBikes_abike_message_sent");
-                            });
+                          var abikeConsumer =
+                              vertx
+                                  .eventBus()
+                                  .consumer(
+                                      "abikes.update",
+                                      message -> {
+                                        webSocket.writeTextMessage(message.body().toString());
+                                        metricsManager.incrementMethodCounter(
+                                            "observeAllBikes_abike_message_sent");
+                                      });
 
                           bikeMapService.getAllBikes();
 
@@ -200,24 +205,33 @@ public class MapServiceVerticle extends AbstractVerticle {
                                         metricsManager.incrementMethodCounter(
                                             "observeUserBikes_message_sent");
                                       });
-                            var userABikeConsumer =
-                                vertx.eventBus().consumer(username + ".abikes", message -> {
-                                    webSocket.writeTextMessage(message.body().toString());
-                                    metricsManager.incrementMethodCounter("observeUserBikes_abike_message_sent");
-                            });
+                          var userABikeConsumer =
+                              vertx
+                                  .eventBus()
+                                  .consumer(
+                                      username + ".abikes",
+                                      message -> {
+                                        webSocket.writeTextMessage(message.body().toString());
+                                        metricsManager.incrementMethodCounter(
+                                            "observeUserBikes_abike_message_sent");
+                                      });
 
-                            var publicABikesConsumer =
-                                vertx.eventBus().consumer("public_abikes", message -> {
-                                    webSocket.writeTextMessage(message.body().toString());
-                                    metricsManager.incrementMethodCounter("observeUserBikes_public_abike_message_sent");
-                            });
+                          var publicABikesConsumer =
+                              vertx
+                                  .eventBus()
+                                  .consumer(
+                                      "public_abikes",
+                                      message -> {
+                                        webSocket.writeTextMessage(message.body().toString());
+                                        metricsManager.incrementMethodCounter(
+                                            "observeUserBikes_public_abike_message_sent");
+                                      });
 
                           bikeMapService.registerUser(username);
                           bikeMapService.getAllBikes(username);
 
                           webSocket.closeHandler(
                               v -> {
-
                                 metricsManager.incrementMethodCounter(
                                     "observeUserBikes_connection_closed");
                                 bikeMapService.deregisterUser(username);
@@ -231,7 +245,6 @@ public class MapServiceVerticle extends AbstractVerticle {
 
                           webSocket.exceptionHandler(
                               err -> {
-
                                 metricsManager.incrementMethodCounter(
                                     "observeUserBikes_connection_error");
                                 bikeMapService.deregisterUser(username);

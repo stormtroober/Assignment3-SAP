@@ -19,7 +19,7 @@ public class Slot implements Serializable {
     return abikeId;
   }
 
-  public void free(){
+  public void free() {
     this.abikeId = null;
   }
 

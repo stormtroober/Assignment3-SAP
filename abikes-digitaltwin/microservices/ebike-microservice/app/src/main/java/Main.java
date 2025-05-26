@@ -23,7 +23,7 @@ public class Main {
               EBikeServiceImpl service = new EBikeServiceImpl(repository, mapCommunicationAdapter);
               RESTEBikeAdapter restEBikeAdapter = new RESTEBikeAdapter(service);
               RideCommunicationAdapter rideCommunicationAdapter =
-                  new RideCommunicationAdapter(service, vertx); // Port for RideCommunicationAdapter
+                  new RideCommunicationAdapter(service); // Port for RideCommunicationAdapter
               EBikeVerticle eBikeVerticle = new EBikeVerticle(restEBikeAdapter, vertx);
               rideCommunicationAdapter.init();
               eBikeVerticle.init();

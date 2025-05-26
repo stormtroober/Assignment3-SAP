@@ -23,9 +23,10 @@ public class Main {
               EBikeServiceImpl service = new EBikeServiceImpl(repository, mapCommunicationAdapter);
               RESTEBikeAdapter restEBikeAdapter = new RESTEBikeAdapter(service);
               RideCommunicationAdapter rideCommunicationAdapter =
-                  new RideCommunicationAdapter(service); // Port for RideCommunicationAdapter
-              EBikeVerticle eBikeVerticle = new EBikeVerticle(restEBikeAdapter, vertx);
+                  new RideCommunicationAdapter(service);
               rideCommunicationAdapter.init();
+
+              EBikeVerticle eBikeVerticle = new EBikeVerticle(restEBikeAdapter, vertx);
               eBikeVerticle.init();
             });
   }

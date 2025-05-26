@@ -2,16 +2,8 @@ package infrastructure.adapters.ride;
 
 import application.ports.EBikeServiceAPI;
 import infrastructure.adapters.kafkatopic.Topics;
-import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.KafkaProperties;
-import infrastructure.utils.MetricsManager;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +25,7 @@ public class RideCommunicationAdapter {
     this.eBikeService = eBikeService;
   }
 
-  public void init(){
+  public void init() {
     initKafkaConsumer();
   }
 
@@ -46,7 +38,7 @@ public class RideCommunicationAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-            new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
     try (consumer) {
       consumer.subscribe(List.of(Topics.EBIKE_RIDE_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", Topics.EBIKE_RIDE_UPDATE.getTopicName());
@@ -58,11 +50,11 @@ public class RideCommunicationAdapter {
             handleRideUpdate(record);
           }
           consumer.commitAsync(
-                  (offsets, exception) -> {
-                    if (exception != null) {
-                      logger.error("Failed to commit offsets: {}", exception.getMessage());
-                    }
-                  });
+              (offsets, exception) -> {
+                if (exception != null) {
+                  logger.error("Failed to commit offsets: {}", exception.getMessage());
+                }
+              });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage());
         }
@@ -76,19 +68,18 @@ public class RideCommunicationAdapter {
     try {
       JsonObject updateJson = new JsonObject(record.value());
       eBikeService
-              .updateEBike(updateJson)
-              .thenAccept(
-                      updated -> logger.info(
-                              "EBike {} updated successfully via Kafka consumer",
-                              updateJson.getString("id")))
-              .exceptionally(
-                      e -> {
-                        logger.error(
-                                "Failed to update EBike {}: {}",
-                                updateJson.getString("id"),
-                                e.getMessage());
-                        return null;
-                      });
+          .updateEBike(updateJson)
+          .thenAccept(
+              updated ->
+                  logger.info(
+                      "EBike {} updated successfully via Kafka consumer",
+                      updateJson.getString("id")))
+          .exceptionally(
+              e -> {
+                logger.error(
+                    "Failed to update EBike {}: {}", updateJson.getString("id"), e.getMessage());
+                return null;
+              });
     } catch (Exception e) {
       logger.error("Invalid EBike data from Kafka: {}", e.getMessage());
     }

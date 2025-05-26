@@ -49,6 +49,17 @@ public class Main {
                         return null;
                       });
 
+              stationService
+                  .createStation("station2")
+                  .thenAccept(
+                      station ->
+                          System.out.println("Station1 created: " + station.encodePrettily()))
+                  .exceptionally(
+                      ex -> {
+                        System.err.println("Failed to create station1: " + ex.getMessage());
+                        return null;
+                      });
+
               RESTABikeAdapter restABikeAdapter = new RESTABikeAdapter(aBikeService);
               RideCommunicationAdapter rideCommunicationAdapter =
                   new RideCommunicationAdapter(aBikeService, stationService);

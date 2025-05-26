@@ -10,11 +10,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StationServiceImpl implements StationServiceAPI {
 
   private final StationRepository repository;
   private final CommunicationPort communicationPort;
+  private final AtomicInteger createCounter = new AtomicInteger();
 
   public StationServiceImpl(StationRepository repository, CommunicationPort communicationPort) {
     this.repository = repository;
@@ -24,7 +26,11 @@ public class StationServiceImpl implements StationServiceAPI {
 
   @Override
   public CompletableFuture<JsonObject> createStation(String id) {
-    Station station = StationFactory.createStandardStation(id);
+    int count = createCounter.incrementAndGet();
+    Station station =
+        (count % 2 != 0)
+            ? StationFactory.createStandardStation(id)
+            : StationFactory.createAlternativeStation(id);
     JsonObject stationJson = StationMapper.toJson(station);
     communicationPort.sendUpdate(stationJson);
     return repository.save(stationJson).thenApply(v -> stationJson);

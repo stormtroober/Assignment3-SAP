@@ -21,7 +21,6 @@ public class RESTABikeAdapter {
   public void configureRoutes(Router router) {
     router.post("/api/abikes/create").handler(this::createABike);
     router.put("/api/abikes/:id/recharge").handler(this::rechargeABike);
-    router.get("/api/abikes").handler(this::getAllABikes);
     router.get("/health").handler(this::healthCheck);
     router.get("/metrics").handler(this::metrics);
   }
@@ -92,24 +91,6 @@ public class RESTABikeAdapter {
         .exceptionally(
             e -> {
               metricsManager.recordError(timer, "rechargeABike", e);
-              handleError(ctx, e);
-              return null;
-            });
-  }
-
-  private void getAllABikes(RoutingContext ctx) {
-    metricsManager.incrementMethodCounter("getAllABikes");
-    var timer = metricsManager.startTimer();
-    abikeService
-        .getAllABikes()
-        .thenAccept(
-            result -> {
-              sendResponse(ctx, 200, result);
-              metricsManager.recordTimer(timer, "getAllABikes");
-            })
-        .exceptionally(
-            e -> {
-              metricsManager.recordError(timer, "getAllABikes", e);
               handleError(ctx, e);
               return null;
             });

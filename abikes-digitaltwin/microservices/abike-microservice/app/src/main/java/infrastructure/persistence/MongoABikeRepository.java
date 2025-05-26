@@ -30,7 +30,7 @@ public class MongoABikeRepository implements ABikeRepository {
             .put("state", ebike.getString("state"))
             .put("batteryLevel", ebike.getInteger("batteryLevel"))
             .put("location", ebike.getJsonObject("location"))
-                .put("type", ebike.getString("type"));
+            .put("type", ebike.getString("type"));
 
     mongoClient
         .insert(COLLECTION, document)
@@ -99,7 +99,7 @@ public class MongoABikeRepository implements ABikeRepository {
                         .put("state", result.getString("state"))
                         .put("batteryLevel", result.getInteger("batteryLevel"))
                         .put("location", result.getJsonObject("location"))
-                            .put("type", result.getString("type"));
+                        .put("type", result.getString("type"));
                 future.complete(Optional.of(ebike));
               } else {
                 future.complete(Optional.empty());
@@ -131,7 +131,7 @@ public class MongoABikeRepository implements ABikeRepository {
                             .put("state", result.getString("state"))
                             .put("batteryLevel", result.getInteger("batteryLevel"))
                             .put("location", result.getJsonObject("location"))
-                                .put("type", result.getString("type"));
+                            .put("type", result.getString("type"));
 
                     ebikes.add(ebike);
                   });

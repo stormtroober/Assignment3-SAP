@@ -15,5 +15,4 @@ public interface ABikeServiceAPI {
   CompletableFuture<JsonObject> updateABike(JsonObject abike);
 
   CompletableFuture<JsonArray> getAllABikes();
-
 }

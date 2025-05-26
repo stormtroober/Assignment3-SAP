@@ -51,7 +51,7 @@ public class Main {
 
               RESTABikeAdapter restABikeAdapter = new RESTABikeAdapter(aBikeService);
               RideCommunicationAdapter rideCommunicationAdapter =
-              new RideCommunicationAdapter(aBikeService, stationService, vertx);
+                  new RideCommunicationAdapter(aBikeService, stationService, vertx);
 
               ABikeVerticle aBikeVerticle = new ABikeVerticle(restABikeAdapter, vertx);
               rideCommunicationAdapter.init();

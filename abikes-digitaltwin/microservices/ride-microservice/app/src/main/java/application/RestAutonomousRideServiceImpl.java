@@ -111,6 +111,9 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                             mapCommunicationAdapter.notifyEndRide(
                                                     bikeId, bike.getType(), userId);;
                                             rideRepository.removeRide(ride);
+                                            if(bike.getState().equals(ABikeState.MAINTENANCE)){
+                                                userCommunicationAdapter.removeDispatch(user.getId(), bike.getId(), false);
+                                            }
                                         }
 
                                     } else {

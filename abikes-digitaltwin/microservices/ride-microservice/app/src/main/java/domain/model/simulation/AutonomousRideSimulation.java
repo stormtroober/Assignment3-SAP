@@ -110,7 +110,6 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
         return;
       }
 
-
       P2d current = bike.getLocation();
       V2d toDest = destination.sub(current);
       double dx = toDest.x();

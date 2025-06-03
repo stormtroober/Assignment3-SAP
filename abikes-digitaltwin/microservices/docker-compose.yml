@@ -232,11 +232,10 @@ services:
       - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
       - SERVICE_NAME=${USER_INSTANCE_HOSTNAME}
       - SERVICE_PORT=${USER_INSTANCE_PORT}
-      - ADAPTER_RIDE_PORT=${USER_ADAPTER_RIDE_PORT}
       - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
       - MONGO_DATABASE=${USER_MONGODB_DATABASE}
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:${USER_INSTANCE_PORT}/health", "curl -f http://localhost:${USER_ADAPTER_RIDE_PORT}/health" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:${USER_INSTANCE_PORT}/health" ]
       interval: 5s
       timeout: 5s
       retries: 3

@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface UserRepository {
-    void save(User user);
+  void save(User user);
 
-    Optional<User> findById(String username);
+  Optional<User> findById(String username);
 
-    Map<String, User> findAll();
+  Map<String, User> findAll();
 }

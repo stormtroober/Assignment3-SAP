@@ -27,35 +27,37 @@ public class Main {
                   new EBikeCommunicationAdapter(vertx);
               ebikeCommunicationAdapter.init();
               MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
-                mapCommunicationAdapter.init();
+              mapCommunicationAdapter.init();
               UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
               userCommunicationAdapter.init();
 
-                RestRideServiceAPI service = getRestRideServiceAPI(vertx, ebikeCommunicationAdapter, mapCommunicationAdapter);
-                RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, vertx);
+              RestRideServiceAPI service =
+                  getRestRideServiceAPI(vertx, ebikeCommunicationAdapter, mapCommunicationAdapter);
+              RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, vertx);
               rideServiceVerticle.init();
             });
   }
 
-    private static RestRideServiceAPI getRestRideServiceAPI(Vertx vertx, EbikeCommunicationPort ebikeCommunicationAdapter, MapCommunicationPort mapCommunicationAdapter) {
-        EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
+  private static RestRideServiceAPI getRestRideServiceAPI(
+      Vertx vertx,
+      EbikeCommunicationPort ebikeCommunicationAdapter,
+      MapCommunicationPort mapCommunicationAdapter) {
+    EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
 
-        BikeConsumerAdapter bikeConsumerAdapter =
-            new BikeConsumerAdapter(ebikeRepository);
-        bikeConsumerAdapter.init();
+    BikeConsumerAdapter bikeConsumerAdapter = new BikeConsumerAdapter(ebikeRepository);
+    bikeConsumerAdapter.init();
 
-        UserRepository userRepository = new InMemoryUserRepository();
+    UserRepository userRepository = new InMemoryUserRepository();
 
-        UserConsumerAdapter userConsumerAdapter =
-            new UserConsumerAdapter(userRepository);
-        userConsumerAdapter.init();
+    UserConsumerAdapter userConsumerAdapter = new UserConsumerAdapter(userRepository);
+    userConsumerAdapter.init();
 
-        return new RestRideServiceAPIImpl(
-            new EventPublisherImpl(vertx),
-                vertx,
-            ebikeRepository,
-              userRepository,
-                mapCommunicationAdapter,
-                ebikeCommunicationAdapter);
-    }
+    return new RestRideServiceAPIImpl(
+        new EventPublisherImpl(vertx),
+        vertx,
+        ebikeRepository,
+        userRepository,
+        mapCommunicationAdapter,
+        ebikeCommunicationAdapter);
+  }
 }

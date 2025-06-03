@@ -3,14 +3,9 @@ package infrastructure.adapter.ebike;
 import application.ports.EbikeCommunicationPort;
 import application.ports.EventPublisher;
 import infrastructure.adapter.kafkatopic.Topics;
-import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.KafkaProperties;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import java.util.concurrent.CompletableFuture;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -24,18 +19,18 @@ public class EBikeCommunicationAdapter implements EbikeCommunicationPort {
   }
 
   public void init() {
-      vertx
-              .eventBus()
-              .consumer(
-                      EventPublisher.RIDE_UPDATE_ADDRESS_EBIKE,
-                      message -> {
-                          if (message.body() instanceof JsonObject) {
-                              JsonObject update = (JsonObject) message.body();
-                              if (update.containsKey("id")) {
-                                  sendUpdate(update);
-                              }
-                          }
-                      });
+    vertx
+        .eventBus()
+        .consumer(
+            EventPublisher.RIDE_UPDATE_ADDRESS_EBIKE,
+            message -> {
+              if (message.body() instanceof JsonObject) {
+                JsonObject update = (JsonObject) message.body();
+                if (update.containsKey("id")) {
+                  sendUpdate(update);
+                }
+              }
+            });
     producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
   }
 

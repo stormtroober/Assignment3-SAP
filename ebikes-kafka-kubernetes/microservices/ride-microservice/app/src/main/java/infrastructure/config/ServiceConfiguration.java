@@ -81,22 +81,4 @@ public class ServiceConfiguration {
         .put("name", config.getString("SERVICE_NAME", "ride-microservice"))
         .put("port", config.getInteger("SERVICE_PORT", 8080));
   }
-
-  public JsonObject getMapAdapterAddress() {
-    return new JsonObject()
-        .put("name", config.getString("MAP_HOST", "map-microservice"))
-        .put("port", config.getInteger("MAP_PORT", 8081));
-  }
-
-  public JsonObject getEBikeAdapterAddress() {
-    return new JsonObject()
-        .put("name", config.getString("EBIKE_HOST", "ebike-microservice"))
-        .put("port", config.getInteger("EBIKE_PORT", 8081));
-  }
-
-  public JsonObject getUserAdapterAddress() {
-    return new JsonObject()
-        .put("name", config.getString("USER_HOST", "user-microservice"))
-        .put("port", config.getInteger("USER_PORT", 8081));
-  }
 }

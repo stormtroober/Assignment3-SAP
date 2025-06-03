@@ -8,7 +8,6 @@ import domain.model.repository.RideRepositoryImpl;
 import domain.model.repository.UserRepository;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,14 +16,14 @@ public class RestRideServiceAPIImpl implements RestRideServiceAPI {
   private final Vertx vertx;
   private final MapCommunicationPort mapCommunicationAdapter;
   private final EBikeRepository bikeRepository;
-    private final UserRepository userRepository;
-    private final EbikeCommunicationPort ebikeCommunicationAdapter;
+  private final UserRepository userRepository;
+  private final EbikeCommunicationPort ebikeCommunicationAdapter;
 
   public RestRideServiceAPIImpl(
       EventPublisher publisher,
       Vertx vertx,
       EBikeRepository ebikeRepository,
-        UserRepository userRepository,
+      UserRepository userRepository,
       MapCommunicationPort mapCommunicationAdapter,
       EbikeCommunicationPort ebikeCommunicationAdapter) {
     this.rideRepository = new RideRepositoryImpl(vertx, publisher);
@@ -35,39 +34,39 @@ public class RestRideServiceAPIImpl implements RestRideServiceAPI {
     this.ebikeCommunicationAdapter = ebikeCommunicationAdapter;
   }
 
-    private CompletableFuture<EBike> checkEbike(String bikeId) {
-        System.out.println("Checking ebike: " + bikeId);
-        return bikeRepository
-                .findById(bikeId)
-                .thenApply(
-                        ebikeJsonOptional -> {
-                            if (ebikeJsonOptional.isEmpty()) {
-                                System.err.println("EBike not found");
-                                return null;
-                            }
+  private CompletableFuture<EBike> checkEbike(String bikeId) {
+    System.out.println("Checking ebike: " + bikeId);
+    return bikeRepository
+        .findById(bikeId)
+        .thenApply(
+            ebikeJsonOptional -> {
+              if (ebikeJsonOptional.isEmpty()) {
+                System.err.println("EBike not found");
+                return null;
+              }
 
-                            JsonObject ebikeJson = ebikeJsonOptional.get();
-                            JsonObject location = ebikeJson.getJsonObject("location");
-                            return new EBike(
-                                    ebikeJson.getString("id"),
-                                    location.getDouble("x"),
-                                    location.getDouble("y"),
-                                    EBikeState.valueOf(ebikeJson.getString("state")),
-                                    ebikeJson.getInteger("batteryLevel"));
-                        });
+              JsonObject ebikeJson = ebikeJsonOptional.get();
+              JsonObject location = ebikeJson.getJsonObject("location");
+              return new EBike(
+                  ebikeJson.getString("id"),
+                  location.getDouble("x"),
+                  location.getDouble("y"),
+                  EBikeState.valueOf(ebikeJson.getString("state")),
+                  ebikeJson.getInteger("batteryLevel"));
+            });
+  }
+
+  private CompletableFuture<User> checkUser(String userId) {
+    System.out.println("Checking user: " + userId);
+
+    Optional<User> user = userRepository.findById(userId);
+    if (user.isPresent()) {
+      return CompletableFuture.completedFuture(user.get());
+    } else {
+      System.err.println("User not found");
+      return CompletableFuture.completedFuture(null);
     }
-
-    private CompletableFuture<User> checkUser(String userId) {
-        System.out.println("Checking user: " + userId);
-
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isPresent()) {
-            return CompletableFuture.completedFuture(user.get());
-        } else {
-            System.err.println("User not found");
-            return CompletableFuture.completedFuture(null);
-        }
-    }
+  }
 
   @Override
   public CompletableFuture<Void> startRide(String userId, String bikeId) {

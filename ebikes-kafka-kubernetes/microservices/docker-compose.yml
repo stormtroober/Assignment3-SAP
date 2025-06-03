@@ -136,7 +136,7 @@ services:
       - SERVICE_NAME=${EBIKE_INSTANCE_HOSTNAME}
       - SERVICE_PORT=${EBIKE_INSTANCE_PORT}
       - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
-      - MONGO_DATABSE=${EBIKE_MONGODB_DATABASE}
+      - MONGO_DATABASE=${EBIKE_MONGODB_DATABASE}
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:${EBIKE_INSTANCE_PORT}/health" ]
       interval: 5s
@@ -193,7 +193,7 @@ services:
       - SERVICE_PORT=${USER_INSTANCE_PORT}
       - ADAPTER_RIDE_PORT=${USER_ADAPTER_RIDE_PORT}
       - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
-      - MONGO_DATABSE=${USER_MONGODB_DATABASE}
+      - MONGO_DATABASE=${USER_MONGODB_DATABASE}
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:${USER_INSTANCE_PORT}/health", "curl -f http://localhost:${USER_ADAPTER_RIDE_PORT}/health" ]
       interval: 5s

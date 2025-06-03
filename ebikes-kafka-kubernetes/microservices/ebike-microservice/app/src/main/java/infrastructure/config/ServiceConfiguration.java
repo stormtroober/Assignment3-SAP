@@ -42,7 +42,7 @@ public class ServiceConfiguration {
                             .add("SERVICE_NAME")
                             .add("SERVICE_PORT")
                             .add("MONGO_CONNECTION")
-                            .add("MONGO_DATABSE")));
+                            .add("MONGO_DATABASE")));
     return ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(envStore));
   }
 
@@ -80,6 +80,6 @@ public class ServiceConfiguration {
   public JsonObject getMongoConfig() {
     return new JsonObject()
         .put("connection_string", config.getString("MONGO_CONNECTION", "mongodb://mongodb:27017"))
-        .put("db_name", config.getString("MONGO_DATABSE", "ebikes_db"));
+        .put("db_name", config.getString("MONGO_DATABASE", "ebikes_db"));
   }
 }

@@ -46,7 +46,7 @@ public class RideConsumerAdapter extends AbstractVerticle {
     router.route().handler(BodyHandler.create());
 
     router.get("/api/users/:username").handler(this::getUser);
-    // Removed PUT endpoint for user updates as it will now come from Kafka
+
     router.get("/metrics").handler(this::metrics);
     router.get("/health").handler(ctx -> ctx.response().setStatusCode(200).end("OK"));
 

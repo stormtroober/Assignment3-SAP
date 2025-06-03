@@ -29,8 +29,10 @@ public class RideConsumerAdapter {
   private final UserServiceAPI userService;
     private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+  private final KafkaProperties kafkaProperties;
 
-  public RideConsumerAdapter(UserServiceAPI userService) {
+  public RideConsumerAdapter(UserServiceAPI userService, KafkaProperties kafkaProperties) {
+    this.kafkaProperties = kafkaProperties;
     this.userService = userService;
   }
 
@@ -46,7 +48,7 @@ public class RideConsumerAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
 
     try (consumer) {
       // Subscribe to the ride-user-update topic

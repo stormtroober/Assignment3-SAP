@@ -7,6 +7,7 @@ import infrastructure.adapters.web.RESTUserAdapter;
 import infrastructure.adapters.web.UserVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.persistence.MongoUserRepository;
+import infrastructure.utils.KafkaProperties;
 import infrastructure.utils.UserEventPublisherImpl;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
@@ -24,18 +25,20 @@ public class Main {
         .onSuccess(
             conf -> {
               logger.info("Configuration loaded: " + conf.encodePrettily());
+                KafkaProperties kafkaProperties = new KafkaProperties(config);
+
               MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
               MongoUserRepository repository = new MongoUserRepository(mongoClient);
               UserEventPublisher UserEventPublisher = new UserEventPublisherImpl(vertx);
               UserServiceAPI service = new UserServiceImpl(repository, UserEventPublisher);
               RESTUserAdapter controller = new RESTUserAdapter(service, vertx);
               UserVerticle userVerticle = new UserVerticle(controller, vertx);
-              RideConsumerAdapter rideAdapter = new RideConsumerAdapter(service);
+              RideConsumerAdapter rideAdapter = new RideConsumerAdapter(service, kafkaProperties);
               userVerticle.init();
               rideAdapter.init();
 
                 RideProducerAdapter rideProducerAdapter =
-                    new RideProducerAdapter(vertx);
+                    new RideProducerAdapter(vertx, kafkaProperties);
             });
   }
 }

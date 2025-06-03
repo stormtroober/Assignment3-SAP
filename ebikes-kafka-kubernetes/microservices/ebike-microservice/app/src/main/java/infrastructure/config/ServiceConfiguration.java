@@ -41,9 +41,6 @@ public class ServiceConfiguration {
                             .add("EUREKA_PORT")
                             .add("SERVICE_NAME")
                             .add("SERVICE_PORT")
-                            .add("ADAPTER_RIDE_PORT")
-                            .add("MAP_HOST")
-                            .add("MAP_PORT")
                             .add("MONGO_CONNECTION")
                             .add("MONGO_DATABSE")));
     return ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(envStore));
@@ -78,16 +75,6 @@ public class ServiceConfiguration {
     return new JsonObject()
         .put("name", config.getString("SERVICE_NAME", "ebike-microservice"))
         .put("port", config.getInteger("SERVICE_PORT", 8080));
-  }
-
-  public JsonObject getMapAdapterConfig() {
-    return new JsonObject()
-        .put("name", config.getString("MAP_HOST", "map-microservice"))
-        .put("port", config.getInteger("MAP_PORT", 8082));
-  }
-
-  public JsonObject getRideAdapterConfig() {
-    return new JsonObject().put("port", config.getInteger("ADAPTER_RIDE_PORT", 8081));
   }
 
   public JsonObject getMongoConfig() {

@@ -30,7 +30,7 @@ public class Main {
               UserServiceAPI service = new UserServiceImpl(repository, UserEventPublisher);
               RESTUserAdapter controller = new RESTUserAdapter(service, vertx);
               UserVerticle userVerticle = new UserVerticle(controller, vertx);
-              RideConsumerAdapter rideAdapter = new RideConsumerAdapter(service, vertx);
+              RideConsumerAdapter rideAdapter = new RideConsumerAdapter(service);
               userVerticle.init();
               rideAdapter.init();
 

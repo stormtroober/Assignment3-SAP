@@ -80,16 +80,6 @@ public class ServiceConfiguration {
         .put("port", config.getInteger("SERVICE_PORT", 8080));
   }
 
-  public JsonObject getMapAdapterConfig() {
-    return new JsonObject()
-        .put("name", config.getString("MAP_HOST", "map-microservice"))
-        .put("port", config.getInteger("MAP_PORT", 8082));
-  }
-
-  public JsonObject getRideAdapterConfig() {
-    return new JsonObject().put("port", config.getInteger("ADAPTER_RIDE_PORT", 8081));
-  }
-
   public JsonObject getMongoConfig() {
     return new JsonObject()
         .put("connection_string", config.getString("MONGO_CONNECTION", "mongodb://mongodb:27017"))

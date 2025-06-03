@@ -179,13 +179,10 @@ services:
       - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
       - SERVICE_NAME=${ABIKE_EUREKA_SERVICE_NAME}
       - SERVICE_PORT=${ABIKE_INSTANCE_PORT}
-      - ADAPTER_RIDE_PORT=${EBIKE_ADAPTER_RIDE_PORT}
-      - MAP_HOST=${MAP_INSTANCE_HOSTNAME}
-      - MAP_PORT=${MAP_ADAPTER_EBIKE_PORT}
       - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
-      - MONGO_DATABSE=${EBIKE_MONGODB_DATABASE}
+      - MONGO_DATABASE=${EBIKE_MONGODB_DATABASE}
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:${ABIKE_INSTANCE_PORT}/health", "curl -f http://localhost:${EBIKE_ADAPTER_RIDE_PORT}/health" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:${ABIKE_INSTANCE_PORT}/health"]
       interval: 5s
       timeout: 5s
       retries: 3

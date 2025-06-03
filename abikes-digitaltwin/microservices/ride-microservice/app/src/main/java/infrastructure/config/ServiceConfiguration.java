@@ -40,14 +40,7 @@ public class ServiceConfiguration {
                             .add("EUREKA_HOST")
                             .add("EUREKA_PORT")
                             .add("SERVICE_NAME")
-                            .add("SERVICE_PORT")
-                            .add("MAP_HOST")
-                            .add("MAP_PORT")
-                            .add("EBIKE_HOST")
-                            .add("EBIKE_PORT")
-                            .add("ABIKE_HOST")
-                            .add("USER_HOST")
-                            .add("USER_PORT")));
+                            .add("SERVICE_PORT")));
 
     return ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(envStore));
   }
@@ -81,29 +74,5 @@ public class ServiceConfiguration {
     return new JsonObject()
         .put("name", config.getString("SERVICE_NAME", "ride-microservice"))
         .put("port", config.getInteger("SERVICE_PORT", 8080));
-  }
-
-  public JsonObject getMapAdapterAddress() {
-    return new JsonObject()
-        .put("name", config.getString("MAP_HOST", "map-microservice"))
-        .put("port", config.getInteger("MAP_PORT", 8081));
-  }
-
-  public JsonObject getEBikeAdapterAddress() {
-    return new JsonObject()
-        .put("name", config.getString("EBIKE_HOST", "ebike-microservice"))
-        .put("port", config.getInteger("EBIKE_PORT", 8081));
-  }
-
-  public JsonObject getABikeAdapterAddress() {
-    return new JsonObject()
-        .put("name", config.getString("ABIKE_HOST", "abike-microservice"))
-        .put("port", config.getInteger("EBIKE_PORT", 8081));
-  }
-
-  public JsonObject getUserAdapterAddress() {
-    return new JsonObject()
-        .put("name", config.getString("USER_HOST", "user-microservice"))
-        .put("port", config.getInteger("USER_PORT", 8081));
   }
 }

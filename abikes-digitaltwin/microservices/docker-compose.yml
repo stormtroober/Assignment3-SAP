@@ -207,13 +207,6 @@ services:
       - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
       - SERVICE_NAME=${RIDE_INSTANCE_HOSTNAME}
       - SERVICE_PORT=${RIDE_INSTANCE_PORT}
-      - MAP_HOST=${MAP_INSTANCE_HOSTNAME}
-      - MAP_PORT=${MAP_ADAPTER_RIDE_PORT}
-      - EBIKE_HOST=${EBIKE_INSTANCE_HOSTNAME}
-      - ABIKE_HOST=${ABIKE_INSTANCE_HOSTNAME}
-      - EBIKE_PORT=${EBIKE_ADAPTER_RIDE_PORT}
-      - USER_HOST=${USER_INSTANCE_HOSTNAME}
-      - USER_PORT=${USER_ADAPTER_RIDE_PORT}
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:${RIDE_INSTANCE_PORT}/health" ]
       interval: 5s
@@ -241,7 +234,7 @@ services:
       - SERVICE_PORT=${USER_INSTANCE_PORT}
       - ADAPTER_RIDE_PORT=${USER_ADAPTER_RIDE_PORT}
       - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
-      - MONGO_DATABSE=${USER_MONGODB_DATABASE}
+      - MONGO_DATABASE=${USER_MONGODB_DATABASE}
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:${USER_INSTANCE_PORT}/health", "curl -f http://localhost:${USER_ADAPTER_RIDE_PORT}/health" ]
       interval: 5s

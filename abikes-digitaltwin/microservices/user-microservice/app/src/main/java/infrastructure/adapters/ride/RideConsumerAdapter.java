@@ -33,11 +33,13 @@ public class RideConsumerAdapter {
   private final MetricsManager metricsManager;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+  private final KafkaProperties kafkaProperties;
 
-  public RideConsumerAdapter(UserServiceAPI userService, Vertx vertx) {
+  public RideConsumerAdapter(UserServiceAPI userService, Vertx vertx, KafkaProperties kafkaProperties) {
     this.userService = userService;
     this.vertx = vertx;
     this.metricsManager = MetricsManager.getInstance();
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -52,7 +54,7 @@ public class RideConsumerAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
 
     try (consumer) {
       //RIDE_USER_UPDATE is for updating coming from a Ride,

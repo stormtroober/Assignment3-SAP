@@ -16,8 +16,8 @@ public class RideProducerAdapter {
     private final String topicName = Topics.USER_UPDATE.getTopicName();
     private final Vertx vertx;
 
-    public RideProducerAdapter(Vertx vertx) {
-        this.producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+    public RideProducerAdapter(Vertx vertx, KafkaProperties kafkaProperties) {
+        this.producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
         this.vertx = vertx;
         setupEventBusConsumer();
     }

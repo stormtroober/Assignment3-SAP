@@ -10,6 +10,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - eureka-network
+      - kafka-ditto-net
     healthcheck:
       test: echo srvr | nc zookeeper ${ZOOKEEPER_CLIENT_PORT} || exit 1
       interval: 5s
@@ -27,6 +28,7 @@ services:
       - "${KAFKA_BROKER_EXTERNAL_PORT}:${KAFKA_BROKER_EXTERNAL_PORT}"
     networks:
       - eureka-network
+      - kafka-ditto-net
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_CLIENT_PORT}
@@ -294,6 +296,7 @@ services:
 networks:
   eureka-network:
     driver: bridge
-
+  kafka-ditto-net:
+    external: true
 volumes:
   mongodb_data:

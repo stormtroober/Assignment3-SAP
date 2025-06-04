@@ -20,9 +20,12 @@ public class RideCommunicationAdapter {
   private final EBikeServiceAPI eBikeService;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+    private final KafkaProperties kafkaProperties;
 
-  public RideCommunicationAdapter(EBikeServiceAPI eBikeService) {
+  public RideCommunicationAdapter(EBikeServiceAPI eBikeService,
+                                  KafkaProperties kafkaProperties) {
     this.eBikeService = eBikeService;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -38,7 +41,7 @@ public class RideCommunicationAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
     try (consumer) {
       consumer.subscribe(List.of(Topics.EBIKE_RIDE_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", Topics.EBIKE_RIDE_UPDATE.getTopicName());

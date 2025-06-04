@@ -24,9 +24,12 @@ public class StationUpdateAdapter {
   private final StationMapServiceAPI mapService;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+    private final KafkaProperties kafkaProperties;
 
-  public StationUpdateAdapter(StationMapServiceAPI mapService) {
+  public StationUpdateAdapter(StationMapServiceAPI mapService,
+                              KafkaProperties kafkaProperties) {
     this.mapService = mapService;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -37,7 +40,7 @@ public class StationUpdateAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
 
     try (consumer) {
       consumer.subscribe(List.of(Topics.STATION_UPDATES.getTopicName()));

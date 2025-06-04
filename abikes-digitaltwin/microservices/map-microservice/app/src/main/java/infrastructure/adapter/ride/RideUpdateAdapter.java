@@ -26,10 +26,12 @@ public class RideUpdateAdapter {
   private final MetricsManager metricsManager;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+    private final KafkaProperties kafkaProperties;
 
-  public RideUpdateAdapter(BikeMapServiceAPI bikeMapService) {
+  public RideUpdateAdapter(BikeMapServiceAPI bikeMapService, KafkaProperties kafkaProperties) {
     this.bikeMapService = bikeMapService;
     this.metricsManager = MetricsManager.getInstance();
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -45,7 +47,7 @@ public class RideUpdateAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
 
     try (consumer) {
       // Subscribe to both topics

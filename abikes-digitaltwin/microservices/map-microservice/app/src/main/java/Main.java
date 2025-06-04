@@ -9,6 +9,7 @@ import infrastructure.adapter.station.StationUpdateAdapter;
 import infrastructure.adapter.web.MapServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.EventPublisherImpl;
+import infrastructure.utils.KafkaProperties;
 import io.vertx.core.Vertx;
 
 public class Main {
@@ -20,6 +21,8 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
+                KafkaProperties kafkaProperties = new KafkaProperties(config);
+
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
               // Services
               StationMapServiceAPI stationMapService = new StationMapServiceAPIImpl(eventPublisher);
@@ -27,10 +30,10 @@ public class Main {
 
               MapServiceVerticle mapServiceVerticle =
                   new MapServiceVerticle(bikeService, stationMapService, vertx);
-              BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(bikeService);
+              BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(bikeService, kafkaProperties);
               StationUpdateAdapter stationUpdateAdapter =
-                  new StationUpdateAdapter(stationMapService);
-              RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(bikeService);
+                  new StationUpdateAdapter(stationMapService, kafkaProperties);
+              RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(bikeService, kafkaProperties);
               mapServiceVerticle.init();
               bikeUpdateAdapter.init();
               stationUpdateAdapter.init();

@@ -13,8 +13,8 @@ public class StationMapCommunicationAdapter implements CommunicationPort {
   private final Producer<String, String> producer;
   private final String topicName = Topics.STATION_UPDATES.getTopicName();
 
-  public StationMapCommunicationAdapter() {
-    this.producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+  public StationMapCommunicationAdapter(KafkaProperties kafkaProperties) {
+    this.producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
   }
 
   @Override

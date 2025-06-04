@@ -13,8 +13,10 @@ public class BikeMapCommunicationAdapter implements CommunicationPort {
   private final Producer<String, String> producer;
   private final String topicName = Topics.ABIKE_UPDATES.getTopicName();
 
-  public BikeMapCommunicationAdapter() {
-    this.producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+  public BikeMapCommunicationAdapter(
+        KafkaProperties kafkaProperties
+  ) {
+    this.producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
   }
 
   @Override

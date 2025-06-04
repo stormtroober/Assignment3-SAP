@@ -178,6 +178,8 @@ services:
       - SERVICE_PORT=${ABIKE_INSTANCE_PORT}
       - MONGO_CONNECTION=${MONGODB_CONNECTION_STRING}
       - MONGO_DATABASE=${EBIKE_MONGODB_DATABASE}
+      - KAFKA_BROKER_HOSTNAME=${KAFKA_BROKER_HOSTNAME}
+      - KAFKA_BROKER_PORT=${KAFKA_BROKER_PORT}
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:${ABIKE_INSTANCE_PORT}/health"]
       interval: 5s

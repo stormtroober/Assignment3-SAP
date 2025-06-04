@@ -22,10 +22,12 @@ public class RideCommunicationAdapter {
   private final StationServiceAPI stationService;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+    private final KafkaProperties kafkaProperties;
 
-  public RideCommunicationAdapter(ABikeServiceAPI aBikeService, StationServiceAPI stationService) {
+  public RideCommunicationAdapter(ABikeServiceAPI aBikeService, StationServiceAPI stationService, KafkaProperties kafkaProperties) {
     this.aBikeService = aBikeService;
     this.stationService = stationService;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -41,7 +43,7 @@ public class RideCommunicationAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
     try (consumer) {
       consumer.subscribe(
           List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName(), Topics.RIDE_MAP_UPDATE.getTopicName()));

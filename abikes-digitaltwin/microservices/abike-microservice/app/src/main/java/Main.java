@@ -12,6 +12,7 @@ import infrastructure.adapters.web.RESTABikeAdapter;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.persistence.MongoABikeRepository;
 import infrastructure.persistence.MongoStationRepository;
+import infrastructure.utils.KafkaProperties;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
 
@@ -24,14 +25,16 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
+                KafkaProperties kafkaProperties = new KafkaProperties(config);
+
               MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
               // Repository
               MongoABikeRepository repository = new MongoABikeRepository(mongoClient);
               StationRepository repositoryStation = new MongoStationRepository(mongoClient);
 
-              CommunicationPort bikeMapCommunicationAdapter = new BikeMapCommunicationAdapter();
+              CommunicationPort bikeMapCommunicationAdapter = new BikeMapCommunicationAdapter(kafkaProperties);
               CommunicationPort stationMapCommunicationAdapter =
-                  new StationMapCommunicationAdapter();
+                  new StationMapCommunicationAdapter(kafkaProperties);
               // Services
               StationServiceAPI stationService =
                   new StationServiceImpl(repositoryStation, stationMapCommunicationAdapter);
@@ -62,7 +65,7 @@ public class Main {
 
               RESTABikeAdapter restABikeAdapter = new RESTABikeAdapter(aBikeService);
               RideCommunicationAdapter rideCommunicationAdapter =
-                  new RideCommunicationAdapter(aBikeService, stationService);
+                  new RideCommunicationAdapter(aBikeService, stationService, kafkaProperties);
               rideCommunicationAdapter.init();
 
               ABikeVerticle aBikeVerticle = new ABikeVerticle(restABikeAdapter, vertx);

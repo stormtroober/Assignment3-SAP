@@ -14,11 +14,16 @@ import org.slf4j.LoggerFactory;
 public class MapCommunicationAdapter implements MapCommunicationPort {
   private static final Logger logger = LoggerFactory.getLogger(MapCommunicationAdapter.class);
   private Producer<String, String> producer;
+    private final KafkaProperties kafkaProperties;
 
-  public MapCommunicationAdapter() {}
+  public MapCommunicationAdapter(
+        KafkaProperties kafkaProperties
+  ) {
+    this.kafkaProperties = kafkaProperties;
+  }
 
   public void init() {
-    producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+    producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
   }
 
   private void sendNotification(

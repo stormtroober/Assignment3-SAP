@@ -21,15 +21,18 @@ public class UserCommunicationAdapter implements UserCommunicationPort {
   private Producer<String, String> producer;
     private final UserRepository userRepository;
     private final DispatchRepository dispatchRepository;
+    private final KafkaProperties kafkaProperties;
 
-  public UserCommunicationAdapter(Vertx vertx, UserRepository userRepository, DispatchRepository dispatchRepository) {
+  public UserCommunicationAdapter(Vertx vertx, UserRepository userRepository, DispatchRepository dispatchRepository,
+                                  KafkaProperties kafkaProperties) {
     this.vertx = vertx;
     this.userRepository = userRepository;
     this.dispatchRepository = dispatchRepository;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
-    producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+    producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
       vertx
               .eventBus()
               .consumer(

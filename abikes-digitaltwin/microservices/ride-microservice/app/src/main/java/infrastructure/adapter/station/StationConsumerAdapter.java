@@ -20,9 +20,11 @@ public class StationConsumerAdapter {
   private final StationRepository stationRepository;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+    private final KafkaProperties kafkaProperties;
 
-  public StationConsumerAdapter(StationRepository stationRepository) {
+  public StationConsumerAdapter(StationRepository stationRepository, KafkaProperties kafkaProperties) {
     this.stationRepository = stationRepository;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -38,7 +40,7 @@ public class StationConsumerAdapter {
 
   private void runKafkaConsumer() {
     try (KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties())) {
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties())) {
       consumer.subscribe(Collections.singletonList(Topics.STATION_UPDATES.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", Topics.STATION_UPDATES.getTopicName());
 

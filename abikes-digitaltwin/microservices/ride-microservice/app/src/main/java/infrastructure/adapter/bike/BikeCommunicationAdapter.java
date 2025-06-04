@@ -13,13 +13,16 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 public class BikeCommunicationAdapter implements BikeCommunicationPort {
   private final Vertx vertx;
   private Producer<String, String> producer;
+  private final KafkaProperties kafkaProperties;
 
-  public BikeCommunicationAdapter(Vertx vertx) {
+  public BikeCommunicationAdapter(Vertx vertx,
+                                  KafkaProperties kafkaProperties) {
     this.vertx = vertx;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
-    producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+    producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
     vertx
         .eventBus()
         .consumer(

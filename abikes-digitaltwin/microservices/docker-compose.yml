@@ -211,6 +211,8 @@ services:
       - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
       - SERVICE_NAME=${RIDE_INSTANCE_HOSTNAME}
       - SERVICE_PORT=${RIDE_INSTANCE_PORT}
+      - KAFKA_BROKER_HOSTNAME=${KAFKA_BROKER_HOSTNAME}
+      - KAFKA_BROKER_PORT=${KAFKA_BROKER_PORT}
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:${RIDE_INSTANCE_PORT}/health" ]
       interval: 5s

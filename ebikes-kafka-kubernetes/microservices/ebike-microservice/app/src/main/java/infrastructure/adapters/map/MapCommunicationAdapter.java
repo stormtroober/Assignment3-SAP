@@ -13,8 +13,8 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
   private final Producer<String, String> producer;
   private final String topicName = Topics.EBIKE_UPDATES.getTopicName();
 
-  public MapCommunicationAdapter() {
-    this.producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+  public MapCommunicationAdapter(KafkaProperties kafkaProperties) {
+    this.producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
   }
 
   @Override

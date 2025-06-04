@@ -13,9 +13,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 public class EBikeCommunicationAdapter implements EbikeCommunicationPort {
   private final Vertx vertx;
   private Producer<String, String> producer;
+  private final KafkaProperties kafkaProperties;
 
-  public EBikeCommunicationAdapter(Vertx vertx) {
+  public EBikeCommunicationAdapter(Vertx vertx, KafkaProperties kafkaProperties) {
     this.vertx = vertx;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -31,7 +33,7 @@ public class EBikeCommunicationAdapter implements EbikeCommunicationPort {
                 }
               }
             });
-    producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+    producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
   }
 
   @Override

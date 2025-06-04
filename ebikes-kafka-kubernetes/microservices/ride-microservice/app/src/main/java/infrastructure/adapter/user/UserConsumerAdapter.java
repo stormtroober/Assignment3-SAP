@@ -22,9 +22,11 @@ public class UserConsumerAdapter {
   private final UserRepository userRepository;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+    private final KafkaProperties kafkaProperties;
 
-  public UserConsumerAdapter(UserRepository userRepository) {
+  public UserConsumerAdapter(UserRepository userRepository, KafkaProperties kafkaProperties) {
     this.userRepository = userRepository;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -40,7 +42,7 @@ public class UserConsumerAdapter {
 
   private void runKafkaConsumer() {
     try (KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties())) {
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties())) {
       consumer.subscribe(List.of(USER_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", USER_UPDATE.getTopicName());
 

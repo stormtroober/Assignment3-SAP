@@ -20,9 +20,11 @@ public class BikeConsumerAdapter {
   private final EBikeRepository ebikeRepository;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
+  private final KafkaProperties kafkaProperties;
 
-  public BikeConsumerAdapter(EBikeRepository ebikeRepository) {
+  public BikeConsumerAdapter(EBikeRepository ebikeRepository, KafkaProperties kafkaProperties) {
     this.ebikeRepository = ebikeRepository;
+    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -38,7 +40,7 @@ public class BikeConsumerAdapter {
 
   private void runKafkaConsumer() {
     try (KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(KafkaProperties.getConsumerProperties())) {
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties())) {
       consumer.subscribe(Collections.singletonList(Topics.EBIKE_UPDATES.getTopicName()));
       logger.info("Subscribed to Kafka topics: {}", Topics.EBIKE_UPDATES.getTopicName());
 

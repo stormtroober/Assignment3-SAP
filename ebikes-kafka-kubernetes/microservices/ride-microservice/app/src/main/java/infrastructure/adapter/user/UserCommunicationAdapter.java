@@ -14,8 +14,8 @@ public class UserCommunicationAdapter implements UserCommunicationPort {
   private final Vertx vertx;
   private final Producer<String, String> producer;
 
-  public UserCommunicationAdapter(Vertx vertx) {
-    producer = new KafkaProducer<>(KafkaProperties.getProducerProperties());
+  public UserCommunicationAdapter(Vertx vertx, KafkaProperties kafkaProperties) {
+    producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
     this.vertx = vertx;
   }
 

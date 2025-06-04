@@ -12,6 +12,7 @@ import infrastructure.adapter.user.UserConsumerAdapter;
 import infrastructure.adapter.web.RideServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.EventPublisherImpl;
+import infrastructure.utils.KafkaProperties;
 import io.vertx.core.Vertx;
 
 public class Main {
@@ -23,16 +24,17 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
+                KafkaProperties kafkaProperties = new KafkaProperties(config);
               EbikeCommunicationPort ebikeCommunicationAdapter =
-                  new EBikeCommunicationAdapter(vertx);
+                  new EBikeCommunicationAdapter(vertx, kafkaProperties);
               ebikeCommunicationAdapter.init();
-              MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter();
+              MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter(kafkaProperties);
               mapCommunicationAdapter.init();
-              UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx);
+              UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx, kafkaProperties);
               userCommunicationAdapter.init();
 
               RestRideServiceAPI service =
-                  getRestRideServiceAPI(vertx, ebikeCommunicationAdapter, mapCommunicationAdapter);
+                  getRestRideServiceAPI(vertx, ebikeCommunicationAdapter, mapCommunicationAdapter, kafkaProperties);
               RideServiceVerticle rideServiceVerticle = new RideServiceVerticle(service, vertx);
               rideServiceVerticle.init();
             });
@@ -41,15 +43,16 @@ public class Main {
   private static RestRideServiceAPI getRestRideServiceAPI(
       Vertx vertx,
       EbikeCommunicationPort ebikeCommunicationAdapter,
-      MapCommunicationPort mapCommunicationAdapter) {
+      MapCommunicationPort mapCommunicationAdapter,
+      KafkaProperties kafkaProperties) {
     EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
 
-    BikeConsumerAdapter bikeConsumerAdapter = new BikeConsumerAdapter(ebikeRepository);
+    BikeConsumerAdapter bikeConsumerAdapter = new BikeConsumerAdapter(ebikeRepository, kafkaProperties);
     bikeConsumerAdapter.init();
 
     UserRepository userRepository = new InMemoryUserRepository();
 
-    UserConsumerAdapter userConsumerAdapter = new UserConsumerAdapter(userRepository);
+    UserConsumerAdapter userConsumerAdapter = new UserConsumerAdapter(userRepository, kafkaProperties);
     userConsumerAdapter.init();
 
     return new RestRideServiceAPIImpl(

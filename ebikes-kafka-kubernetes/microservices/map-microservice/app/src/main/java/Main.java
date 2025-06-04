@@ -6,6 +6,7 @@ import infrastructure.adapter.ride.RideUpdateAdapter;
 import infrastructure.adapter.web.MapServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.EventPublisherImpl;
+import infrastructure.utils.KafkaProperties;
 import io.vertx.core.Vertx;
 
 public class Main {
@@ -17,11 +18,13 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
+                KafkaProperties properties = new KafkaProperties(config);
+
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
               RestMapServiceAPI service = new RestMapServiceAPIImpl(eventPublisher);
               MapServiceVerticle mapServiceVerticle = new MapServiceVerticle(service, vertx);
-              BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(service);
-              RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(service);
+              BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(service, properties);
+              RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(service, properties);
               mapServiceVerticle.init();
               bikeUpdateAdapter.init();
               rideUpdateAdapter.init();

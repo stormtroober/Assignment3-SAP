@@ -40,7 +40,9 @@ public class ServiceConfiguration {
                             .add("EUREKA_HOST")
                             .add("EUREKA_PORT")
                             .add("SERVICE_NAME")
-                            .add("SERVICE_PORT")));
+                            .add("SERVICE_PORT")
+                                .add("KAFKA_BROKER_HOSTNAME")
+                                .add("KAFKA_BROKER_PORT")));
     return ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(envStore));
   }
 
@@ -67,6 +69,12 @@ public class ServiceConfiguration {
                 "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE", "http://eureka-server:8761/eureka/"))
         .put("host", config.getString("EUREKA_HOST", "eureka-server"))
         .put("port", config.getInteger("EUREKA_PORT", 8761));
+  }
+
+  public JsonObject getKafkaConfig() {
+    return new JsonObject()
+            .put("host", config.getString("KAFKA_BROKER_HOSTNAME", "kafka-broker"))
+            .put("port", config.getInteger("KAFKA_BROKER_PORT", 9092));
   }
 
   public JsonObject getServiceConfig() {

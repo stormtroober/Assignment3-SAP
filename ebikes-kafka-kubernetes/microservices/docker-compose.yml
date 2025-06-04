@@ -83,6 +83,8 @@ services:
         - EUREKA_PORT=${EUREKA_INSTANCE_PORT}
         - SERVICE_NAME=${MAP_INSTANCE_HOSTNAME}
         - SERVICE_PORT=${MAP_INSTANCE_PORT}
+        - KAFKA_BROKER_HOSTNAME=${KAFKA_BROKER_HOSTNAME}
+        - KAFKA_BROKER_PORT=${KAFKA_BROKER_PORT}
       healthcheck:
         test: ["CMD-SHELL", "curl -f http://localhost:${MAP_INSTANCE_PORT}/health || exit 1"]
         interval: 5s

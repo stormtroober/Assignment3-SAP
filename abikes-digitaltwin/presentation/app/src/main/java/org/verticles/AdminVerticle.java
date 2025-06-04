@@ -15,7 +15,7 @@ public class AdminVerticle extends AbstractVerticle {
     private WebSocket bikeWebSocket;
     private WebSocket stationWebSocket;
     private final Vertx vertx;
-    private static final int PORT = 8080;
+    private static final int PORT = 8088;
     private static final String ADDRESS = "localhost";
 
     public AdminVerticle(Vertx vertx) {

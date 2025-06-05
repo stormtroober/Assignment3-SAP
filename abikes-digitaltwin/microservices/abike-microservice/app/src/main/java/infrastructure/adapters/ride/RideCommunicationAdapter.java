@@ -46,13 +46,13 @@ public class RideCommunicationAdapter {
         new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
     try (consumer) {
       consumer.subscribe(
-          List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName(), Topics.RIDE_MAP_UPDATE.getTopicName()));
+          List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName(), Topics.RIDE_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topics for ride updates");
 
       while (running.get()) {
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, String> record : records) {
-          if (record.topic().equals(Topics.RIDE_MAP_UPDATE.getTopicName())) {
+          if (record.topic().equals(Topics.RIDE_UPDATE.getTopicName())) {
             logger.info("Received ride update from Kafka: {}", record.value());
             processRideUpdate(new JsonObject(record.value()));
           } else if (record.topic().equals(Topics.ABIKE_RIDE_UPDATE.getTopicName())) {
@@ -101,8 +101,7 @@ public class RideCommunicationAdapter {
         stationService.deassignBikeFromStation(bikeId);
       }
     }
-    // Here we should receive also the arrived station id and bikeid
-    // so we can assign the bike to the station
+
     if (rideUpdate.containsKey("stationId")) {
       String stationId = rideUpdate.getString("stationId");
       stationService.assignBikeToStation(stationId, bikeId);

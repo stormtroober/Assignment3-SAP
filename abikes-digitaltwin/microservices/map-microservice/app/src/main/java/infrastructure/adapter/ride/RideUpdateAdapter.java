@@ -1,6 +1,6 @@
 package infrastructure.adapter.ride;
 
-import static infrastructure.adapter.kafkatopic.Topics.RIDE_MAP_UPDATE;
+import static infrastructure.adapter.kafkatopic.Topics.RIDE_UPDATE;
 
 import application.ports.BikeMapServiceAPI;
 import domain.model.BikeType;
@@ -51,15 +51,15 @@ public class RideUpdateAdapter {
 
     try (consumer) {
       // Subscribe to both topics
-      consumer.subscribe(List.of(RIDE_MAP_UPDATE.getTopicName()));
-      logger.info("Subscribed to Kafka topic: {}", RIDE_MAP_UPDATE.getTopicName());
+      consumer.subscribe(List.of(RIDE_UPDATE.getTopicName()));
+      logger.info("Subscribed to Kafka topic: {}", RIDE_UPDATE.getTopicName());
 
       while (running.get()) {
         try {
           ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
           for (ConsumerRecord<String, String> record : records) {
             try {
-              if (record.topic().equals(RIDE_MAP_UPDATE.getTopicName())) {
+              if (record.topic().equals(RIDE_UPDATE.getTopicName())) {
                 JsonObject rideUpdate = new JsonObject(record.value());
                 logger.info("Received ride update from Kafka: {}", rideUpdate);
                 processRideUpdate(rideUpdate);

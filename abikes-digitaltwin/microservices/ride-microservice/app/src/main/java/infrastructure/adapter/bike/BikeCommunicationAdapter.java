@@ -45,7 +45,7 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
                     if (update.containsKey("bikeName") && update.containsKey("stationId")) {
                         String bikeId = update.getString("bikeName");
                         producer.send(
-                            new ProducerRecord<>(Topics.RIDE_MAP_UPDATE.getTopicName(), bikeId, update.encode()),
+                            new ProducerRecord<>(Topics.RIDE_UPDATE.getTopicName(), bikeId, update.encode()),
                             (metadata, exception) -> {
                                 if (exception == null) {
                                     System.out.println("ABike station update sent successfully");

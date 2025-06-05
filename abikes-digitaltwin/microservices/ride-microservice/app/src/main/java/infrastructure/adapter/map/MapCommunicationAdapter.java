@@ -35,7 +35,7 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
             .put("bikeType", type)
             .put("action", action);
 
-    String topicName = Topics.RIDE_MAP_UPDATE.getTopicName();
+    String topicName = Topics.RIDE_UPDATE.getTopicName();
     logger.info(
         "Sending {} notification to Kafka topic: {} for user: {} and bike: {}, type: {}",
         logMessagePrefix,
@@ -87,7 +87,7 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
             .put("bikeType", type)
             .put("action", action);
 
-    String topicName = Topics.RIDE_MAP_UPDATE.getTopicName();
+    String topicName = Topics.RIDE_UPDATE.getTopicName();
 
     producer.send(
             new ProducerRecord<>(topicName, bikeId, message.encode()),

@@ -20,16 +20,16 @@ public class BikeMapCommunicationAdapter implements CommunicationPort {
   }
 
   @Override
-  public void sendUpdate(JsonObject ebike) {
+  public void sendUpdate(JsonObject abike) {
     System.out.println("Sending ABike update to Kafka topic: " + topicName);
-    producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()));
+    producer.send(new ProducerRecord<>(topicName, "abike:" + abike.getString("id"), abike.encode()));
   }
 
-  public void sendAllUpdates(JsonArray ebikes) {
-    System.out.println("Sending all EBike updates to Kafka topic: " + topicName);
-    for (int i = 0; i < ebikes.size(); i++) {
-      JsonObject ebike = ebikes.getJsonObject(i);
-      producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()));
+  public void sendAllUpdates(JsonArray abikes) {
+    System.out.println("Sending all ABike updates to Kafka topic: " + topicName);
+    for (int i = 0; i < abikes.size(); i++) {
+      JsonObject ebike = abikes.getJsonObject(i);
+      producer.send(new ProducerRecord<>(topicName, "abike:" + ebike.getString("id"), ebike.encode()));
     }
   }
 }

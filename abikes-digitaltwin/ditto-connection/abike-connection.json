@@ -6,7 +6,8 @@
   "sources": [
     {
       "addresses": [
-        "abike-update"
+        "abike-update",
+        "station-update"
       ],
       "consumerCount": 1,
       "qos": 1,
@@ -21,14 +22,14 @@
         "JavaScript"
       ],
       "replyTarget": {
-        "address": "EBIKE-REPLIES",
+        "address": "abike-replies",
         "headerMapping": {},
         "expectedResponseTypes": [
           "response",
           "error",
           "nack"
         ],
-        "enabled": true
+        "enabled": false
       }
     }
   ],
@@ -45,7 +46,7 @@
     "JavaScript": {
       "mappingEngine": "JavaScript",
       "options": {
-        "incomingScript": "function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) { var jsonData; try { jsonData = JSON.parse(textPayload); } catch (e) { return null; } var thingId = \"abike:\" + jsonData.id; if (!thingId) return null; var features = {}; for (var key in jsonData) { if (jsonData.hasOwnProperty(key) && key !== 'id') { features[key] = { properties: { value: jsonData[key] } }; } } var value = { policyId: \"org.eclipse.ditto:simple-policy\", features: features }; return Ditto.buildDittoProtocolMsg( \"\", thingId, \"things\", \"twin\", \"commands\", \"modify\", \"/\", headers, value ); }",
+        "incomingScript": "function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) { var jsonData; try { jsonData = JSON.parse(textPayload); } catch (e) { return null; } var topic = headers[\"kafka.topic\"] || \"\"; let thingId; if (topic === \"abike-update\") { thingId = \"abike:\" + jsonData.id; } else if( topic === \"station-update\") { thingId = \"station:\" + jsonData.id; } if (!thingId) return null; var features = {}; for (var key in jsonData) { if (jsonData.hasOwnProperty(key) && key !== 'id') { features[key] = { properties: { value: jsonData[key] } }; } } var value = { policyId: \"org.eclipse.ditto:simple-policy\", features: features }; return Ditto.buildDittoProtocolMsg( \"\", thingId, \"things\", \"twin\", \"commands\", \"modify\", \"/\", headers, value ); } ",
         "outgoingScript": "function mapFromDittoProtocolMsg(namespace, id, group, channel, criterion, action, path, dittoHeaders, value) { return { headers: dittoHeaders, payload: JSON.stringify(value), contentType: \"application/json\" }; }"
       }
     }

@@ -5,7 +5,14 @@ function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {
     } catch (e) {
         return null;
     }
-    var thingId = "abike:" + jsonData.id;
+
+    var topic = headers["kafka.topic"] || "";
+    let thingId;
+    if (topic === "abike-update") {
+        thingId = "abike:" + jsonData.id;
+    } else if( topic === "station-update") {
+        thingId = "station:" + jsonData.id;
+    }
     if (!thingId) return null;
 
     var features = {};

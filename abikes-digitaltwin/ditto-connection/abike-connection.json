@@ -45,7 +45,7 @@
     "JavaScript": {
       "mappingEngine": "JavaScript",
       "options": {
-        "incomingScript": "function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) { var jsonData; try { jsonData = JSON.parse(textPayload); } catch (e) { return null; } var thingId = jsonData.id; if (!thingId) return null; var features = {}; for (var key in jsonData) if (jsonData.hasOwnProperty(key)) features[key] = { properties: { value: jsonData[key] } }; var topic = headers['kafka.topic'] || ''; return Ditto.buildDittoProtocolMsg('default', thingId, 'things', 'twin', 'commands', 'modify', '/features', headers, features); }",
+        "incomingScript": "function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) { var jsonData; try { jsonData = JSON.parse(textPayload); } catch (e) { return null; } var thingId = \"abike:\" + jsonData.id; if (!thingId) return null; var features = {}; jsonData.id = thingId; for (var key in jsonData) { if (jsonData.hasOwnProperty(key) && key !== 'id') { features[key] = { properties: { value: jsonData[key] } }; } } var value = { thingId: \"abike:\" + thingId, policyId: \"org.eclipse.ditto:simple-policy\", features: features }; return Ditto.buildDittoProtocolMsg( \"org.eclipse.ditto\", thingId, \"things\", \"twin\", \"commands\", \"modify\", \"/\", headers, value ); }",
         "outgoingScript": "function mapFromDittoProtocolMsg(namespace, id, group, channel, criterion, action, path, dittoHeaders, value) { return { headers: dittoHeaders, payload: JSON.stringify(value), contentType: \"application/json\" }; }"
       }
     }

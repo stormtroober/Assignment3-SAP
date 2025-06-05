@@ -4,8 +4,8 @@ import application.ports.ABikeServiceAPI;
 import application.ports.CommunicationPort;
 import application.ports.StationRepository;
 import application.ports.StationServiceAPI;
-import infrastructure.adapters.map.BikeMapCommunicationAdapter;
-import infrastructure.adapters.map.StationMapCommunicationAdapter;
+import infrastructure.adapters.map.BikeCommunicationAdapter;
+import infrastructure.adapters.map.StationCommunicationAdapter;
 import infrastructure.adapters.ride.RideCommunicationAdapter;
 import infrastructure.adapters.web.ABikeVerticle;
 import infrastructure.adapters.web.RESTABikeAdapter;
@@ -32,9 +32,9 @@ public class Main {
               MongoABikeRepository repository = new MongoABikeRepository(mongoClient);
               StationRepository repositoryStation = new MongoStationRepository(mongoClient);
 
-              CommunicationPort bikeMapCommunicationAdapter = new BikeMapCommunicationAdapter(kafkaProperties);
+              CommunicationPort bikeMapCommunicationAdapter = new BikeCommunicationAdapter(kafkaProperties);
               CommunicationPort stationMapCommunicationAdapter =
-                  new StationMapCommunicationAdapter(kafkaProperties);
+                  new StationCommunicationAdapter(kafkaProperties);
               // Services
               StationServiceAPI stationService =
                   new StationServiceImpl(repositoryStation, stationMapCommunicationAdapter);

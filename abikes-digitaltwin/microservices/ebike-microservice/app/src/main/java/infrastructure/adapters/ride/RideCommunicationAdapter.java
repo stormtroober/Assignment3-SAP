@@ -28,10 +28,6 @@ public class RideCommunicationAdapter {
   }
 
   public void init() {
-    initKafkaConsumer();
-  }
-
-  private void initKafkaConsumer() {
     logger.info("Initializing Kafka consumer for EBike updates");
     consumerExecutor = Executors.newSingleThreadExecutor();
     running.set(true);

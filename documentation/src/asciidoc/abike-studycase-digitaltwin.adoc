@@ -1,0 +1,55 @@
+== ABike Study Case and Digital Twin
+
+=== Digital Twin Concept
+==== Overview and Benefits
+
+A digital twin is a virtual representation of a physical object or system. In the context of ABike, digital twins enable real-time monitoring, analysis, and optimization of bike-sharing operations.
+
+=== Implementation Architecture
+
+Digital twins for bike-sharing systems capture various dimensions:
+
+* Physical state (location, condition)
+* Usage patterns
+* Maintenance requirements
+** Predictive maintenance
+** Service history
+
+* Physical state (location, condition)
+* Usage patterns
+* Maintenance requirements
+** Predictive maintenance
+** Service history
+
+[cols="3,2,5"]
+|===
+| Component | Function | Description
+| IoT Sensors | Data Collection | Collect real-time data from bikes and stations
+| Event Bus | Data Transport | Kafka-based event streaming for real-time updates
+| Twin Models | State Management | Digital representation of each physical bike
+| Analytics Engine | Insight Generation | Process data to generate operational insights
+|===
+
+=== Benefits and Outcomes
+
+The ABike digital twin implementation resulted in:
+
+* 24% increase in bike availability
+* 18% reduction in maintenance costs
+* Enhanced user experience through predictive station rebalancing
+
+[source, json]
+----
+{
+  "bikeId": "B-1234",
+  "status": "in_use",
+  "location": {
+    "latitude": 44.494887,
+    "longitude": 11.342616
+  },
+  "batteryLevel": 78,
+  "lastMaintenance": "2023-10-15"
+}
+----
+
+This case study demonstrates how event sourcing and digital twins can transform urban mobility services.

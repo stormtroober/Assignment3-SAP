@@ -1,0 +1,23 @@
+== Kafka Event Sourcing
+
+=== Introduction to Event Sourcing
+==== Concepts and Principles
+
+Event sourcing is an architectural pattern that stores changes to application state as a sequence of events. This approach enables accurate reconstruction of past states and provides a complete audit trail.
+
+Kafka serves as an excellent platform for implementing event sourcing due to its distributed nature and durability guarantees.
+
+=== Kafka Architecture for Event Sourcing
+
+* Topics
+* Partitions
+** Producers
+** Consumers
+
+[cols="3,2,5"]
+|===
+| Component | Role | Description
+| Topics | Event Store | Persistent, immutable logs of events
+| Partitions | Scalability Unit | Enable parallel processing and horizontal scaling
+| Consumers | Event Processors | Process events and update read models
+|===

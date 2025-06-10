@@ -1,0 +1,35 @@
+== Kubernetes Deployment
+
+=== Containerization and Orchestration
+Kubernetes provides a robust platform for deploying, scaling, and managing containerized applications.
+Container orchestration is crucial for maintaining system reliability and scalability.
+Kubernetes automates deployment, scaling, and operations of application containers.
+
+[source, yaml]
+----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka
+----
+
+=== Helm Charts and Operators
+
+NOTE: Helm is the package manager for Kubernetes that simplifies deployment.
+
+[quote, Kubernetes Documentation, kubernetes.io]
+____
+Kubernetes provides the ability to orchestrate complex applications, ensuring they run exactly as intended.
+____
+
+*StatefulSets* are particularly important for _stateful applications_ like Kafka.
+This deployment approach ensures `proper scaling and data persistence`.
+
+link:https://kubernetes.io/docs/home/[Kubernetes Documentation]
+
+This architecture provides high availability.footnote:[High availability refers to the ability of a system to operate continuously without failure.]

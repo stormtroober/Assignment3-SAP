@@ -1,5 +1,5 @@
 import application.EBikeServiceImpl;
-import infrastructure.adapters.map.MapCommunicationAdapter;
+import infrastructure.adapters.BikeUpdateAdapter;
 import infrastructure.adapters.ride.RideCommunicationAdapter;
 import infrastructure.adapters.web.EBikeVerticle;
 import infrastructure.adapters.web.RESTEBikeAdapter;
@@ -18,23 +18,24 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
-                KafkaProperties kafkaProperties = new KafkaProperties(config);
-              
+              KafkaProperties kafkaProperties = new KafkaProperties(config);
+
               MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
               MongoEBikeRepository repository = new MongoEBikeRepository(mongoClient);
-                EBikeVerticle eBikeVerticle = getEBikeVerticle(kafkaProperties, repository, vertx);
-                eBikeVerticle.init();
+              EBikeVerticle eBikeVerticle = getEBikeVerticle(kafkaProperties, repository, vertx);
+              eBikeVerticle.init();
             });
   }
 
-    private static EBikeVerticle getEBikeVerticle(KafkaProperties kafkaProperties, MongoEBikeRepository repository, Vertx vertx) {
-        MapCommunicationAdapter mapCommunicationAdapter = new MapCommunicationAdapter(kafkaProperties);
-        EBikeServiceImpl service = new EBikeServiceImpl(repository, mapCommunicationAdapter);
-        RESTEBikeAdapter restEBikeAdapter = new RESTEBikeAdapter(service);
-        RideCommunicationAdapter rideCommunicationAdapter =
-            new RideCommunicationAdapter(service, kafkaProperties);
-        rideCommunicationAdapter.init();
+  private static EBikeVerticle getEBikeVerticle(
+      KafkaProperties kafkaProperties, MongoEBikeRepository repository, Vertx vertx) {
+    BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(kafkaProperties);
+    EBikeServiceImpl service = new EBikeServiceImpl(repository, bikeUpdateAdapter);
+    RESTEBikeAdapter restEBikeAdapter = new RESTEBikeAdapter(service);
+    RideCommunicationAdapter rideCommunicationAdapter =
+        new RideCommunicationAdapter(service, kafkaProperties);
+    rideCommunicationAdapter.init();
 
-        return new EBikeVerticle(restEBikeAdapter, vertx);
-    }
+    return new EBikeVerticle(restEBikeAdapter, vertx);
+  }
 }

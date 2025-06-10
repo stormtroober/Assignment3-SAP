@@ -20,10 +20,9 @@ public class RideCommunicationAdapter {
   private final EBikeServiceAPI eBikeService;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
-    private final KafkaProperties kafkaProperties;
+  private final KafkaProperties kafkaProperties;
 
-  public RideCommunicationAdapter(EBikeServiceAPI eBikeService,
-                                  KafkaProperties kafkaProperties) {
+  public RideCommunicationAdapter(EBikeServiceAPI eBikeService, KafkaProperties kafkaProperties) {
     this.eBikeService = eBikeService;
     this.kafkaProperties = kafkaProperties;
   }

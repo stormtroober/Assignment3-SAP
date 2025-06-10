@@ -1,6 +1,6 @@
-package infrastructure.adapters.map;
+package infrastructure.adapters;
 
-import application.ports.MapCommunicationPort;
+import application.ports.BikeCommunicationPort;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonArray;
@@ -9,11 +9,11 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-public class MapCommunicationAdapter implements MapCommunicationPort {
+public class BikeUpdateAdapter implements BikeCommunicationPort {
   private final Producer<String, String> producer;
   private final String topicName = Topics.EBIKE_UPDATES.getTopicName();
 
-  public MapCommunicationAdapter(KafkaProperties kafkaProperties) {
+  public BikeUpdateAdapter(KafkaProperties kafkaProperties) {
     this.producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
   }
 

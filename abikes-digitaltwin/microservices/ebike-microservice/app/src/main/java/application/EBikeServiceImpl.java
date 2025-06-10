@@ -1,10 +1,10 @@
 package application;
 
+import application.ports.BikeCommunicationPort;
 import application.ports.EBikeRepository;
 import application.ports.EBikeServiceAPI;
-import application.ports.MapCommunicationPort;
 import domain.model.*;
-import infrastructure.adapters.map.MapCommunicationAdapter;
+import infrastructure.adapters.BikeUpdateAdapter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
@@ -13,13 +13,12 @@ import java.util.concurrent.CompletableFuture;
 public class EBikeServiceImpl implements EBikeServiceAPI {
 
   private final EBikeRepository repository;
-  private final MapCommunicationPort mapCommunicationAdapter;
+  private final BikeCommunicationPort mapCommunicationAdapter;
 
-  public EBikeServiceImpl(
-      EBikeRepository repository, MapCommunicationAdapter mapCommunicationAdapter) {
+  public EBikeServiceImpl(EBikeRepository repository, BikeUpdateAdapter bikeUpdateAdapter) {
     this.repository = repository;
-    this.mapCommunicationAdapter = mapCommunicationAdapter;
-    repository.findAll().thenAccept(mapCommunicationAdapter::sendAllUpdates);
+    this.mapCommunicationAdapter = bikeUpdateAdapter;
+    repository.findAll().thenAccept(bikeUpdateAdapter::sendAllUpdates);
   }
 
   @Override

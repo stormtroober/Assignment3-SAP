@@ -1,23 +1,218 @@
-== Kafka Event Sourcing
+== EBike Event Sourcing
 
-=== Introduction to Event Sourcing
-==== Concepts and Principles
+=== Kafka Topics
+This part describes the Kafka topics used in the EBike event sourcing implementation.
 
-Event sourcing is an architectural pattern that stores changes to application state as a sequence of events. This approach enables accurate reconstruction of past states and provides a complete audit trail.
+**Topics Used**:
 
-Kafka serves as an excellent platform for implementing event sourcing due to its distributed nature and durability guarantees.
+- **ebike-updates**: This topic carries status and position updates from ebikes to the map service (for visualization purposes) and to the ride service (for local state synchronization). When an ebike changes position or updates its status (available, in use, maintenance), these events are published here.
 
-=== Kafka Architecture for Event Sourcing
+- **ebike-ride-update**: This topic handles ride-related updates that flow from the ride service to the ebike service. It includes events like ride start/end notifications that trigger state changes in the bicycle's operational status.
 
-* Topics
-* Partitions
-** Producers
-** Consumers
+- **ride-map-update**: This topic transmits ride events (start/end of rides) from the ride service to the map service. These updates ensure that the map visualization remains current with active rides and completed journeys.
 
-[cols="3,2,5"]
-|===
-| Component | Role | Description
-| Topics | Event Store | Persistent, immutable logs of events
-| Partitions | Scalability Unit | Enable parallel processing and horizontal scaling
-| Consumers | Event Processors | Process events and update read models
-|===
+- **ride-user-update**: This topic carries updates from the ride service to the user service, including credit charges for completed rides and ride status changes that affect the user experience.
+
+- **user-update**: This topic handles general user data updates (such as profile information) from the user service to the ride service. These events are used to maintain synchronized local state across services when user information changes.
+
+=== Event Flow
+
+At the purpose of explaining the event flow, i'll detail how events are produced and consumed across the microservices involved in the EBike system. The following sections outline the communication patterns between services, including producers, consumers, and the topics they interact with.
+
+==== Detailed Communication Patterns
+
+===== 1. EBike State Update
+- **Producer:** ebike-microservice (_MapCommunicationAdapter_)
+- **Topic:** ebike-updates
+- **Consumers:** map-microservice (_BikeUpdateAdapter_), ride-microservice (_BikeConsumerAdapter_)
+- **Flow:** When an EBike's state or position changes, the ebike-microservice publishes this update to the ebike-updates topic. The map service consumes this message to update the bike's position on the map, while the ride service updates its local repository of available e-bikes.
+
+===== 2. Ride Events Affecting EBike
+- **Producer:** ride-microservice (_EBikeCommunicationAdapter_)
+- **Topic:** ebike-ride-update
+- **Consumer:** ebike-microservice (_RideCommunicationAdapter_)
+- **Flow:** When the ride service processes a ride event (e.g., start/end ride), it publishes an update to the ebike-ride-update topic. The ebike service consumes this message and updates the EBike's state accordingly (e.g., from AVAILABLE to IN_USE).
+
+===== 3. Ride Events Affecting Map
+- **Producer:** ride-microservice (_MapCommunicationAdapter_)
+- **Topic:** ride-map-update
+- **Consumer:** map-microservice (_RideUpdateAdapter_)
+- **Flow:** When the ride service processes a ride event, it sends a message to the ride-map-update topic. The map service consumes this message to associate or disassociate the user with the bike on the map.
+
+===== 4. Ride Events Affecting User
+- **Producer:** ride-microservice (_UserCommunicationAdapter_)
+- **Topic:** ride-user-update
+- **Consumer:** user-microservice (_RideConsumerAdapter_)
+- **Flow:** When the ride service handles user-related events (e.g., charging for a completed ride), it sends an update to the ride-user-update topic. The user service consumes this message to update user data (e.g., remaining credit).
+
+===== 5. User Data Update
+- **Producer:** user-microservice (_RideProducerAdapter_)
+- **Topic:** user-update
+- **Consumer:** ride-microservice (_UserConsumerAdapter_)
+- **Flow:** When user data changes in the user service, it sends an update to the user-update topic. The ride service consumes this message to keep its local user repository synchronized.
+
+==== Typical Event Flow Scenario
+
+When a user starts a ride through the system, a complex sequence of events propagates through the microservices:
+
+1. The ride service receives the API call to start a ride and becomes the initial event producer
+2. The ride service publishes events to multiple topics:
+   - To ebike-ride-update to inform the ebike service to mark the bike as in use
+   - To ride-map-update to update the map visualization
+   - To ride-user-update to charge the user's credit for the ride
+
+3. The ebike service responds to these events by:
+   - Consuming the ebike-ride-update message and changing the bike's status
+   - Publishing its own update to ebike-updates to notify all interested services of the bike's new state
+
+4. The map service maintains an up-to-date view by:
+   - Consuming ebike-updates to have current bike positions and statuses
+   - Consuming ride-map-update to visualize user-bike associations
+
+5. The user service consumes ride-user-update messages to manage user credit and ride history
+
+This event-driven approach allows the system to maintain consistency while avoiding tight coupling between services. Each service can evolve independently as long as it maintains compatibility with the event formats it produces and consumes.
+
+=== Adapter Configuration
+
+Every adapter uses a shared Kafka configuration to connect to the Kafka Cluster.
+
+.Kafka Producer Configuration
+[source,java]
+----
+public Properties getProducerProperties() {
+    Properties props = new Properties();
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddress);
+    props.put(ProducerConfig.ACKS_CONFIG, "all");
+    props.put(ProducerConfig.RETRIES_CONFIG, 5);
+    props.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, 1000);
+    props.put(ProducerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, 5000);
+    props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 500);
+    props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+    props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+    props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+    props.put(
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+        "org.apache.kafka.common.serialization.StringSerializer");
+    props.put(
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+        "org.apache.kafka.common.serialization.StringSerializer");
+    return props;
+}
+----
+
+
+
+.Kafka Consumer Configuration
+[source,java]
+----
+public Properties getConsumerProperties() {
+    Properties props = new Properties();
+    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddress);
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, "ebike-user-group");
+    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+    props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000");
+    props.put(
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+            "org.apache.kafka.common.serialization.StringDeserializer");
+    props.put(
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+            "org.apache.kafka.common.serialization.StringDeserializer");
+    return props;
+  }
+----
+
+
+The _Consumer_ adapters execute on a separate thread, managed through a single-thread `ExecutorService`. This approach allows for continuous background polling of Kafka messages without blocking the main thread. The polling cycle processes incoming messages by transforming them into JSON objects and updating the appropriate repository (e.g., user, bike, or ride repository depending on the adapter).
+
+.Kafka Consumer Execution
+[source,java]
+----
+private void startKafkaConsumer() {
+    consumerExecutor = Executors.newSingleThreadExecutor();
+    running.set(true);
+    consumerExecutor.submit(this::runKafkaConsumer);
+  }
+----
+
+
+
+=== Deployment Configuration
+
+The EBike system uses Docker Compose to orchestrate its services, including the Kafka event streaming platform. The Kafka infrastructure consists of Zookeeper for coordination and a Kafka broker for message handling, both integrated into the application's network.
+
+==== Kafka Infrastructure in Docker Compose
+
+The following services are added to the Docker Compose configuration to support the event sourcing architecture:
+
+- **Zookeeper**: Manages the Kafka cluster coordination
+- **Kafka Broker**: Handles the message queuing and delivery
+- **Redpanda Console**: Provides a web UI for monitoring Kafka topics and messages
+
+.Docker Compose Configuration for Kafka
+[source,yaml]
+----
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.5.0
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - eureka-network
+
+  kafka-broker:
+    image: confluentinc/cp-kafka:5.5.0
+    hostname: ${KAFKA_BROKER_HOSTNAME}
+    depends_on:
+      - zookeeper
+    ports:
+      - "${KAFKA_BROKER_EXTERNAL_PORT}:${KAFKA_BROKER_EXTERNAL_PORT}"
+    networks:
+      - eureka-network
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${KAFKA_BROKER_HOSTNAME}:${KAFKA_BROKER_PORT},PLAINTEXT_HOST://localhost:${KAFKA_BROKER_EXTERNAL_PORT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:${KAFKA_BROKER_EXTERNAL_PORT} --list || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:latest
+    ports:
+      - "8087:8080"
+    networks:
+      - eureka-network
+    environment:
+      KAFKA_BROKERS: "kafka-broker:9092"
+    depends_on:
+      kafka-broker:
+        condition: service_healthy
+----
+
+==== Environment Variables
+
+The following environment variables are set in the `.env` file to configure the Kafka broker:
+
+[source,properties]
+----
+#kafka configuration
+KAFKA_BROKER_HOSTNAME=kafka-broker
+KAFKA_BROKER_PORT=9092
+KAFKA_BROKER_EXTERNAL_PORT=29092
+----
+
+These variables are referenced in the Docker Compose file and passed to each microservice to ensure consistent Kafka broker configuration across the system. The internal port (9092) is used for service-to-service communication within the Docker network, while the external port (29092) is mapped to the host for access from outside the container environment.
+
+Each microservice container receives these Kafka connection parameters through environment variables, which are then used in their respective adapter configurations to establish producer and consumer connections to the Kafka broker.

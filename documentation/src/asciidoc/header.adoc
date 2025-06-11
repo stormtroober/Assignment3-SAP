@@ -1,12 +1,12 @@
 Università di Bologna · Campus di Cesena
 
-Corso di Laurea Magistrale in Ingegneria e Scienze Informatiche
+Master Degree in Computer Science and Engineering
 
 
 '''
 
 |=======
-|[.normalize]#Giacomo Ragni# |[.normalize]#000518425218# |[.normalize]#jack#
+|[.normalize]#Alessandro Becci# |[.normalize]#Enrolment n.0001125114# |[.normalize]#alessandro.becci@studio.unibo.it#
 |=======
 
 toc::[]

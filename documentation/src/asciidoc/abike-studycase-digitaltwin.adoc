@@ -1,55 +1,41 @@
-== ABike Study Case and Digital Twin
+== Autonomous A-Bike Case Study
 
-=== Digital Twin Concept
-==== Overview and Benefits
+=== New Features
 
-A digital twin is a virtual representation of a physical object or system. In the context of ABike, digital twins enable real-time monitoring, analysis, and optimization of bike-sharing operations.
+The following new features have been introduced in the extension of the EBike case study, featuring the autonomous e-bike ("a-bike") for smart city environments:
 
-=== Implementation Architecture
+- The a-bike can autonomously reach the nearest station after being used.
+- The a-bike can autonomously reach a user who requests the service.
 
-Digital twins for bike-sharing systems capture various dimensions:
+Also, it was needed that the a-bike and the elements of the smart city (e.g., stations) would be available as Digital Twins.
 
-* Physical state (location, condition)
-* Usage patterns
-* Maintenance requirements
-** Predictive maintenance
-** Service history
+==== User Stories
 
-* Physical state (location, condition)
-* Usage patterns
-* Maintenance requirements
-** Predictive maintenance
-** Service history
-
-[cols="3,2,5"]
+[cols="1,2,2", options="header"]
 |===
-| Component | Function | Description
-| IoT Sensors | Data Collection | Collect real-time data from bikes and stations
-| Event Bus | Data Transport | Kafka-based event streaming for real-time updates
-| Twin Models | State Management | Digital representation of each physical bike
-| Analytics Engine | Insight Generation | Process data to generate operational insights
+| As a... | I want to... | So that...
+
+| User
+| Request an a-bike to come to my location
+| I can conveniently access a bike without searching for one
+
+| User
+| Return an a-bike and have it autonomously go to the nearest station
+| I don't need to worry about parking or returning the bike manually
+
+| City Operator
+| Monitor and manage a-bike and station digital twins
+| I can ensure efficient operation and maintenance of the bike fleet
+
+| City Operator
+| Track the real-time location and status of each a-bike
+| I can optimize bike distribution and respond to issues quickly
 |===
 
-=== Benefits and Outcomes
+=== Implementation
 
-The ABike digital twin implementation resulted in:
+==== New Microservices
 
-* 24% increase in bike availability
-* 18% reduction in maintenance costs
-* Enhanced user experience through predictive station rebalancing
+==== New Communication Flow and Topics
 
-[source, json]
-----
-{
-  "bikeId": "B-1234",
-  "status": "in_use",
-  "location": {
-    "latitude": 44.494887,
-    "longitude": 11.342616
-  },
-  "batteryLevel": 78,
-  "lastMaintenance": "2023-10-15"
-}
-----
-
-This case study demonstrates how event sourcing and digital twins can transform urban mobility services.
+==== Digital Twin

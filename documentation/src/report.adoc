@@ -11,8 +11,6 @@
 
 include::asciidoc/header.adoc[]
 
-include::asciidoc/introduction.adoc[]
-
 include::asciidoc/kafka-event-sourcing.adoc[]
 
 include::asciidoc/kubernetes-deployment.adoc[]

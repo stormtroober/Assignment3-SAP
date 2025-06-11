@@ -1,4 +1,4 @@
-= Software Architecture and Platforms Assignment 3 Report
+= Software Architecture and Platforms Report
 :toc:
 :toclevels: 2
 :sectnums:

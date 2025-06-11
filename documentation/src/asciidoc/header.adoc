@@ -1,6 +1,6 @@
 Università di Bologna · Campus di Cesena
 
-Master Degree in Computer Science and Engineering
+Assignment 3 Report - Master Degree in Computer Science and Engineering
 
 
 '''

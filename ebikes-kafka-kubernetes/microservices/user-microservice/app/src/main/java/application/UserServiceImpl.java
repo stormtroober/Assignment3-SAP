@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserServiceAPI {
                                 return eventStore.loadEvents(username, 0)
                                         .thenCompose(history -> {
                                             long nextSeq = history.size() + 1;
-                                            CreditRecharged evt = new CreditRecharged(username, nextSeq, creditToAdd);
+                                            CreditRecharged evt = new CreditRecharged(username, nextSeq, newCredit);
                                             return eventStore.appendEvent(username, evt, history.size());
                                         })
                                         .thenApply(x -> {

@@ -43,7 +43,7 @@ public class MongoEventStore implements EventStore {
                 UserCreated uc = (UserCreated) event;
                 payload
                         .put("userType",      uc.getUserType())
-                        .put("initialCredit", uc.getInitialCredit());
+                        .put("newCredit", uc.getInitialCredit());
                 break;
 
             case "CreditRecharged":
@@ -103,7 +103,7 @@ public class MongoEventStore implements EventStore {
                                         aggregateId,
                                         seq,
                                         p.getString("userType"),
-                                        p.getInteger("initialCredit")
+                                        p.getInteger("newCredit")
                                 ));
                                 break;
 

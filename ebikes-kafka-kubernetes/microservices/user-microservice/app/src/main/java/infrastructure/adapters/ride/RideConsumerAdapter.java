@@ -85,21 +85,28 @@ public class RideConsumerAdapter {
   }
 
   private void processUserUpdate(JsonObject user) {
-
     try {
+      String username = user.getString("username");
+      Integer credit = user.getInteger("credit");
+      
+      if (username == null || credit == null) {
+        logger.error("Invalid user data from Kafka - missing username or credit: {}", user);
+        return;
+      }
+
       userService
-          .updateUser(user)
+          .updateCredit(username, credit)
           .thenAccept(
               updatedUser -> {
                 if (updatedUser != null) {
-                  logger.info("User updated via Kafka: {}", updatedUser);
+                  logger.info("User credit updated via Kafka: {}", updatedUser);
                 } else {
-                  logger.error("User not found via Kafka update: {}", user.getString("username"));
+                  logger.error("User not found via Kafka update: {}", username);
                 }
               })
           .exceptionally(
               e -> {
-                logger.error("Error processing user update from Kafka", e);
+                logger.error("Error processing user credit update from Kafka", e);
                 return null;
               });
     } catch (Exception e) {

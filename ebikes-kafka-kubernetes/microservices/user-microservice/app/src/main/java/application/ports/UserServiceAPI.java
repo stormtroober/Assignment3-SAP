@@ -28,23 +28,6 @@ public interface UserServiceAPI {
   CompletableFuture<JsonObject> signUp(String username, User.UserType type);
 
   /**
-   * Retrieves a user by its username.
-   *
-   * @param username the username of the user
-   * @return a CompletableFuture containing an Optional with the user as a JsonObject if found, or
-   *     an empty Optional if not found
-   */
-  CompletableFuture<Optional<JsonObject>> getUserByUsername(String username);
-
-  /**
-   * Updates the details of an existing user.
-   *
-   * @param user the user details to update as a JsonObject
-   * @return a CompletableFuture containing the updated user as a JsonObject
-   */
-  CompletableFuture<JsonObject> updateUser(JsonObject user);
-
-  /**
    * Recharges the credit of a user.
    *
    * @param username the username of the user
@@ -54,13 +37,13 @@ public interface UserServiceAPI {
   CompletableFuture<JsonObject> rechargeCredit(String username, int creditToAdd);
 
   /**
-   * Decreases the credit of a user.
+   * Updates the credit of a user to a specific value.
    *
    * @param username the username of the user
-   * @param creditToDecrease the amount of credit to decrease
+   * @param newCredit the new credit value to set
    * @return a CompletableFuture containing the updated user as a JsonObject
    */
-  CompletableFuture<JsonObject> decreaseCredit(String username, int creditToDecrease);
+  CompletableFuture<JsonObject> updateCredit(String username, int newCredit);
 
   /**
    * Retrieves all users.

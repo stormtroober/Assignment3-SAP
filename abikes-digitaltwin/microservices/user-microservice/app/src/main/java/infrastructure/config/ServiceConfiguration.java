@@ -43,8 +43,8 @@ public class ServiceConfiguration {
                             .add("SERVICE_PORT")
                             .add("MONGO_CONNECTION")
                             .add("MONGO_DATABASE")
-                                .add("KAFKA_BROKER_HOSTNAME")
-                                .add("KAFKA_BROKER_PORT")));
+                            .add("KAFKA_BROKER_HOSTNAME")
+                            .add("KAFKA_BROKER_PORT")));
     return ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(envStore));
   }
 
@@ -81,8 +81,8 @@ public class ServiceConfiguration {
 
   public JsonObject getKafkaConfig() {
     return new JsonObject()
-            .put("host", config.getString("KAFKA_BROKER_HOSTNAME", "kafka-broker"))
-            .put("port", config.getInteger("KAFKA_BROKER_PORT", 9092));
+        .put("host", config.getString("KAFKA_BROKER_HOSTNAME", "kafka-broker"))
+        .put("port", config.getInteger("KAFKA_BROKER_PORT", 9092));
   }
 
   public JsonObject getMongoConfig() {

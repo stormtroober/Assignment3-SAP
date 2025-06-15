@@ -1,11 +1,11 @@
 package domain.events;
 
 public interface UserEvent {
-    String getAggregateId(); // es. username
+  String getAggregateId(); // es. username
 
-    long getSequence(); // version
+  long getSequence(); // version
 
-    long getOccurredAt(); // timestamp
+  long getOccurredAt(); // timestamp
 
-    UserEventType getType(); // tipo dell'evento
+  UserEventType getType(); // tipo dell'evento
 }

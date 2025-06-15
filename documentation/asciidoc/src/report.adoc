@@ -1,0 +1,24 @@
+= Software Architecture and Platforms Report
+:toc:
+:toclevels: 2
+:sectnums:
+:doctype: book
+:pdf-theme: report-theme.yml
+:source-highlighter: rouge
+:rouge-style: github
+:xrefstyle: short
+:toc: macro
+:imagesdir: resources
+:imagesoutdir: output/resources/
+:diagramsdir: svg
+
+include::chapters/header.adoc[]
+
+include::chapters/kafka-event-sourcing.adoc[]
+
+include::chapters/kubernetes-deployment.adoc[]
+
+include::chapters/abike-studycase-digitaltwin.adoc[]
+
+include::chapters/conclusion.adoc[]
+

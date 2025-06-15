@@ -5,9 +5,10 @@ ASCIIDOCTOR_DIAGRAM = -r asciidoctor-diagram
 INPUT_FILE = src/report.adoc
 OUTPUT_PDF = output/report.pdf
 OUTPUT_HTML = output/report.html
+OUTPUT_FOLDER = output/
 THEME_DIR = .
-THEME_NAME = src/report
-FONTS_DIR = resources/font/FiraCode
+THEME_NAME = src/report-theme.yml
+FONTS_DIR = src/resources/font/FiraCode
 
 # Default target to build both PDF and HTML
 all: pdf html
@@ -31,5 +32,5 @@ html:
 
 # Target to clean the generated files
 clean:
-	rm -f $(OUTPUT_PDF) $(OUTPUT_HTML)
+	rm -rf $(OUTPUT_FOLDER)
 	@echo "Cleaned: $(OUTPUT_PDF) and $(OUTPUT_HTML)"

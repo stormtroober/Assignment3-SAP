@@ -1,7 +1,16 @@
-== EBike Event Sourcing
+== EBike Application in Event Driven Architecture
+
+[plantuml, {diagramsdir}/deployment_arc, svg, title="Deployment Architecture graph"]
+----
+!include resources/puml/test.puml
+----
+
+The Domain-Driven Design (DDD) architecture is not repeated here, since it's already provided in the report of the second assignment, available at link:https://github.com/stormtroober/microservices-ebikes/blob/main/doc/asciidoc/doc/assets/docs/report.pdf[Assignment 2 Report].
+
+For transforming the EBike application into an event-driven architecture, Kafka is used as the event broker, enabling asynchronous communication between the microservices. This section describes the Kafka topics used, the event flow between services, and the configuration of adapters that produce and consume events.
 
 === Kafka Topics
-This part describes the Kafka topics used in the EBike event sourcing implementation.
+This part describes the Kafka topics used to transform the EBike original architecture into an event-driven architecture. The topics are designed to facilitate communication between the ebike, ride, map, and user microservices, ensuring that each service can react to relevant events without direct dependencies on one another.
 
 **Topics Used**:
 

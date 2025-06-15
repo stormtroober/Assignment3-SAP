@@ -1,9 +1,5 @@
 == EBike Application in Event Driven Architecture
 
-[plantuml, {diagramsdir}/deployment_arc, svg, title="Deployment Architecture graph"]
-----
-!include resources/puml/test.puml
-----
 
 The Domain-Driven Design (DDD) architecture is not repeated here, since it's already provided in the report of the second assignment, available at link:https://github.com/stormtroober/microservices-ebikes/blob/main/doc/asciidoc/doc/assets/docs/report.pdf[Assignment 2 Report].
 
@@ -29,6 +25,11 @@ This part describes the Kafka topics used to transform the EBike original archit
 At the purpose of explaining the event flow, i'll detail how events are produced and consumed across the microservices involved in the EBike system. The following sections outline the communication patterns between services, including producers, consumers, and the topics they interact with.
 
 ==== Detailed Communication Patterns
+
+[plantuml, {diagramsdir}/kafka-comm-ebike, svg, title="Microservices communications using Kafka", width=50%]
+----
+!include resources/puml/kafka-comm-ebike.puml
+----
 
 ===== 1. EBike State Update
 - **Producer:** ebike-microservice (_MapCommunicationAdapter_)

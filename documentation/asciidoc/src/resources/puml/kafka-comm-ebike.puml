@@ -1,0 +1,42 @@
+@startuml kafka-communications
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam ArrowColor Black
+skinparam ArrowThickness 1.5
+
+' Define style for Kafka topics
+skinparam cloud {
+  BackgroundColor #FFCCCC
+  BorderColor #CC0000
+}
+
+' Microservices
+rectangle "ebike-microservice" as EBike
+rectangle "ride-microservice" as Ride
+rectangle "map-microservice" as Map
+rectangle "user-microservice" as User
+
+' Kafka Topics (styled)
+cloud "ebike-updates" as T1
+cloud "ebike-ride-update" as T2
+cloud "ride-map-update" as T3
+cloud "ride-user-update" as T4
+cloud "user-update" as T5
+
+' Communication flows
+EBike --> T1 : publish
+T1 --> Map : consume
+T1 --> Ride : consume
+
+Ride --> T2 : publish
+T2 --> EBike : consume
+
+Ride --> T3 : publish
+T3 --> Map : consume
+
+Ride --> T4 : publish
+T4 --> User : consume
+
+User --> T5 : publish
+T5 --> Ride : consume
+@enduml

@@ -27,7 +27,7 @@ public class Main {
         .onSuccess(
             conf -> {
               logger.info("Configuration loaded: " + conf.encodePrettily());
-                KafkaProperties kafkaProperties = new KafkaProperties(config);
+              KafkaProperties kafkaProperties = new KafkaProperties(config);
 
               MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
 
@@ -36,15 +36,16 @@ public class Main {
 
               EventStore eventStore = new MongoEventStore(mongoClient);
 
-              UserServiceAPI service = new UserServiceEventSourcedImpl(eventStore, UserEventPublisher);
+              UserServiceAPI service =
+                  new UserServiceEventSourcedImpl(eventStore, UserEventPublisher);
               RESTUserAdapter controller = new RESTUserAdapter(service, vertx);
               UserVerticle userVerticle = new UserVerticle(controller, vertx);
               RideConsumerAdapter rideAdapter = new RideConsumerAdapter(service, kafkaProperties);
               userVerticle.init();
               rideAdapter.init();
 
-                RideProducerAdapter rideProducerAdapter =
-                    new RideProducerAdapter(vertx, kafkaProperties);
+              RideProducerAdapter rideProducerAdapter =
+                  new RideProducerAdapter(vertx, kafkaProperties);
             });
   }
 }

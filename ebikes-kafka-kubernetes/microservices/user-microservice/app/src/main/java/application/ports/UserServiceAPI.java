@@ -3,7 +3,6 @@ package application.ports;
 import domain.model.User;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /** Port for the User Service API. Provides methods to manage the Application domain. */

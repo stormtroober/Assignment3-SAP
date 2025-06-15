@@ -326,8 +326,8 @@ echo "✅ Deployment complete."
 
 Kubernetes transformation brings significant benefits. By leveraging replica sets, each microservice can be scaled independently to meet varying load patterns, ensuring reliable performance under heavy traffic. At the same time, Kubernetes resource management capabilities—such as defining CPU and memory requests and limits—provide fine-grained control over how cluster resources are allocated, leading to more efficient utilization and predictable application behavior. Configuration management is also greatly simplified: all environment-specific settings and sensitive data can be centralized in ConfigMaps and Secrets.
 
-=== Event Sourcing Preservation
+=== Event Driven Architecture Preservation
 
 The event-driven architecture using Kafka topics remained unchanged during the transformation.
 
-The transformation focused purely on the deployment and orchestration layer while preserving the application's core event sourcing functionality and inter-service communication patterns.
+The transformation focused purely on the deployment and orchestration layer while preserving the application's core event driven architecture functionality and inter-service communication patterns.

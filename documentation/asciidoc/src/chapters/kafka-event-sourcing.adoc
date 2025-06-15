@@ -81,7 +81,250 @@ When a user starts a ride through the system, a complex sequence of events propa
 
 5. The user service consumes ride-user-update messages to manage user credit and ride history
 
-This event-driven approach allows the system to maintain consistency while avoiding tight coupling between services. Each service can evolve independently as long as it maintains compatibility with the event formats it produces and consumes.
+=== Event Sourcing Implementation
+
+The User Microservice has been choosen for event sourcing because it handles critical user data, such as credit and ride history, which must be accurately tracked and auditable. By storing events in a MongoDB collection, the system can maintain a complete history of user interactions, enabling features like user activity tracking and credit management.
+
+==== Event Types and Structure
+
+The event sourcing implementation defines three main event types that capture all possible state changes for a user:
+
+.User Event Types
+[source,java]
+----
+public enum UserEventType {
+  USER_CREATED("UserCreated"),
+  CREDIT_UPDATED("CreditUpdated"),
+  CREDIT_RECHARGED("CreditRecharged");
+  // ...existing code...
+}
+----
+
+Each event implements the `UserEvent` interface, which provides common properties for event identification and ordering:
+
+.UserEvent Interface
+[source,java]
+----
+public interface UserEvent {
+  String getAggregateId(); // username
+  long getSequence();      // version for ordering
+  long getOccurredAt();    // timestamp
+  UserEventType getType(); // event type identifier
+}
+----
+
+The `UserCreated` event captures the initial user registration with their type and starting credit:
+
+.UserCreated Event Structure
+[source,java]
+----
+public final class UserCreated implements UserEvent {
+  private final String aggregateId;
+  private final long sequence;
+  private final UserEventType type = UserEventType.USER_CREATED;
+  
+  // Payload fields
+  private final String userType;
+  private final int initialCredit;
+  
+  public UserCreated(String aggregateId, long sequence, String userType, int initialCredit) {
+    this.aggregateId = aggregateId;
+    this.sequence = sequence;
+    this.userType = userType;
+    this.initialCredit = initialCredit;
+    this.occurredAt = System.currentTimeMillis();
+  }
+  // ...existing code...
+}
+----
+
+==== User Aggregate Pattern
+
+The `UserAggregate` class implements the aggregate pattern, maintaining the current state of a user by applying a sequence of events. This approach ensures that the current state can always be reconstructed from the event history:
+
+.User Aggregate State Reconstruction
+[source,java]
+----
+public class UserAggregate {
+  private String username;
+  private String userType;
+  private int credit;
+  private long version;
+
+  public UserAggregate(List<UserEvent> history) {
+    this.version = 0;
+    history.forEach(this::applyEvent);
+  }
+
+  public void applyEvent(UserEvent evt) {
+    switch (evt.getType()) {
+      case USER_CREATED:
+        UserCreated uc = (UserCreated) evt;
+        this.username = uc.getAggregateId();
+        this.userType = uc.getUserType();
+        this.credit = uc.getInitialCredit();
+        break;
+      case CREDIT_RECHARGED:
+        this.credit += ((CreditRecharged) evt).getAmount();
+        break;
+      case CREDIT_UPDATED:
+        this.credit = ((CreditUpdated) evt).getNewCredit();
+        break;
+      // ...existing code...
+    }
+    this.version = evt.getSequence();
+  }
+  // ...existing code...
+}
+----
+
+The aggregate also provides command methods that generate new events while enforcing business rules:
+
+.Command Methods in UserAggregate
+[source,java]
+----
+public UserCreated create(String username, String userType, int initialCredit) {
+  if (version != 0) throw new IllegalStateException("Already created");
+  return new UserCreated(username, version + 1, userType, initialCredit);
+}
+
+public CreditUpdated updateCredit(int newCredit) {
+  if (version == 0) throw new IllegalStateException("Not created");
+  return new CreditUpdated(username, version + 1, newCredit);
+}
+----
+
+==== MongoDB Event Store
+
+The `MongoEventStore` provides persistent storage for events with proper serialization and deserialization. Events are stored as JSON documents with a structured format that includes metadata and payload:
+
+.Event Storage Structure
+[source,java]
+----
+JsonObject doc = new JsonObject()
+    .put("aggregateId", aggregateId)
+    .put("sequence", event.getSequence())
+    .put("type", event.getType().getValue())
+    .put("occurredAt", event.getOccurredAt())
+    .put("payload", payload);
+----
+
+The event store supports loading events by aggregate ID and sequence number, enabling efficient state reconstruction:
+
+.Event Loading with Ordering
+[source,java]
+----
+JsonObject query = new JsonObject()
+    .put("aggregateId", aggregateId)
+    .put("sequence", new JsonObject().put("$gte", fromSequence));
+
+// Sort by sequence ascending for proper event ordering
+results.sort(Comparator.comparingInt(d -> d.getInteger("sequence")));
+----
+
+==== Event-Sourced Service Implementation
+
+The `UserServiceEventSourcedImpl` coordinates between the aggregate, event store, and external publishers. It maintains an in-memory cache of aggregates for performance while ensuring consistency through the event store:
+
+.Aggregate Caching and Loading
+[source,java]
+----
+private CompletableFuture<UserAggregate> getOrLoad(String username) {
+  UserAggregate cached = cache.get(username);
+  if (cached != null) {
+    return CompletableFuture.completedFuture(cached);
+  }
+
+  return eventStore.loadEvents(username, 0)
+      .thenApply(history -> {
+        UserAggregate agg = new UserAggregate(history);
+        cache.put(username, agg);
+        return agg;
+      });
+}
+----
+
+The service follows a command-event-publish pattern for all operations:
+
+.Command Processing Pattern
+[source,java]
+----
+public CompletableFuture<JsonObject> updateCredit(String username, int newCredit) {
+  return getOrLoad(username)
+      .thenCompose(agg -> {
+        // 1. Generate event from aggregate
+        CreditUpdated evt = agg.updateCredit(newCredit);
+        
+        // 2. Persist event to store
+        return eventStore.appendEvent(username, evt, agg.getVersion())
+            .thenApply(v -> {
+              // 3. Apply event to aggregate
+              agg.applyEvent(evt);
+              JsonObject userJson = agg.toJson();
+              
+              // 4. Publish to external systems
+              userEventPublisher.publishUserUpdate(username, userJson);
+              return userJson;
+            });
+      });
+}
+----
+
+This pattern ensures that:
+
+- Business logic is enforced through the aggregate
+- All state changes are captured as events
+- External systems are notified of changes
+- The system can recover from any point in time by replaying events
+
+.User-Events storage in MongoDB
+[source,json]
+----
+{
+  "_id": "684e9f94846dfb422934f045",
+  "aggregateId": "ale",
+  "sequence": {
+    "$numberLong": "1"
+  },
+  "type": "UserCreated",
+  "occurredAt": {
+    "$numberLong": "1749983124244"
+  },
+  "payload": {
+    "userType": "USER",
+    "initialCredit": 100
+  }
+}
+{
+  "_id": "684e9f99846dfb422934f046",
+  "aggregateId": "tone",
+  "sequence": {
+    "$numberLong": "1"
+  },
+  "type": "UserCreated",
+  "occurredAt": {
+    "$numberLong": "1749983129463"
+  },
+  "payload": {
+    "userType": "ADMIN",
+    "initialCredit": 100
+  }
+}
+{
+  "_id": "684e9ff7846dfb422934f047",
+  "aggregateId": "ale",
+  "sequence": {
+    "$numberLong": "2"
+  },
+  "type": "CreditUpdated",
+  "occurredAt": {
+    "$numberLong": "1749983223195"
+  },
+  "payload": {
+    "newCredit": 99
+  }
+}
+----
 
 === Adapter Configuration
 

@@ -1,4 +1,4 @@
-import application.UserServiceImpl;
+import application.UserServiceEventSourcedImpl;
 import application.ports.EventStore;
 import application.ports.UserEventPublisher;
 import application.ports.UserServiceAPI;
@@ -36,7 +36,7 @@ public class Main {
 
               EventStore eventStore = new MongoEventStore(mongoClient);
 
-              UserServiceAPI service = new UserServiceImpl(repository, UserEventPublisher, eventStore);
+              UserServiceAPI service = new UserServiceEventSourcedImpl(eventStore, UserEventPublisher, repository);
               RESTUserAdapter controller = new RESTUserAdapter(service, vertx);
               UserVerticle userVerticle = new UserVerticle(controller, vertx);
               RideConsumerAdapter rideAdapter = new RideConsumerAdapter(service, kafkaProperties);

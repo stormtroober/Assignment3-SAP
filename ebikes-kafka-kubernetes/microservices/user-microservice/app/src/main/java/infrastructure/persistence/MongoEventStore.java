@@ -5,6 +5,7 @@ import domain.events.CreditUpdated;
 import domain.events.UserCreated;
 import domain.events.CreditRecharged;
 import domain.events.UserEvent;
+import domain.events.UserEventType;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 
@@ -33,25 +34,25 @@ public class MongoEventStore implements EventStore {
         JsonObject doc = new JsonObject()
                 .put("aggregateId", aggregateId)
                 .put("sequence",    event.getSequence())
-                .put("type",        event.getType())
+                .put("type",        event.getType().getValue())
                 .put("occurredAt",  event.getOccurredAt());
 
         // Build the payload based on event type
         JsonObject payload = new JsonObject();
         switch (event.getType()) {
-            case "UserCreated":
+            case USER_CREATED:
                 UserCreated uc = (UserCreated) event;
                 payload
-                        .put("userType",      uc.getUserType())
-                        .put("newCredit", uc.getInitialCredit());
+                        .put("userType", uc.getUserType())
+                        .put("initialCredit", uc.getInitialCredit());
                 break;
 
-            case "CreditRecharged":
+            case CREDIT_RECHARGED:
                 CreditRecharged cr = (CreditRecharged) event;
-                payload.put("newCredit", cr.getAmount());
+                payload.put("amount", cr.getAmount());
                 break;
 
-            case "CreditUpdated":
+            case CREDIT_UPDATED:
                 CreditUpdated cu = (CreditUpdated) event;
                 payload.put("newCredit", cu.getNewCredit());
                 break;
@@ -65,7 +66,6 @@ public class MongoEventStore implements EventStore {
 
         doc.put("payload", payload);
 
-        // Insert into Mongo; rely on a unique index on (aggregateId, sequence)
         mongo.insert(COLLECTION, doc)
                 .onSuccess(__ -> fut.complete(null))
                 .onFailure(err -> fut.completeExceptionally(
@@ -93,29 +93,30 @@ public class MongoEventStore implements EventStore {
 
                     List<UserEvent> history = new ArrayList<>();
                     for (JsonObject doc : results) {
-                        String type = doc.getString("type");
+                        String typeString = doc.getString("type");
+                        UserEventType type = UserEventType.fromString(typeString);
                         long   seq  = doc.getLong("sequence");
                         JsonObject p = doc.getJsonObject("payload", new JsonObject());
 
                         switch (type) {
-                            case "UserCreated":
+                            case USER_CREATED:
                                 history.add(new UserCreated(
                                         aggregateId,
                                         seq,
                                         p.getString("userType"),
-                                        p.getInteger("newCredit")
+                                        p.getInteger("initialCredit")
                                 ));
                                 break;
 
-                            case "CreditRecharged":
+                            case CREDIT_RECHARGED:
                                 history.add(new CreditRecharged(
                                         aggregateId,
                                         seq,
-                                        p.getInteger("newCredit")
+                                        p.getInteger("amount")
                                 ));
                                 break;
 
-                            case "CreditUpdated":
+                            case CREDIT_UPDATED:
                                 history.add(new domain.events.CreditUpdated(
                                         aggregateId,
                                         seq,

@@ -4,7 +4,7 @@ public final class CreditRecharged implements UserEvent {
     private final String aggregateId;
     private final long   occurredAt;
     private final long   sequence;
-    private final String type = "CreditRecharged";
+    private final UserEventType type = UserEventType.CREDIT_RECHARGED;
 
     // payload
     private final int amount;
@@ -19,7 +19,7 @@ public final class CreditRecharged implements UserEvent {
     @Override public String getAggregateId()  { return aggregateId; }
     @Override public long   getSequence()     { return sequence; }
     @Override public long   getOccurredAt()   { return occurredAt; }
-    @Override public String getType()         { return type; }
+    @Override public UserEventType getType() { return type; }
 
     public int getAmount() { return amount; }
 }

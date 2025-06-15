@@ -4,7 +4,7 @@ public final class CreditUpdated implements UserEvent {
     private final String aggregateId;
     private final long   occurredAt;
     private final long   sequence;
-    private final String type = "CreditUpdated";
+    private final UserEventType type = UserEventType.CREDIT_UPDATED;
 
     // payload: nuovo valore di credito
     private final int newCredit;
@@ -19,7 +19,7 @@ public final class CreditUpdated implements UserEvent {
     @Override public String getAggregateId() { return aggregateId; }
     @Override public long   getSequence()    { return sequence;    }
     @Override public long   getOccurredAt()  { return occurredAt;  }
-    @Override public String getType()        { return type;        }
+    @Override public UserEventType getType() { return type; }
 
     /** Ritorna il credito dopo l’aggiornamento */
     public int getNewCredit() { return newCredit; }

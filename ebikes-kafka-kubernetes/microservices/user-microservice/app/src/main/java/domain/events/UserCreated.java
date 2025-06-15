@@ -4,7 +4,7 @@ public final class UserCreated implements UserEvent {
     private final String aggregateId;
     private final long   occurredAt;
     private final long   sequence;
-    private final String type = "UserCreated";
+    private final UserEventType type = UserEventType.USER_CREATED;
 
     // campi payload
     private final String userType;
@@ -25,7 +25,7 @@ public final class UserCreated implements UserEvent {
     @Override public String getAggregateId()  { return aggregateId; }
     @Override public long   getSequence()     { return sequence; }
     @Override public long   getOccurredAt()   { return occurredAt; }
-    @Override public String getType()         { return type; }
+    @Override public UserEventType getType() { return type; }
 
     public String getUserType()     { return userType; }
     public int    getInitialCredit(){ return initialCredit; }

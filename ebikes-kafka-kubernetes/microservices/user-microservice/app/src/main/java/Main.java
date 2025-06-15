@@ -8,7 +8,6 @@ import infrastructure.adapters.web.RESTUserAdapter;
 import infrastructure.adapters.web.UserVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.persistence.MongoEventStore;
-import infrastructure.persistence.MongoUserRepository;
 import infrastructure.utils.KafkaProperties;
 import infrastructure.utils.UserEventPublisherImpl;
 import io.vertx.core.Vertx;
@@ -31,7 +30,6 @@ public class Main {
 
               MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
 
-              MongoUserRepository repository = new MongoUserRepository(mongoClient);
               UserEventPublisher UserEventPublisher = new UserEventPublisherImpl(vertx);
 
               EventStore eventStore = new MongoEventStore(mongoClient);

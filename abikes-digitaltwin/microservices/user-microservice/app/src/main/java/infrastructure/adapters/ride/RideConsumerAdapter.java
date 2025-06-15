@@ -5,16 +5,9 @@ import static infrastructure.adapters.kafkatopic.Topics.RIDE_USER_UPDATE;
 
 import application.ports.UserServiceAPI;
 import infrastructure.adapters.kafkatopic.Topics;
-import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.KafkaProperties;
-import infrastructure.utils.MetricsManager;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -29,17 +22,15 @@ import org.slf4j.LoggerFactory;
 public class RideConsumerAdapter {
   private static final Logger logger = LoggerFactory.getLogger(RideConsumerAdapter.class);
   private final UserServiceAPI userService;
-  private final Vertx vertx;
-  private final MetricsManager metricsManager;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final KafkaProperties kafkaProperties;
+  private final Vertx vertx;
 
   public RideConsumerAdapter(UserServiceAPI userService, Vertx vertx, KafkaProperties kafkaProperties) {
+    this.kafkaProperties = kafkaProperties;
     this.userService = userService;
     this.vertx = vertx;
-    this.metricsManager = MetricsManager.getInstance();
-    this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
@@ -54,14 +45,13 @@ public class RideConsumerAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
+            new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
 
     try (consumer) {
-      //RIDE_USER_UPDATE is for updating coming from a Ride,
-        //RIDE_BIKE_DISPATCH is for making appear the user position on the map
-      consumer.subscribe(List.of(RIDE_USER_UPDATE.getTopicName(),
-              RIDE_BIKE_DISPATCH.getTopicName()));
-      logger.info("Subscribed to Kafka topic: {}", RIDE_USER_UPDATE.getTopicName());
+      List<String> topicsToSubscribe = List.of(
+              RIDE_USER_UPDATE.getTopicName(), RIDE_BIKE_DISPATCH.getTopicName());
+      consumer.subscribe(topicsToSubscribe);
+      logger.info("Subscribed to Kafka topic: {}", topicsToSubscribe);
 
       while (running.get()) {
         try {
@@ -73,21 +63,21 @@ public class RideConsumerAdapter {
                 String userId = record.key();
                 logger.info("Received dispatch message: {}", message);
                 processBikeDispatch(userId, message);
-              } else if (record.topic().equals(RIDE_USER_UPDATE.getTopicName())) {
+              }
+              else if (record.topic().equals(RIDE_USER_UPDATE.getTopicName())) {
                 logger.info("Received user update from Kafka: {}", message);
                 processUserUpdate(message);
               }
             } catch (Exception e) {
-              logger.error("Invalid message from Kafka: {}", e.getMessage());
+              logger.error("Invalid user data from Kafka: {}", e.getMessage());
             }
           }
-
           consumer.commitAsync(
-              (offsets, exception) -> {
-                if (exception != null) {
-                  logger.error("Failed to commit offsets: {}", exception.getMessage());
-                }
-              });
+                  (offsets, exception) -> {
+                    if (exception != null) {
+                      logger.error("Failed to commit offsets: {}", exception.getMessage());
+                    }
+                  });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage());
         }
@@ -98,32 +88,32 @@ public class RideConsumerAdapter {
   }
 
   private void processUserUpdate(JsonObject user) {
-    metricsManager.incrementMethodCounter("updateUser");
-    var timer = metricsManager.startTimer();
-
     try {
+      String username = user.getString("username");
+      Integer credit = user.getInteger("credit");
+
+      if (username == null || credit == null) {
+        logger.error("Invalid user data from Kafka - missing username or credit: {}", user);
+        return;
+      }
+
       userService
-          .updateUser(user)
-          .thenAccept(
-              updatedUser -> {
-                if (updatedUser != null) {
-                  logger.info("User updated via Kafka: {}", updatedUser);
-                  metricsManager.recordTimer(timer, "updateUser");
-                } else {
-                  logger.error("User not found via Kafka update: {}", user.getString("username"));
-                  metricsManager.recordError(
-                      timer, "updateUser", new RuntimeException("User not found"));
-                }
-              })
-          .exceptionally(
-              e -> {
-                logger.error("Error processing user update from Kafka", e);
-                metricsManager.recordError(timer, "updateUser", e);
-                return null;
-              });
+              .updateCredit(username, credit)
+              .thenAccept(
+                      updatedUser -> {
+                        if (updatedUser != null) {
+                          logger.info("User credit updated via Kafka: {}", updatedUser);
+                        } else {
+                          logger.error("User not found via Kafka update: {}", username);
+                        }
+                      })
+              .exceptionally(
+                      e -> {
+                        logger.error("Error processing user credit update from Kafka", e);
+                        return null;
+                      });
     } catch (Exception e) {
       logger.error("Invalid JSON format in Kafka message", e);
-      metricsManager.recordError(timer, "updateUser", e);
     }
   }
 
@@ -136,8 +126,6 @@ public class RideConsumerAdapter {
     }
   }
 
-
-
   public void stop() {
     running.set(false);
     if (consumerExecutor != null) {
@@ -145,5 +133,4 @@ public class RideConsumerAdapter {
     }
     logger.info("RideCommunicationAdapter Kafka consumer executor shut down.");
   }
-
 }

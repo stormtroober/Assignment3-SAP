@@ -139,4 +139,67 @@ public class MongoEventStore implements EventStore {
 
         return fut;
     }
+
+    @Override
+    public CompletableFuture<List<UserEvent>> loadAllEvents() {
+        CompletableFuture<List<UserEvent>> fut = new CompletableFuture<>();
+
+        JsonObject query = new JsonObject(); // Empty query to get all events
+
+        mongo.find(COLLECTION, query)
+                .onSuccess(results -> {
+                    // Sort by aggregateId first, then by sequence
+                    results.sort(Comparator
+                            .comparing((JsonObject d) -> d.getString("aggregateId"))
+                            .thenComparingLong(d -> d.getLong("sequence")));
+
+                    List<UserEvent> allEvents = new ArrayList<>();
+                    for (JsonObject doc : results) {
+                        String aggregateId = doc.getString("aggregateId");
+                        String typeString = doc.getString("type");
+                        UserEventType type = UserEventType.fromString(typeString);
+                        long seq = doc.getLong("sequence");
+                        JsonObject p = doc.getJsonObject("payload", new JsonObject());
+
+                        switch (type) {
+                            case USER_CREATED:
+                                allEvents.add(new UserCreated(
+                                        aggregateId,
+                                        seq,
+                                        p.getString("userType"),
+                                        p.getInteger("initialCredit")
+                                ));
+                                break;
+
+                            case CREDIT_RECHARGED:
+                                allEvents.add(new CreditRecharged(
+                                        aggregateId,
+                                        seq,
+                                        p.getInteger("amount")
+                                ));
+                                break;
+
+                            case CREDIT_UPDATED:
+                                allEvents.add(new CreditUpdated(
+                                        aggregateId,
+                                        seq,
+                                        p.getInteger("newCredit")
+                                ));
+                                break;
+
+                            default:
+                                throw new IllegalStateException(
+                                        "Unknown event type in store: " + type
+                                );
+                        }
+                    }
+
+                    fut.complete(allEvents);
+                })
+                .onFailure(err -> fut.completeExceptionally(
+                        new RuntimeException("Failed to load all events: " + err.getMessage(), err)
+                ));
+
+        return fut;
+    }
 }

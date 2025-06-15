@@ -4,25 +4,26 @@ import application.ports.*;
 import domain.events.CreditRecharged;
 import domain.events.CreditUpdated;
 import domain.events.UserCreated;
+import domain.events.UserEvent;
 import domain.model.User;
 import domain.model.UserAggregate;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class UserServiceEventSourcedImpl implements UserServiceAPI {
     private final EventStore            eventStore;
     private final UserEventPublisher    userEventPublisher;
-    private final UserRepository        readRepo;
     private final ConcurrentMap<String, UserAggregate> cache = new ConcurrentHashMap<>();
 
     public UserServiceEventSourcedImpl(EventStore eventStore,
-                                       UserEventPublisher userEventPublisher,
-                                       UserRepository readRepo) {
+                                       UserEventPublisher userEventPublisher) {
         this.eventStore = eventStore;
         this.userEventPublisher = userEventPublisher;
-        this.readRepo = readRepo;
     }
 
     private CompletableFuture<UserAggregate> getOrLoad(String username) {
@@ -57,9 +58,7 @@ public class UserServiceEventSourcedImpl implements UserServiceAPI {
                             .thenApply(v -> {
                                 agg.applyEvent(evt);
                                 JsonObject userJson = agg.toJson();
-                                // Update read model
-                                readRepo.save(userJson);
-                                // Publish events like in UserServiceImpl
+                                // Publish events for external communication
                                 userEventPublisher.publishUserUpdate(username, userJson);
                                 userEventPublisher.publishAllUsersUpdates(userJson);
                                 return userJson;
@@ -94,7 +93,6 @@ public class UserServiceEventSourcedImpl implements UserServiceAPI {
                             .thenApply(v -> {
                                 agg.applyEvent(evt);
                                 JsonObject userJson = agg.toJson();
-                                readRepo.update(userJson);
                                 userEventPublisher.publishUserUpdate(username, userJson);
                                 userEventPublisher.publishAllUsersUpdates(userJson);
                                 return userJson;
@@ -121,7 +119,6 @@ public class UserServiceEventSourcedImpl implements UserServiceAPI {
                             .thenApply(v -> {
                                 agg.applyEvent(evt);
                                 JsonObject userJson = agg.toJson();
-                                readRepo.update(userJson);
                                 userEventPublisher.publishUserUpdate(username, userJson);
                                 userEventPublisher.publishAllUsersUpdates(userJson);
                                 return userJson;
@@ -131,6 +128,28 @@ public class UserServiceEventSourcedImpl implements UserServiceAPI {
 
     @Override
     public CompletableFuture<JsonArray> getAllUsers() {
-        return readRepo.findAll();
+        // Load all events and group by aggregateId to rebuild all users
+        return eventStore.loadAllEvents()
+                .thenApply(allEvents -> {
+                    // Group events by aggregateId
+                    Map<String, List<UserEvent>> eventsByUser = allEvents.stream()
+                            .collect(Collectors.groupingBy(UserEvent::getAggregateId));
+                    
+                    JsonArray users = new JsonArray();
+                    
+                    // Rebuild each user aggregate from their events
+                    eventsByUser.forEach((username, events) -> {
+                        if (!events.isEmpty()) {
+                            UserAggregate agg = new UserAggregate(events);
+                            if (agg.getVersion() > 0) {
+                                // Update cache with rebuilt aggregate
+                                cache.put(username, agg);
+                                users.add(agg.toJson());
+                            }
+                        }
+                    });
+                    
+                    return users;
+                });
     }
 }

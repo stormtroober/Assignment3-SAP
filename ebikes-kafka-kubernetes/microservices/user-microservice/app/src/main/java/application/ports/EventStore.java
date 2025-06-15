@@ -22,4 +22,6 @@ public interface EventStore {
             String aggregateId,
             long fromSequence
     );
+
+    CompletableFuture<List<UserEvent>> loadAllEvents();
 }

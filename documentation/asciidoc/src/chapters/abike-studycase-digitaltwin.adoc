@@ -9,6 +9,16 @@ The following new features have been introduced in the extension of the EBike ca
 
 Also, it was needed that the a-bike and the elements of the smart city (e.g., stations) would be available as Digital Twins.
 
+=== Requirements
+
+We report here only the Domain-Driven-Design parts that are new or changed compared to the original EBike case study.
+
+1. The system must allow users to request an autonomous a-bike to reach their location.
+2. The system must allow users to view the real-time position and status of a-bikes.
+3. The system must allow a-bikes to autonomously return to the nearest station after use.
+4. The system must allow operators to monitor all a-bikes and stations in real time via Digital Twin.
+5. The system must allow operators to view the operational status and real-time position of a-bikes on a map.
+
 ==== User Stories
 
 [cols="1,2,2", options="header"]
@@ -19,18 +29,83 @@ Also, it was needed that the a-bike and the elements of the smart city (e.g., st
 | Request an a-bike to come to my location
 | I can conveniently access a bike without searching for one
 
-| User
-| Return an a-bike and have it autonomously go to the nearest station
-| I don't need to worry about parking or returning the bike manually
+| City Operator
+| Have the a-bike autonomously return to the nearest station after use
+| I can ensure bikes are available for other users and reduce operational costs
 
 | City Operator
-| Monitor and manage a-bike and station digital twins
+| Track the real-time location and status of each a-bike via digital twin
 | I can ensure efficient operation and maintenance of the bike fleet
-
-| City Operator
-| Track the real-time location and status of each a-bike
-| I can optimize bike distribution and respond to issues quickly
 |===
+
+==== Use Cases
+
+[plantuml, {diagramsdir}/abike-usecases, svg, title="ABike Application Use Cases", width=50%]
+----
+!include resources/puml/abike-usecases.puml
+----
+
+==== Use Case Descriptions
+
+**Request a-bike to user location**
+
+[cols="2,3", options="header"]
+|===
+| Field           | Description
+
+| Actors          | User, A-Bike, System
+| Scope           | A-Bike System
+| Preconditions   | The user must be authenticated and have credits available.
+| Postconditions  | An autonomous a-bike is sent to the user's location.
+| Trigger         | The user requests an a-bike via the application.
+| Flow   | 1. The user selects the option to request an a-bike. +
+2. The system sends the command to the a-bike to reach the user's location. +
+3. The user can see the approaching a-bike's arriving on the map. +
+|===
+
+**A-bike returns autonomously to nearest station**
+
+[cols="2,3", options="header"]
+|===
+| Field           | Description
+
+| Actors          | A-Bike, System, City Operator
+| Scope           | A-Bike System
+| Preconditions   | The ride has ended and the a-bike is not at a station.
+| Postconditions  | The a-bike autonomously reaches the nearest station and becomes available.
+| Trigger         | The system detects that the ride ended outside a station.
+| Flow   | 1. The system identifies the nearest station to the current a-bike position. +
+2. The system sends the command to the a-bike to reach the station. +
+3. The a-bike autonomously moves towards the station. +
+4. The system updates the a-bike's position in real time. +
+5. Upon arrival at the station, the a-bike is marked as available.
+|===
+
+**Monitor a-bike and stations via Digital Twin**
+
+[cols="2,3", options="header"]
+|===
+| Field           | Description
+
+| Actors          | City Operator
+| Scope           | A-Bike System
+| Preconditions   | The operator must be authenticated.
+| Postconditions  | The operator views the real-time status and position of all a-bikes and stations.
+| Trigger         | The operator accesses the Digital Twin dashboard.
+| Flow   | 1. The operator accesses the Digital Twin dashboard. +
+2. The system displays the dashboard with all a-bikes and stations, updated in real time. +
+3. The operator can select an a-bike or station to view details and operational status. +
+|===
+
+==== Bounded Contexts
+In addition to the original EBike case study, a new bounded context is introduced for the autonomous a-bike:
+
+- Autonomous A-Bike Context: This context handles the management of A-Bikes and Stations.
+
+Initially, it was considered to extend the original EBike context to include the autonomous a-bike. However, it was decided to create a new bounded context to better encapsulate the new features and requirements. This separation is also expected to be beneficial for the future development of a more complex smart city system.
+
+Stations are also included in this new context, as they are essential and closely related to the operations of the autonomous a-bikes.
+
 
 === Implementation
 
@@ -39,3 +114,5 @@ Also, it was needed that the a-bike and the elements of the smart city (e.g., st
 ==== New Communication Flow and Topics
 
 ==== Digital Twin
+
+

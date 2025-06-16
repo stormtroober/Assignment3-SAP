@@ -1,0 +1,14 @@
+@startuml abike-usecases
+left to right direction
+
+actor User
+actor "City Operator" as CityOperator
+
+rectangle "A-Bike System" {
+    User -- (Request a-bike to my location)
+    CityOperator -- (Autonomously return a-bike to nearest station)
+    CityOperator -- (Track real-time location and status via digital twin)
+}
+
+
+@enduml

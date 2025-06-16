@@ -13,8 +13,8 @@ function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {
     } else if( topic === "station-update") {
         thingId = "station:" + jsonData.id;
     }
-    if (!thingId) return null;
-
+    
+    // Transform properties into Ditto features
     var features = {};
     for (var key in jsonData) {
         if (jsonData.hasOwnProperty(key) && key !== 'id') {

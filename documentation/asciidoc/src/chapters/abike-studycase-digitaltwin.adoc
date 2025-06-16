@@ -106,13 +106,126 @@ Initially, it was considered to extend the original EBike context to include the
 
 Stations are also included in this new context, as they are essential and closely related to the operations of the autonomous a-bikes.
 
-
 === Implementation
+Only non-trivial implementation details are reported here.
 
 ==== New Microservices
+It was decided to create a new microservice for the autonomous a-bike, that manages the autonomous a-bike and the stations. The new microservice is called `abike-microservice`.
+
+It follows the same architecture of the other microservices, using hexagonal architecture and an Event-Driven approach.
 
 ==== New Communication Flow and Topics
 
-==== Digital Twin
+Here we describe the new topics and communication flows introduced in the autonomous a-bike case study.
+Is been chosen to duplicate some topics, when it would be possible to use the same topics as the ones used for E-Bikes, but it was considered more appropriate to have separate topics for the autonomous a-bike to avoid confusion and also in the optic of a future extension of the smart city system.
 
+[plantuml, {diagramsdir}/kafka-comm-abike, svg, title="Microservices communications using Kafka", width=50%]
+----
+!include resources/puml/kafka-comm-abike.puml
+----
 
+===== Detailed Communication Patterns
+
+===== 1. ABike State Update
+- **Producer:** abike-microservice (_BikeCommunicationAdapter_)
+- **Topic:** abike-updates
+- **Consumers:** map-microservice (_BikeUpdateAdapter_), ride-microservice (_BikeConsumerAdapter_)
+- **Flow:** When an ABike's state or position changes, the abike-microservice publishes this update to the abike-updates topic. The map service consumes this message to update the bike's position on the map via websocket, while the ride service updates its local repository of available ABikes.
+
+===== 2. Station State Update
+- **Producer:** abike-microservice (_StationCommunicationAdapter_)
+- **Topic:** station-updates
+- **Consumers:** map-microservice (_StationUpdateAdapter_), ride-microservice (_StationConsumerAdapter_)
+- **Flow:** When a station's data changes, the abike-microservice publishes an update to the station-updates topic. The map service consumes this to update the station's view via websocket, and the ride service consumes it to keep its local station repository synchronized.
+
+===== 3. Ride Events Affecting ABike
+- **Producer:** ride-microservice (_BikeCommunicationAdapter_)
+- **Topic:** abike-ride-update
+- **Consumer:** abike-microservice (_RideCommunicationAdapter_)
+- **Flow:** When the ride-microservice processes a ride event involving an ABike (e.g., start/end ride), it publishes an update to the abike-ride-update topic. The abike-microservice consumes this message to update the ABike's state accordingly (e.g., from AVAILABLE to IN_USE).
+
+===== 4. Bike Dispatch Notifications
+- **Producer:** ride-microservice (_UserCommunicationAdapter_)
+- **Topic:** ride-bike-dispatch
+- **Consumer:** user-microservice (_RideConsumerAdapter_)
+- **Flow:** When the ride-microservice processes a dispatch request (e.g., sending an autonomous bike to a user), it publishes a message to the ride-bike-dispatch topic. The user-microservice consumes this message and forwards it to the specific user's client via a real-time websocket.
+
+=== Digital Twin
+
+For the Digital Twin, it was decided to use Eclipse Ditto, which is a powerful platform for managing Digital Twins. 
+
+The platform is setupped to listen to the Kafka topics related to the a-bike and stations, and it automatically updates the Digital Twin representation of the a-bike and stations in real time, using a JavaScript payload mapper.
+
+==== Connection Setup and Docker Integration
+
+The digital twin implementation uses Eclipse Ditto connected to the Kafka message broker to synchronize real-time data from the microservices. The connection is established through Ditto's connectivity service, which is deployed via Docker and shares the same network (`kafka-ditto-net`) as the Kafka broker to enable communication.
+
+The Kafka broker is configured to be accessible from both the microservices network and the Ditto network:
+
+[source,yaml]
+----
+kafka-broker:
+  networks:
+    - eureka-network
+    - kafka-ditto-net
+----
+
+==== Kafka Topics Consumption
+
+The Ditto connection listens to two main Kafka topics that provide real-time updates about the autonomous bike-sharing system:
+
+- **`abike-update`**: Receives updates about individual autonomous a-bikes
+- **`station-update`**: Receives updates about stations
+
+The connection configuration specifies these topics as source addresses:
+
+[source,json]
+----
+"sources": [
+  {
+    "addresses": [
+      "abike-update",
+      "station-update"
+    ],
+    "consumerCount": 1,
+    "payloadMapping": ["JavaScript"]
+  }
+]
+----
+
+==== Data Transformation with JavaScript Mapper
+
+The connection uses a JavaScript mapper to transform incoming Kafka messages into Ditto protocol messages. The mapper handles both bike and station updates by creating appropriate thing IDs and feature structures:
+
+[source,javascript]
+----
+function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {
+    var topic = headers["kafka.topic"] || "";
+    let thingId;
+    if (topic === "abike-update") {
+        thingId = "abike:" + jsonData.id;
+    } else if( topic === "station-update") {
+        thingId = "station:" + jsonData.id;
+    }
+    
+    // Transform properties into Ditto features
+    var features = {};
+    for (var key in jsonData) {
+        if (jsonData.hasOwnProperty(key) && key !== 'id') {
+            features[key] = {
+                properties: {
+                    value: jsonData[key]
+                }
+            };
+        }
+    }
+    // Create Ditto protocol message...
+}
+----
+
+This mapper creates digital twin representations where each bike becomes a "thing" with the ID format `abike:{bikeId}` and each station becomes `station:{stationId}`. All properties from the Kafka message (except the ID) are transformed into Ditto features with nested property structures.
+
+The real-time synchronization ensures that the digital twin always reflects the current state of the physical bike-sharing system, enabling operators to monitor fleet status, track bike locations, and manage station capacity through the digital twin interface.
+
+.Ditto Explorer with Things
+image::../resources/png/ditto-explorer.png[Ditto Explorer with Things, width=70%]

@@ -1,0 +1,40 @@
+
+@startuml kafka-abike-communications
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam ArrowColor Black
+skinparam ArrowThickness 1.5
+
+' Define style for Kafka topics
+skinparam cloud {
+  BackgroundColor #FFCCCC
+  BorderColor #CC0000
+}
+
+' Microservices
+rectangle "abike-microservice" as ABike
+rectangle "ride-microservice" as Ride
+rectangle "map-microservice" as Map
+rectangle "user-microservice" as User
+
+' Kafka Topics (styled)
+cloud "abike-updates" as T1
+cloud "station-updates" as T2
+cloud "abike-ride-update" as T3
+cloud "ride-bike-dispatch" as T4
+
+' Communication flows
+ABike --> T1 : publish
+T1 --> Map : consume
+T1 --> Ride : consume
+
+ABike --> T2 : publish
+T2 --> Map : consume
+T2 --> Ride : consume
+
+Ride --> T3 : publish
+T3 --> ABike : consume
+
+Ride --> T4 : publish
+T4 --> User : consume
+@enduml

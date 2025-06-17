@@ -61,7 +61,7 @@ At the purpose of explaining the event flow, i'll detail how events are produced
 - **Consumer:** ride-microservice (_UserConsumerAdapter_)
 - **Flow:** When user data changes in the user service, it sends an update to the user-update topic. The ride service consumes this message to keep its local user repository synchronized.
 
-==== Typical Event Flow Scenario
+==== Ride Scenario
 
 When a user starts a ride through the system, a complex sequence of events propagates through the microservices:
 

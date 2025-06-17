@@ -117,9 +117,9 @@ It follows the same architecture of the other microservices, using hexagonal arc
 ==== New Communication Flow and Topics
 
 Here we describe the new topics and communication flows introduced in the autonomous a-bike case study.
-Is been chosen to duplicate some topics, when it would be possible to use the same topics as the ones used for E-Bikes, but it was considered more appropriate to have separate topics for the autonomous a-bike to avoid confusion and also in the optic of a future extension of the smart city system.
+It was decided to duplicate some topics, even though it would have been possible to use the same topics as those used for E-Bikes. However, having separate topics for the autonomous a-bike was considered more appropriate to avoid confusion and to better support future extensions of the smart city system.
 
-[plantuml, {diagramsdir}/kafka-comm-abike, svg, title="Microservices communications using Kafka", width=50%]
+[plantuml, {diagramsdir}/kafka-comm-abike, svg, title="Microservices communications of ABike System using Kafka", width=50%]
 ----
 !include resources/puml/kafka-comm-abike.puml
 ----

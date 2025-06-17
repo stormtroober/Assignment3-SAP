@@ -261,33 +261,6 @@ spec:
   type: LoadBalancer  # Enables external access
 ----
 
-=== Monitoring Integration
-
-==== Prometheus Configuration Adaptation
-
-The Prometheus configuration was moved to a ConfigMap for better Kubernetes integration:
-
-.Prometheus ConfigMap
-[source,yaml]
-----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: prometheus-config
-  namespace: ebikes
-data:
-  prometheus.yml: |
-    scrape_configs:
-      - job_name: 'ride-microservice'
-        metrics_path: '/metrics'
-        static_configs:
-          - targets: [ 'ride-microservice:8080' ]
-      - job_name: 'user-rideadapter'
-        metrics_path: '/metrics'
-        static_configs:
-          - targets: [ 'user-microservice:8081' ]
-----
-
 === Deployment Orchestration
 
 ==== Namespace Organization
@@ -324,7 +297,9 @@ echo "✅ Deployment complete."
 
 === Key Benefits of Kubernetes Transformation
 
-Kubernetes transformation brings significant benefits. By leveraging replica sets, each microservice can be scaled independently to meet varying load patterns, ensuring reliable performance under heavy traffic. At the same time, Kubernetes resource management capabilities—such as defining CPU and memory requests and limits—provide fine-grained control over how cluster resources are allocated, leading to more efficient utilization and predictable application behavior. Configuration management is also greatly simplified: all environment-specific settings and sensitive data can be centralized in ConfigMaps and Secrets.
+Kubernetes transformation brings significant benefits. By leveraging replica sets, each microservice can be scaled independently to meet varying load patterns, ensuring reliable performance under heavy traffic. At the same time, Kubernetes resource management capabilities—such as defining CPU and memory requests and limits—provide fine-grained control over how cluster resources are allocated, leading to more efficient utilization and predictable application behavior. 
+
+Configuration management is also greatly simplified: all environment-specific settings and sensitive data can be centralized in ConfigMaps and Secrets.
 
 === Event Driven Architecture Preservation
 

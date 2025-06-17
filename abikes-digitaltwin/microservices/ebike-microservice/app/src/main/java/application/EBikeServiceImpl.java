@@ -4,7 +4,7 @@ import application.ports.BikeCommunicationPort;
 import application.ports.EBikeRepository;
 import application.ports.EBikeServiceAPI;
 import domain.model.*;
-import infrastructure.adapters.BikeUpdateAdapter;
+import infrastructure.adapters.outbound.BikeUpdateAdapter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;

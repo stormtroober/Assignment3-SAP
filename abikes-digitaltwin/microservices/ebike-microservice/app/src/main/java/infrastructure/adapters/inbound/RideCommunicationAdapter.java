@@ -1,4 +1,4 @@
-package infrastructure.adapters.ride;
+package infrastructure.adapters.inbound;
 
 import application.ports.EBikeServiceAPI;
 import infrastructure.adapters.kafkatopic.Topics;

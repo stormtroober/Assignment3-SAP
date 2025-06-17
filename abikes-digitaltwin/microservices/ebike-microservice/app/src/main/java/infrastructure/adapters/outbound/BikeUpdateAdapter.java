@@ -1,4 +1,4 @@
-package infrastructure.adapters;
+package infrastructure.adapters.outbound;
 
 import application.ports.BikeCommunicationPort;
 import infrastructure.adapters.kafkatopic.Topics;

@@ -1,6 +1,6 @@
 import application.EBikeServiceImpl;
-import infrastructure.adapters.BikeUpdateAdapter;
-import infrastructure.adapters.ride.RideCommunicationAdapter;
+import infrastructure.adapters.inbound.RideCommunicationAdapter;
+import infrastructure.adapters.outbound.BikeUpdateAdapter;
 import infrastructure.adapters.web.EBikeVerticle;
 import infrastructure.adapters.web.RESTEBikeAdapter;
 import infrastructure.config.ServiceConfiguration;

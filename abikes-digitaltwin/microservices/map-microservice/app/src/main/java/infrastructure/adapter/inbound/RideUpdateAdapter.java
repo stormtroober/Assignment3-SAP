@@ -1,4 +1,4 @@
-package infrastructure.adapter.ride;
+package infrastructure.adapter.inbound;
 
 import static infrastructure.adapter.kafkatopic.Topics.RIDE_UPDATE;
 
@@ -26,7 +26,7 @@ public class RideUpdateAdapter {
   private final MetricsManager metricsManager;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
-    private final KafkaProperties kafkaProperties;
+  private final KafkaProperties kafkaProperties;
 
   public RideUpdateAdapter(BikeMapServiceAPI bikeMapService, KafkaProperties kafkaProperties) {
     this.bikeMapService = bikeMapService;

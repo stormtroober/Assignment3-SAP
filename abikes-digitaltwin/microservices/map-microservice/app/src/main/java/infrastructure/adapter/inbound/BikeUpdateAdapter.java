@@ -1,4 +1,4 @@
-package infrastructure.adapter.bike;
+package infrastructure.adapter.inbound;
 
 import application.ports.BikeMapServiceAPI;
 import domain.model.*;
@@ -22,10 +22,9 @@ public class BikeUpdateAdapter {
   private final BikeMapServiceAPI bikeMapServiceAPI;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
-    private final KafkaProperties kafkaProperties;
+  private final KafkaProperties kafkaProperties;
 
-  public BikeUpdateAdapter(BikeMapServiceAPI bikeMapServiceAPI,
-                           KafkaProperties kafkaProperties) {
+  public BikeUpdateAdapter(BikeMapServiceAPI bikeMapServiceAPI, KafkaProperties kafkaProperties) {
     this.bikeMapServiceAPI = bikeMapServiceAPI;
     this.kafkaProperties = kafkaProperties;
   }

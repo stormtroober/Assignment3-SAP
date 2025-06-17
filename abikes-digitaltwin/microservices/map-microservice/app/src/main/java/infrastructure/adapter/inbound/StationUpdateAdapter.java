@@ -1,4 +1,4 @@
-package infrastructure.adapter.station;
+package infrastructure.adapter.inbound;
 
 import application.ports.StationMapServiceAPI;
 import domain.model.Slot;
@@ -24,10 +24,9 @@ public class StationUpdateAdapter {
   private final StationMapServiceAPI mapService;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
-    private final KafkaProperties kafkaProperties;
+  private final KafkaProperties kafkaProperties;
 
-  public StationUpdateAdapter(StationMapServiceAPI mapService,
-                              KafkaProperties kafkaProperties) {
+  public StationUpdateAdapter(StationMapServiceAPI mapService, KafkaProperties kafkaProperties) {
     this.mapService = mapService;
     this.kafkaProperties = kafkaProperties;
   }

@@ -3,9 +3,9 @@ import application.StationMapServiceAPIImpl;
 import application.ports.BikeMapServiceAPI;
 import application.ports.EventPublisher;
 import application.ports.StationMapServiceAPI;
-import infrastructure.adapter.bike.BikeUpdateAdapter;
-import infrastructure.adapter.ride.RideUpdateAdapter;
-import infrastructure.adapter.station.StationUpdateAdapter;
+import infrastructure.adapter.inbound.BikeUpdateAdapter;
+import infrastructure.adapter.inbound.RideUpdateAdapter;
+import infrastructure.adapter.inbound.StationUpdateAdapter;
 import infrastructure.adapter.web.MapServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.utils.EventPublisherImpl;
@@ -21,7 +21,7 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
-                KafkaProperties kafkaProperties = new KafkaProperties(config);
+              KafkaProperties kafkaProperties = new KafkaProperties(config);
 
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
               // Services
@@ -30,10 +30,12 @@ public class Main {
 
               MapServiceVerticle mapServiceVerticle =
                   new MapServiceVerticle(bikeService, stationMapService, vertx);
-              BikeUpdateAdapter bikeUpdateAdapter = new BikeUpdateAdapter(bikeService, kafkaProperties);
+              BikeUpdateAdapter bikeUpdateAdapter =
+                  new BikeUpdateAdapter(bikeService, kafkaProperties);
               StationUpdateAdapter stationUpdateAdapter =
                   new StationUpdateAdapter(stationMapService, kafkaProperties);
-              RideUpdateAdapter rideUpdateAdapter = new RideUpdateAdapter(bikeService, kafkaProperties);
+              RideUpdateAdapter rideUpdateAdapter =
+                  new RideUpdateAdapter(bikeService, kafkaProperties);
               mapServiceVerticle.init();
               bikeUpdateAdapter.init();
               stationUpdateAdapter.init();

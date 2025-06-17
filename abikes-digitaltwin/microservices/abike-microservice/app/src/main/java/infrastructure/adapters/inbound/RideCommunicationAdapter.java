@@ -1,4 +1,4 @@
-package infrastructure.adapters.ride;
+package infrastructure.adapters.inbound;
 
 import application.ports.ABikeServiceAPI;
 import application.ports.StationServiceAPI;
@@ -22,9 +22,12 @@ public class RideCommunicationAdapter {
   private final StationServiceAPI stationService;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
-    private final KafkaProperties kafkaProperties;
+  private final KafkaProperties kafkaProperties;
 
-  public RideCommunicationAdapter(ABikeServiceAPI aBikeService, StationServiceAPI stationService, KafkaProperties kafkaProperties) {
+  public RideCommunicationAdapter(
+      ABikeServiceAPI aBikeService,
+      StationServiceAPI stationService,
+      KafkaProperties kafkaProperties) {
     this.aBikeService = aBikeService;
     this.stationService = stationService;
     this.kafkaProperties = kafkaProperties;
@@ -87,6 +90,7 @@ public class RideCommunicationAdapter {
     }
   }
 
+  // Ride updates regarding the assignment of bikes to stations
   private void processRideUpdate(JsonObject rideUpdate) {
     String bikeId = rideUpdate.getString("bikeName");
 

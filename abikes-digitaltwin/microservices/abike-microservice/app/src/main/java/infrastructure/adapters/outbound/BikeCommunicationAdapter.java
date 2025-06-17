@@ -1,4 +1,4 @@
-package infrastructure.adapters.map;
+package infrastructure.adapters.outbound;
 
 import application.ports.CommunicationPort;
 import infrastructure.adapters.kafkatopic.Topics;
@@ -13,23 +13,23 @@ public class BikeCommunicationAdapter implements CommunicationPort {
   private final Producer<String, String> producer;
   private final String topicName = Topics.ABIKE_UPDATES.getTopicName();
 
-  public BikeCommunicationAdapter(
-        KafkaProperties kafkaProperties
-  ) {
+  public BikeCommunicationAdapter(KafkaProperties kafkaProperties) {
     this.producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
   }
 
   @Override
   public void sendUpdate(JsonObject abike) {
     System.out.println("Sending ABike update to Kafka topic: " + topicName);
-    producer.send(new ProducerRecord<>(topicName, "abike:" + abike.getString("id"), abike.encode()));
+    producer.send(
+        new ProducerRecord<>(topicName, "abike:" + abike.getString("id"), abike.encode()));
   }
 
   public void sendAllUpdates(JsonArray abikes) {
     System.out.println("Sending all ABike updates to Kafka topic: " + topicName);
     for (int i = 0; i < abikes.size(); i++) {
       JsonObject ebike = abikes.getJsonObject(i);
-      producer.send(new ProducerRecord<>(topicName, "abike:" + ebike.getString("id"), ebike.encode()));
+      producer.send(
+          new ProducerRecord<>(topicName, "abike:" + ebike.getString("id"), ebike.encode()));
     }
   }
 }

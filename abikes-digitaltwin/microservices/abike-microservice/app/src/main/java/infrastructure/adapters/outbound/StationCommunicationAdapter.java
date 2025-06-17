@@ -1,4 +1,4 @@
-package infrastructure.adapters.map;
+package infrastructure.adapters.outbound;
 
 import application.ports.CommunicationPort;
 import infrastructure.adapters.kafkatopic.Topics;
@@ -20,15 +20,16 @@ public class StationCommunicationAdapter implements CommunicationPort {
   @Override
   public void sendUpdate(JsonObject station) {
     System.out.println("Sending Station update to Kafka topic: " + topicName);
-    // System.out.println("Station: " + station);
-    producer.send(new ProducerRecord<>(topicName, "station:" + station.getString("id"), station.encode()));
+    producer.send(
+        new ProducerRecord<>(topicName, "station:" + station.getString("id"), station.encode()));
   }
 
   public void sendAllUpdates(JsonArray stations) {
     System.out.println("Sending all Station updates to Kafka topic: " + topicName);
     for (int i = 0; i < stations.size(); i++) {
       JsonObject station = stations.getJsonObject(i);
-      producer.send(new ProducerRecord<>(topicName, "station:" + station.getString("id"), station.encode()));
+      producer.send(
+          new ProducerRecord<>(topicName, "station:" + station.getString("id"), station.encode()));
     }
   }
 }

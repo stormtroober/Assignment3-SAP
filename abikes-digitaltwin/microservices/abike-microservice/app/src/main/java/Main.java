@@ -4,9 +4,9 @@ import application.ports.ABikeServiceAPI;
 import application.ports.CommunicationPort;
 import application.ports.StationRepository;
 import application.ports.StationServiceAPI;
-import infrastructure.adapters.map.BikeCommunicationAdapter;
-import infrastructure.adapters.map.StationCommunicationAdapter;
-import infrastructure.adapters.ride.RideCommunicationAdapter;
+import infrastructure.adapters.inbound.RideCommunicationAdapter;
+import infrastructure.adapters.outbound.BikeCommunicationAdapter;
+import infrastructure.adapters.outbound.StationCommunicationAdapter;
 import infrastructure.adapters.web.ABikeVerticle;
 import infrastructure.adapters.web.RESTABikeAdapter;
 import infrastructure.config.ServiceConfiguration;
@@ -25,14 +25,15 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
-                KafkaProperties kafkaProperties = new KafkaProperties(config);
+              KafkaProperties kafkaProperties = new KafkaProperties(config);
 
               MongoClient mongoClient = MongoClient.create(vertx, config.getMongoConfig());
               // Repository
               MongoABikeRepository repository = new MongoABikeRepository(mongoClient);
               StationRepository repositoryStation = new MongoStationRepository(mongoClient);
 
-              CommunicationPort bikeMapCommunicationAdapter = new BikeCommunicationAdapter(kafkaProperties);
+              CommunicationPort bikeMapCommunicationAdapter =
+                  new BikeCommunicationAdapter(kafkaProperties);
               CommunicationPort stationMapCommunicationAdapter =
                   new StationCommunicationAdapter(kafkaProperties);
               // Services

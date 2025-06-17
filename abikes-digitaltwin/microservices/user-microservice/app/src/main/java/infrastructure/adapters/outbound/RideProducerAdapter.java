@@ -1,4 +1,4 @@
-package infrastructure.adapters.ride;
+package infrastructure.adapters.outbound;
 
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;

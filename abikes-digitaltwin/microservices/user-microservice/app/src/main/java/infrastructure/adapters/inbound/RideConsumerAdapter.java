@@ -1,4 +1,4 @@
-package infrastructure.adapters.ride;
+package infrastructure.adapters.inbound;
 
 import static infrastructure.adapters.kafkatopic.Topics.RIDE_BIKE_DISPATCH;
 import static infrastructure.adapters.kafkatopic.Topics.RIDE_USER_UPDATE;

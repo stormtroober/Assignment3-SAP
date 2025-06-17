@@ -22,11 +22,11 @@ This part describes the Kafka topics used to transform the EBike original archit
 
 === Event Flow
 
-At the purpose of explaining the event flow, i'll detail how events are produced and consumed across the microservices involved in the EBike system. The following sections outline the communication patterns between services, including producers, consumers, and the topics they interact with.
+At the purpose of explaining the event flow, i'll detail how events are produced and consumed across the microservices involved in the EBike system.
 
 ==== Detailed Communication Patterns
 
-[plantuml, {diagramsdir}/kafka-comm-ebike, svg, title="Microservices communications using Kafka", width=50%]
+[plantuml, {diagramsdir}/kafka-comm-ebike, svg, title="Microservices communications of EBike system using Kafka", width=60%]
 ----
 !include resources/puml/kafka-comm-ebike.puml
 ----

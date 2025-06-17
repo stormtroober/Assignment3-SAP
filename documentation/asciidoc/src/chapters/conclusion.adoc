@@ -1,8 +1,7 @@
-== Conclusion
+== Conclusions
 
-This is the conclusion of the document.
-La storia di Mario e Giovanni è finita.
-Ora Mario è felice e Giovanni è triste.
-Cosa succederà ora?
-Quale sarà il prossimo capitolo?
-Il dinosauro e Mario sono amici?
+This assignment was a great opportunity to apply the knowledge and skills acquired throughout the course. It introduced me to Event Driven Architecture and the use of Apache Kafka for building scalable and resilient systems. It enhanced my understanding of microservices and message brokers, making also my knowledge of Docker more advanced.
+
+Also the transformation made in Kubernetes was significant, as it allowed me to get an insight into how to manage containerized applications in a production-like environment.
+
+More-over it was also an opportunity to work with Digital Twins, topic I already knew because of my previous bachelor thesis. It was nice though to see how Eclipse Ditto evolved and how it can be used in a microservices-broker context.

@@ -1,4 +1,4 @@
-package infrastructure.adapter.bike;
+package infrastructure.adapter.outbound;
 
 import application.ports.BikeCommunicationPort;
 import application.ports.EventPublisher;
@@ -15,8 +15,7 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
   private Producer<String, String> producer;
   private final KafkaProperties kafkaProperties;
 
-  public BikeCommunicationAdapter(Vertx vertx,
-                                  KafkaProperties kafkaProperties) {
+  public BikeCommunicationAdapter(Vertx vertx, KafkaProperties kafkaProperties) {
     this.vertx = vertx;
     this.kafkaProperties = kafkaProperties;
   }
@@ -40,24 +39,24 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
         .consumer(
             EventPublisher.RIDE_UPDATE_ADDRESS_ABIKE_STATION,
             message -> {
-                if (message.body() instanceof JsonObject update) {
-                    System.out.println("Received ABike station update: " + update.encode());
-                    if (update.containsKey("bikeName") && update.containsKey("stationId")) {
-                        String bikeId = update.getString("bikeName");
-                        producer.send(
-                            new ProducerRecord<>(Topics.RIDE_UPDATE.getTopicName(), bikeId, update.encode()),
-                            (metadata, exception) -> {
-                                if (exception == null) {
-                                    System.out.println("ABike station update sent successfully");
-                                } else {
-                                    System.err.println("Failed to send ABike station update: " + exception.getMessage());
-                                }
-                            });
-                    }
+              if (message.body() instanceof JsonObject update) {
+                System.out.println("Received ABike station update: " + update.encode());
+                if (update.containsKey("bikeName") && update.containsKey("stationId")) {
+                  String bikeId = update.getString("bikeName");
+                  producer.send(
+                      new ProducerRecord<>(
+                          Topics.RIDE_UPDATE.getTopicName(), bikeId, update.encode()),
+                      (metadata, exception) -> {
+                        if (exception == null) {
+                          System.out.println("ABike station update sent successfully");
+                        } else {
+                          System.err.println(
+                              "Failed to send ABike station update: " + exception.getMessage());
+                        }
+                      });
                 }
-            }
-        );
-
+              }
+            });
 
     vertx
         .eventBus()
@@ -90,7 +89,7 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
   @Override
   public void sendUpdateABike(JsonObject aBike) {
     String topicName = Topics.ABIKE_RIDE_UPDATE.getTopicName();
-    //System.out.println("Sending ABike update to Kafka topic: " + topicName);
+    // System.out.println("Sending ABike update to Kafka topic: " + topicName);
     producer.send(
         new ProducerRecord<>(topicName, aBike.getString("id"), aBike.encode()),
         (metadata, exception) -> {

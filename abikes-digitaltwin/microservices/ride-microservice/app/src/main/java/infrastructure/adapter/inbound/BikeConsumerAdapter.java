@@ -1,4 +1,4 @@
-package infrastructure.adapter.bike;
+package infrastructure.adapter.inbound;
 
 import domain.model.repository.ABikeRepository;
 import domain.model.repository.EBikeRepository;
@@ -24,8 +24,10 @@ public class BikeConsumerAdapter {
   private final AtomicBoolean running = new AtomicBoolean(false);
   private KafkaProperties kafkaProperties;
 
-  public BikeConsumerAdapter(ABikeRepository abikeRepository, EBikeRepository ebikeRepository,
-                             KafkaProperties kafkaProperties) {
+  public BikeConsumerAdapter(
+      ABikeRepository abikeRepository,
+      EBikeRepository ebikeRepository,
+      KafkaProperties kafkaProperties) {
     this.abikeRepository = abikeRepository;
     this.ebikeRepository = ebikeRepository;
     this.kafkaProperties = kafkaProperties;
@@ -86,7 +88,7 @@ public class BikeConsumerAdapter {
   private void processABikeUpdate(JsonObject abikeJson) {
     try {
       String id = abikeJson.getString("id");
-      //logger.info("Received ABike update: id={}", id);
+      // logger.info("Received ABike update: id={}", id);
 
       abikeRepository
           .findById(id)

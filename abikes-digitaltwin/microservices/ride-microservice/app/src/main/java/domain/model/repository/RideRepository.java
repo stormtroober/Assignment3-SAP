@@ -12,8 +12,8 @@ public interface RideRepository {
   void removeRide(Ride ride);
 
   /**
-   * Adds a ride with a simulation to the repository.
-   * Alternative to the addNormalRide method
+   * Adds a ride with a simulation to the repository. Alternative to the addNormalRide method
+   *
    * @param ride
    * @param simulation
    */

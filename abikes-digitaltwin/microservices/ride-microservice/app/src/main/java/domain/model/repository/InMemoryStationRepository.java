@@ -39,38 +39,39 @@ public class InMemoryStationRepository implements StationRepository {
     return save(station);
   }
 
-    @Override
-    public CompletableFuture<Optional<JsonObject>> findClosestStation(P2d bikePosition) {
-        if (stations.isEmpty()) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-
-        JsonObject closestStation = null;
-        double minDistance = Double.MAX_VALUE;
-
-        for (JsonObject station : stations.values()) {
-            JsonObject location = station.getJsonObject("location");
-            if (location != null) {
-                double stationX = location.getDouble("x");
-                double stationY = location.getDouble("y");
-
-                // Calculate Euclidean distance
-                double distance = Math.sqrt(
-                        Math.pow(stationX - bikePosition.x(), 2) +
-                                Math.pow(stationY - bikePosition.y(), 2)
-                );
-
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestStation = station;
-                }
-            }
-        }
-
-        logger.info("Found closest station at distance {}: {}",
-                minDistance,
-                closestStation != null ? closestStation.getString("id") : "none");
-
-        return CompletableFuture.completedFuture(Optional.ofNullable(closestStation));
+  @Override
+  public CompletableFuture<Optional<JsonObject>> findClosestStation(P2d bikePosition) {
+    if (stations.isEmpty()) {
+      return CompletableFuture.completedFuture(Optional.empty());
     }
+
+    JsonObject closestStation = null;
+    double minDistance = Double.MAX_VALUE;
+
+    for (JsonObject station : stations.values()) {
+      JsonObject location = station.getJsonObject("location");
+      if (location != null) {
+        double stationX = location.getDouble("x");
+        double stationY = location.getDouble("y");
+
+        // Calculate Euclidean distance
+        double distance =
+            Math.sqrt(
+                Math.pow(stationX - bikePosition.x(), 2)
+                    + Math.pow(stationY - bikePosition.y(), 2));
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestStation = station;
+        }
+      }
+    }
+
+    logger.info(
+        "Found closest station at distance {}: {}",
+        minDistance,
+        closestStation != null ? closestStation.getString("id") : "none");
+
+    return CompletableFuture.completedFuture(Optional.ofNullable(closestStation));
+  }
 }

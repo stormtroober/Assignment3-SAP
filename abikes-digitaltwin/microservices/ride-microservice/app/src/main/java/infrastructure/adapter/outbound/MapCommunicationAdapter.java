@@ -1,4 +1,4 @@
-package infrastructure.adapter.map;
+package infrastructure.adapter.outbound;
 
 import application.ports.MapCommunicationPort;
 import domain.model.bike.BikeType;
@@ -14,11 +14,9 @@ import org.slf4j.LoggerFactory;
 public class MapCommunicationAdapter implements MapCommunicationPort {
   private static final Logger logger = LoggerFactory.getLogger(MapCommunicationAdapter.class);
   private Producer<String, String> producer;
-    private final KafkaProperties kafkaProperties;
+  private final KafkaProperties kafkaProperties;
 
-  public MapCommunicationAdapter(
-        KafkaProperties kafkaProperties
-  ) {
+  public MapCommunicationAdapter(KafkaProperties kafkaProperties) {
     this.kafkaProperties = kafkaProperties;
   }
 
@@ -82,22 +80,20 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
   }
 
   private void sendPublicRideNotification(String bikeId, BikeType type, String action) {
-    JsonObject message = new JsonObject()
-            .put("bikeName", bikeId)
-            .put("bikeType", type)
-            .put("action", action);
+    JsonObject message =
+        new JsonObject().put("bikeName", bikeId).put("bikeType", type).put("action", action);
 
     String topicName = Topics.RIDE_UPDATE.getTopicName();
 
     producer.send(
-            new ProducerRecord<>(topicName, bikeId, message.encode()),
-            (metadata, exception) -> {
-              if (exception == null) {
-                logger.info("Notification for {} public ride sent successfully.", action);
-              } else {
-                logger.error("Failed to send notification for {} public ride", action);
-              }
-            });
+        new ProducerRecord<>(topicName, bikeId, message.encode()),
+        (metadata, exception) -> {
+          if (exception == null) {
+            logger.info("Notification for {} public ride sent successfully.", action);
+          } else {
+            logger.error("Failed to send notification for {} public ride", action);
+          }
+        });
   }
 
   // Method to close the producer when shutting down

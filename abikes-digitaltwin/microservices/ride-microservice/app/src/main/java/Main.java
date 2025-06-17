@@ -2,12 +2,12 @@ import application.RestAutonomousRideServiceImpl;
 import application.RestSimpleRideServiceImpl;
 import application.ports.*;
 import domain.model.repository.*;
-import infrastructure.adapter.bike.BikeCommunicationAdapter;
-import infrastructure.adapter.bike.BikeConsumerAdapter;
-import infrastructure.adapter.map.MapCommunicationAdapter;
-import infrastructure.adapter.station.StationConsumerAdapter;
-import infrastructure.adapter.user.UserCommunicationAdapter;
-import infrastructure.adapter.user.UserConsumerAdapter;
+import infrastructure.adapter.inbound.BikeConsumerAdapter;
+import infrastructure.adapter.inbound.StationConsumerAdapter;
+import infrastructure.adapter.inbound.UserConsumerAdapter;
+import infrastructure.adapter.outbound.BikeCommunicationAdapter;
+import infrastructure.adapter.outbound.MapCommunicationAdapter;
+import infrastructure.adapter.outbound.UserCommunicationAdapter;
 import infrastructure.adapter.web.RideServiceVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.repository.DispatchRepository;
@@ -25,10 +25,12 @@ public class Main {
         .onSuccess(
             conf -> {
               System.out.println("Configuration loaded: " + conf.encodePrettily());
-                KafkaProperties kafkaProperties = new KafkaProperties(config);
+              KafkaProperties kafkaProperties = new KafkaProperties(config);
 
-              MapCommunicationPort mapCommunicationAdapter = new MapCommunicationAdapter(kafkaProperties);
-              BikeCommunicationPort bikeCommunicationAdapter = new BikeCommunicationAdapter(vertx, kafkaProperties);
+              MapCommunicationPort mapCommunicationAdapter =
+                  new MapCommunicationAdapter(kafkaProperties);
+              BikeCommunicationPort bikeCommunicationAdapter =
+                  new BikeCommunicationAdapter(vertx, kafkaProperties);
 
               bikeCommunicationAdapter.init();
               mapCommunicationAdapter.init();
@@ -37,10 +39,11 @@ public class Main {
               ABikeRepository abikeRepository = new InMemoryABikeRepository();
               EBikeRepository ebikeRepository = new InMemoryEBikeRepository();
               DispatchRepository dispatchRepository = new InMemoryDispatchRepository();
-                StationRepository stationRepository = new InMemoryStationRepository();
+              StationRepository stationRepository = new InMemoryStationRepository();
 
-              UserCommunicationPort userCommunicationAdapter = new UserCommunicationAdapter(vertx, userRepository, dispatchRepository,
-                      kafkaProperties);
+              UserCommunicationPort userCommunicationAdapter =
+                  new UserCommunicationAdapter(
+                      vertx, userRepository, dispatchRepository, kafkaProperties);
               userCommunicationAdapter.init();
 
               EventPublisher eventPublisher = new EventPublisherImpl(vertx);
@@ -58,28 +61,28 @@ public class Main {
                   new RestAutonomousRideServiceImpl(
                       eventPublisher,
                       vertx,
-                          mapCommunicationAdapter,
+                      mapCommunicationAdapter,
                       userCommunicationAdapter,
                       abikeRepository,
                       userRepository,
-                          stationRepository
-                  );
+                      stationRepository);
 
               RideServiceVerticle rideServiceVerticle =
                   new RideServiceVerticle(service, autonomousRideService, vertx);
               rideServiceVerticle.init();
 
               // TODO: we need ports here
-              UserConsumerAdapter userConsumerAdapter = new UserConsumerAdapter(userRepository, kafkaProperties);
+              UserConsumerAdapter userConsumerAdapter =
+                  new UserConsumerAdapter(userRepository, kafkaProperties);
               userConsumerAdapter.init();
 
               BikeConsumerAdapter bikeConsumerAdapter =
                   new BikeConsumerAdapter(abikeRepository, ebikeRepository, kafkaProperties);
               bikeConsumerAdapter.init();
 
-                StationConsumerAdapter stationConsumerAdapter =
-                    new StationConsumerAdapter(stationRepository, kafkaProperties);
-                stationConsumerAdapter.init();
+              StationConsumerAdapter stationConsumerAdapter =
+                  new StationConsumerAdapter(stationRepository, kafkaProperties);
+              stationConsumerAdapter.init();
             });
   }
 }

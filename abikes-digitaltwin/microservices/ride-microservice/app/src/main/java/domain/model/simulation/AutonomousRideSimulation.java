@@ -10,7 +10,6 @@ import domain.model.bike.ABike;
 import domain.model.bike.ABikeState;
 import domain.model.bike.BikeState;
 import io.vertx.core.Vertx;
-
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
@@ -33,7 +32,11 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   private boolean destinationReached = false;
 
   public AutonomousRideSimulation(
-      Ride ride, Vertx vertx, EventPublisher publisher, P2d destination, AutonomousRideType rideType) {
+      Ride ride,
+      Vertx vertx,
+      EventPublisher publisher,
+      P2d destination,
+      AutonomousRideType rideType) {
     this.ride = ride;
     this.vertx = vertx;
     this.publisher = publisher;
@@ -50,10 +53,9 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   public CompletableFuture<Void> startSimulation(Optional<BikeState> startingState) {
     log.info("Starting simulation for ride {}", ride.getId());
     future = new CompletableFuture<>();
-    if(startingState.isPresent()) {
+    if (startingState.isPresent()) {
       ride.start((ABikeState) startingState.get());
-    }
-    else {
+    } else {
       ride.start();
     }
 
@@ -64,20 +66,20 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
     }
 
     vertx.setPeriodic(
-            100,
-            timerId -> {
-              log.debug("Timer tick for ride {}: stopped={}", ride.getId(), stopped);
-              if (stopped) {
-                vertx.cancelTimer(timerId);
-                // Only call completeSimulation if not manually stopped
-                if (!manuallyStoppedFlag) {
-                  completeSimulation();
-                }
-                future.complete(null);
-              } else {
-                updateMovement();
-              }
-            });
+        100,
+        timerId -> {
+          log.debug("Timer tick for ride {}: stopped={}", ride.getId(), stopped);
+          if (stopped) {
+            vertx.cancelTimer(timerId);
+            // Only call completeSimulation if not manually stopped
+            if (!manuallyStoppedFlag) {
+              completeSimulation();
+            }
+            future.complete(null);
+          } else {
+            updateMovement();
+          }
+        });
 
     return future;
   }
@@ -92,8 +94,11 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
         ride.end();
         stopSimulation();
         publisher.publishABikeUpdate(
-                bike.getId(), ride.getBike().getLocation().x(), ride.getBike().getLocation().y(),
-                bike.getState().toString(), bike.getBatteryLevel());
+            bike.getId(),
+            ride.getBike().getLocation().x(),
+            ride.getBike().getLocation().y(),
+            bike.getState().toString(),
+            bike.getBatteryLevel());
         scheduleCompletion();
         return;
       }
@@ -104,8 +109,11 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
         stopSimulation();
         bike.setState(ABikeState.AVAILABLE);
         publisher.publishABikeUpdate(
-                bike.getId(), ride.getBike().getLocation().x(), ride.getBike().getLocation().y(),
-                bike.getState().toString(), bike.getBatteryLevel());
+            bike.getId(),
+            ride.getBike().getLocation().x(),
+            ride.getBike().getLocation().y(),
+            bike.getState().toString(),
+            bike.getBatteryLevel());
         scheduleCompletion();
         return;
       }
@@ -117,11 +125,11 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
       double distance = Math.hypot(dx, dy);
 
       log.debug(
-              "Ride {} movement update: current={}, destination={}, distance={}",
-              ride.getId(),
-              current,
-              destination,
-              distance);
+          "Ride {} movement update: current={}, destination={}, distance={}",
+          ride.getId(),
+          current,
+          destination,
+          distance);
 
       // check arrival
       if (distance <= ARRIVAL_THRESHOLD) {
@@ -154,7 +162,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
       // Rest of the method remains unchanged
       bike.decreaseBattery(BATTERY_DECREASE);
 
-      if(rideType == AutonomousRideType.TO_USER) {
+      if (rideType == AutonomousRideType.TO_USER) {
         user.decreaseCredit(CREDIT_DECREASE);
       }
 
@@ -180,21 +188,20 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
   }
 
   private void completeSimulation() {
-      ABike bike = (ABike) ride.getBike();
-      P2d loc = bike.getLocation();
-      if(rideType == AutonomousRideType.TO_USER && bike.getBatteryLevel() > 0) {
-        bike.setState(ABikeState.IN_USE);
-      }
-      else if(rideType == AutonomousRideType.TO_STATION && bike.getBatteryLevel() > 0) {
-        bike.setState(ABikeState.AVAILABLE);
-      }
-      log.info(
-              "Completing simulation for ride {} at final location {}, battery={}",
-              ride.getId(),
-              loc,
-              bike.getBatteryLevel());
-      publisher.publishABikeUpdate(
-              bike.getId(), loc.x(), loc.y(), bike.getState().toString(), bike.getBatteryLevel());
+    ABike bike = (ABike) ride.getBike();
+    P2d loc = bike.getLocation();
+    if (rideType == AutonomousRideType.TO_USER && bike.getBatteryLevel() > 0) {
+      bike.setState(ABikeState.IN_USE);
+    } else if (rideType == AutonomousRideType.TO_STATION && bike.getBatteryLevel() > 0) {
+      bike.setState(ABikeState.AVAILABLE);
+    }
+    log.info(
+        "Completing simulation for ride {} at final location {}, battery={}",
+        ride.getId(),
+        loc,
+        bike.getBatteryLevel());
+    publisher.publishABikeUpdate(
+        bike.getId(), loc.x(), loc.y(), bike.getState().toString(), bike.getBatteryLevel());
 
     publisher.publishUserUpdate(ride.getUser().getId(), ride.getUser().getCredit());
   }
@@ -223,7 +230,7 @@ public class AutonomousRideSimulation implements RideSimulation, Service {
     ABike bike = (ABike) ride.getBike();
     P2d loc = bike.getLocation();
     publisher.publishABikeUpdate(
-            bike.getId(), loc.x(), loc.y(), bike.getState().toString(), bike.getBatteryLevel());
+        bike.getId(), loc.x(), loc.y(), bike.getState().toString(), bike.getBatteryLevel());
     publisher.publishUserUpdate(ride.getUser().getId(), ride.getUser().getCredit());
 
     stopSimulation();

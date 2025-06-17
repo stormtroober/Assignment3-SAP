@@ -1,4 +1,4 @@
-package infrastructure.adapter.user;
+package infrastructure.adapter.inbound;
 
 import static infrastructure.adapter.kafkatopic.Topics.USER_UPDATE;
 
@@ -24,8 +24,7 @@ public class UserConsumerAdapter {
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final KafkaProperties kafkaProperties;
 
-  public UserConsumerAdapter(UserRepository userRepository,
-                             KafkaProperties kafkaProperties) {
+  public UserConsumerAdapter(UserRepository userRepository, KafkaProperties kafkaProperties) {
     this.userRepository = userRepository;
     this.kafkaProperties = kafkaProperties;
   }

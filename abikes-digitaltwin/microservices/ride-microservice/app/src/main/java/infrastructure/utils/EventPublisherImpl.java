@@ -19,8 +19,7 @@ public class EventPublisherImpl implements EventPublisher {
 
   @Override
   public void publishABikeStationUpdate(String bikeId, String stationId) {
-    JsonObject message =
-        new JsonObject().put("bikeName", bikeId).put("stationId", stationId);
+    JsonObject message = new JsonObject().put("bikeName", bikeId).put("stationId", stationId);
     vertx.eventBus().publish(RIDE_UPDATE_ADDRESS_ABIKE_STATION, message);
   }
 

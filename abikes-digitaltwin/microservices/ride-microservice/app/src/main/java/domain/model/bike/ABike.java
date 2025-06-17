@@ -10,7 +10,7 @@ public class ABike implements Bike, Aggregate<String>, Serializable {
   private final String id;
   private volatile ABikeState state;
   private volatile P2d location;
-  private volatile V2d direction;  // Added direction field
+  private volatile V2d direction; // Added direction field
   private volatile int batteryLevel; // 0..100
   private final BikeType type;
 
@@ -79,13 +79,13 @@ public class ABike implements Bike, Aggregate<String>, Serializable {
 
   @Override
   public void startRide(BikeState state) {
-      setState(state);
+    setState(state);
   }
 
   @Override
   public synchronized String toString() {
     return String.format(
-            "ABike{id='%s', location=%s, batteryLevel=%d%%, state='%s', type='%s'}",
-            id, location, batteryLevel, state, type);
+        "ABike{id='%s', location=%s, batteryLevel=%d%%, state='%s', type='%s'}",
+        id, location, batteryLevel, state, type);
   }
 }

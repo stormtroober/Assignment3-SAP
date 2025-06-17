@@ -1,20 +1,18 @@
-  package domain.model.simulation;
+package domain.model.simulation;
 
-  import domain.model.Ride;
-  import domain.model.bike.BikeState;
-  import org.apache.kafka.common.quota.ClientQuotaAlteration;
+import domain.model.Ride;
+import domain.model.bike.BikeState;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
-  import java.util.Optional;
-  import java.util.concurrent.CompletableFuture;
+public interface RideSimulation {
+  Ride getRide();
 
-  public interface RideSimulation {
-    Ride getRide();
+  CompletableFuture<Void> startSimulation(Optional<BikeState> startingState);
 
-    CompletableFuture<Void> startSimulation(Optional<BikeState> startingState);
+  void stopSimulation();
 
-    void stopSimulation();
+  void stopSimulationManually();
 
-    void stopSimulationManually();
-
-    String getId();
-  }
+  String getId();
+}

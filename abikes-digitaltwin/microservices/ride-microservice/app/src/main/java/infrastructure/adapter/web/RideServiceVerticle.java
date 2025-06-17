@@ -159,33 +159,33 @@ public class RideServiceVerticle extends AbstractVerticle {
                       });
             });
 
-      router
-              .post("/stopRideToUser")
-              .handler(
-                      ctx -> {
-                          metricsManager.incrementMethodCounter("stopRideToUser");
-                          var timer = metricsManager.startTimer();
+    router
+        .post("/stopRideToUser")
+        .handler(
+            ctx -> {
+              metricsManager.incrementMethodCounter("stopRideToUser");
+              var timer = metricsManager.startTimer();
 
-                          JsonObject body = ctx.body().asJsonObject();
-                          String username = body.getString("username");
+              JsonObject body = ctx.body().asJsonObject();
+              String username = body.getString("username");
 
-                          autonomousRideService
-                                  .stopAutonomousRide(username)
-                                  .thenAccept(
-                                          v -> {
-                                              ctx.response().setStatusCode(200).end("Autonomous ride stopped");
-                                              metricsManager.recordTimer(timer, "stopRideToUser");
-                                          })
-                                  .exceptionally(
-                                          ex -> {
-                                              ctx.response()
-                                                      .setStatusCode(400)
-                                                      .putHeader("Content-Type", "application/json")
-                                                      .end(new JsonObject().put("error", ex.getMessage()).encode());
-                                              metricsManager.recordError(timer, "stopRideToUser", ex);
-                                              return null;
-                                          });
+              autonomousRideService
+                  .stopAutonomousRide(username)
+                  .thenAccept(
+                      v -> {
+                        ctx.response().setStatusCode(200).end("Autonomous ride stopped");
+                        metricsManager.recordTimer(timer, "stopRideToUser");
+                      })
+                  .exceptionally(
+                      ex -> {
+                        ctx.response()
+                            .setStatusCode(400)
+                            .putHeader("Content-Type", "application/json")
+                            .end(new JsonObject().put("error", ex.getMessage()).encode());
+                        metricsManager.recordError(timer, "stopRideToUser", ex);
+                        return null;
                       });
+            });
 
     server
         .requestHandler(router)

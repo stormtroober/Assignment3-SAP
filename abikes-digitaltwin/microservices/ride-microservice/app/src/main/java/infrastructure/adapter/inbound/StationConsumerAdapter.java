@@ -1,4 +1,4 @@
-package infrastructure.adapter.station;
+package infrastructure.adapter.inbound;
 
 import domain.model.repository.StationRepository;
 import infrastructure.adapter.kafkatopic.Topics;
@@ -20,9 +20,10 @@ public class StationConsumerAdapter {
   private final StationRepository stationRepository;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
-    private final KafkaProperties kafkaProperties;
+  private final KafkaProperties kafkaProperties;
 
-  public StationConsumerAdapter(StationRepository stationRepository, KafkaProperties kafkaProperties) {
+  public StationConsumerAdapter(
+      StationRepository stationRepository, KafkaProperties kafkaProperties) {
     this.stationRepository = stationRepository;
     this.kafkaProperties = kafkaProperties;
   }

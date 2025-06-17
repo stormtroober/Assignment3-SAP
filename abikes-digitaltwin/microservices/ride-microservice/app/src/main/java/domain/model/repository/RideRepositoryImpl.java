@@ -4,17 +4,14 @@ import application.ports.EventPublisher;
 import ddd.Repository;
 import domain.model.P2d;
 import domain.model.Ride;
-import domain.model.simulation.AutonomousRideSimulation;
 import domain.model.simulation.NormalRideSimulation;
 import domain.model.simulation.RideSimulation;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.ConcurrentHashSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RideRepositoryImpl implements RideRepository, Repository {
 
@@ -55,7 +52,7 @@ public class RideRepositoryImpl implements RideRepository, Repository {
 
   @Override
   public void addRideWithSimulation(Ride ride, RideSimulation simulation) {
-    if(simulation == null) {
+    if (simulation == null) {
       throw new IllegalArgumentException("Simulation cannot be null");
     }
     simulations.put(ride.getId(), simulation);

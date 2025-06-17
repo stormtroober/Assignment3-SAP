@@ -1,8 +1,7 @@
 package domain.model.simulation;
 
 public enum AutonomousRideType {
+  TO_USER,
 
-    TO_USER,
-
-    TO_STATION
+  TO_STATION
 }

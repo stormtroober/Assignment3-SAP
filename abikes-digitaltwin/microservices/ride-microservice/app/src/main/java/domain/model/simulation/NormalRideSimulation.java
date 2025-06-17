@@ -7,7 +7,6 @@ import domain.model.User;
 import domain.model.V2d;
 import domain.model.bike.*;
 import io.vertx.core.Vertx;
-
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -35,10 +34,9 @@ public class NormalRideSimulation implements RideSimulation, Service {
   public CompletableFuture<Void> startSimulation(Optional<BikeState> startingState) {
     CompletableFuture<Void> future = new CompletableFuture<>();
 
-    if(startingState.isPresent()) {
+    if (startingState.isPresent()) {
       ride.start((ABikeState) startingState.get());
-    }
-    else {
+    } else {
       ride.start();
     }
 
@@ -77,11 +75,11 @@ public class NormalRideSimulation implements RideSimulation, Service {
       if (user.getCredit() == 0) {
         ride.end();
         stopSimulation();
-          if (bike instanceof EBike) {
-              bike.setState(EBikeState.AVAILABLE);
-          } else {
-              bike.setState(ABikeState.AVAILABLE);
-          }
+        if (bike instanceof EBike) {
+          bike.setState(EBikeState.AVAILABLE);
+        } else {
+          bike.setState(ABikeState.AVAILABLE);
+        }
         completeSimulation();
       }
 
@@ -113,7 +111,6 @@ public class NormalRideSimulation implements RideSimulation, Service {
     }
   }
 
-
   private void completeSimulation() {
     publishBikeUpdate(ride.getBike());
     publisher.publishUserUpdate(ride.getUser().getId(), ride.getUser().getCredit());
@@ -142,20 +139,19 @@ public class NormalRideSimulation implements RideSimulation, Service {
   private void publishBikeUpdate(Bike bike) {
     if (bike instanceof EBike) {
       publisher.publishEBikeUpdate(
-              bike.getId(),
-              bike.getLocation().x(),
-              bike.getLocation().y(),
-              bike.getState().toString(),
-              bike.getBatteryLevel());
-    }
-    else if (bike instanceof ABike) {
+          bike.getId(),
+          bike.getLocation().x(),
+          bike.getLocation().y(),
+          bike.getState().toString(),
+          bike.getBatteryLevel());
+    } else if (bike instanceof ABike) {
       publisher.publishABikeUpdate(
-              bike.getId(),
-              bike.getLocation().x(),
-              bike.getLocation().y(),
-              bike.getState().toString(),
-              bike.getBatteryLevel());;
+          bike.getId(),
+          bike.getLocation().x(),
+          bike.getLocation().y(),
+          bike.getState().toString(),
+          bike.getBatteryLevel());
+      ;
     }
   }
-
 }

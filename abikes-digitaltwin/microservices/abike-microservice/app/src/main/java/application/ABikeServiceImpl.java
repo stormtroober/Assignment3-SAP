@@ -8,7 +8,6 @@ import domain.model.*;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
@@ -35,7 +34,7 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
 
   // Get all stations and pick a random one for the bike's location
   @Override
-  public CompletableFuture<JsonObject> createABike(String id) {
+  public CompletableFuture<ABike> createABike(String id) {
     return stationService
         .findStationWithFreeSlot()
         .thenCompose(
@@ -62,19 +61,13 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
                           ABikeState.AVAILABLE,
                           MAX_BATTERY,
                           BikeType.AUTONOMOUS);
-              //TODO, to be removed when communication uses domain model
-              bikeCommunicationAdapter.sendUpdate(ABikeMapper.toJson(abike));
-              return repository.save(abike).thenApply(v -> ABikeMapper.toJson(abike));
+              bikeCommunicationAdapter.sendUpdate(abike);
+              return repository.save(abike).thenApply(v -> abike);
             });
   }
 
   @Override
-  public CompletableFuture<Optional<ABike>> getABike(String id) {
-    return repository.findById(id);
-  }
-
-  @Override
-  public CompletableFuture<JsonObject> rechargeABike(String id) {
+  public CompletableFuture<ABike> rechargeABike(String id) {
     return repository
             .findById(id)
             .thenCompose(optionalABike -> {
@@ -87,16 +80,14 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
                         MAX_BATTERY,
                         abike.getType()
                 );
-                //TODO: remove when communication uses domain model
-                JsonObject abikeJson = ABikeMapper.toJson(recharged);
-                bikeCommunicationAdapter.sendUpdate(abikeJson);
-                return repository.update(recharged).thenApply(v -> abikeJson);
+                bikeCommunicationAdapter.sendUpdate(recharged);
+                return repository.update(recharged).thenApply(v -> recharged);
               }
               return CompletableFuture.completedFuture(null);
             });
   }
   @Override
-  public CompletableFuture<JsonObject> updateABike(ABike abike) {
+  public CompletableFuture<ABike> updateABike(ABike abike) {
     ABike updatedABike;
     if (abike.getBatteryLevel() == 0 && abike.getABikeState() != ABikeState.MAINTENANCE) {
       updatedABike = new ABike(
@@ -115,15 +106,9 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
             v -> repository
                 .findById(updatedABike.getId())
                 .thenApply(opt -> {
-                    //todo: remove when communication uses domain model
-                  bikeCommunicationAdapter.sendUpdate(ABikeMapper.toJson(updatedABike));
-                  return ABikeMapper.toJson(updatedABike);
+                  bikeCommunicationAdapter.sendUpdate(updatedABike);
+                  return updatedABike;
                 })
         );
-  }
-
-  @Override
-  public CompletableFuture<List<ABike>> getAllABikes() {
-    return repository.findAll();
   }
 }

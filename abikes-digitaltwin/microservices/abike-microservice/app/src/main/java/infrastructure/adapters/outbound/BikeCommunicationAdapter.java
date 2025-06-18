@@ -21,10 +21,10 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
   }
 
   @Override
-  public void sendUpdate(JsonObject abike) {
+  public void sendUpdate(ABike abike) {
     System.out.println("Sending ABike update to Kafka topic: " + topicName);
     producer.send(
-        new ProducerRecord<>(topicName, "abike:" + abike.getString("id"), abike.encode()));
+        new ProducerRecord<>(topicName, "abike:" + abike.getId(), ABikeMapper.toJson(abike).encode()));
   }
 
   public void sendAllUpdates(List<ABike> abikes) {

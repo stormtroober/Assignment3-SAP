@@ -1,6 +1,6 @@
 package application;
 
-import application.ports.CommunicationPort;
+import application.ports.StationCommunicationPort;
 import application.ports.StationRepository;
 import application.ports.StationServiceAPI;
 import domain.model.Station;
@@ -15,13 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class StationServiceImpl implements StationServiceAPI {
 
   private final StationRepository repository;
-  private final CommunicationPort communicationPort;
+  private final StationCommunicationPort stationCommunicationPort;
   private final AtomicInteger createCounter = new AtomicInteger();
 
-  public StationServiceImpl(StationRepository repository, CommunicationPort communicationPort) {
+  public StationServiceImpl(StationRepository repository, StationCommunicationPort stationCommunicationPort) {
     this.repository = repository;
-    this.communicationPort = communicationPort;
-    repository.findAll().thenAccept(communicationPort::sendAllUpdates);
+    this.stationCommunicationPort = stationCommunicationPort;
+    repository.findAll().thenAccept(stationCommunicationPort::sendAllUpdates);
   }
 
   @Override
@@ -32,7 +32,7 @@ public class StationServiceImpl implements StationServiceAPI {
             ? StationFactory.createStandardStation(id)
             : StationFactory.createAlternativeStation(id);
     JsonObject stationJson = StationMapper.toJson(station);
-    communicationPort.sendUpdate(stationJson);
+    stationCommunicationPort.sendUpdate(stationJson);
     return repository.save(stationJson).thenApply(v -> stationJson);
   }
 
@@ -52,7 +52,7 @@ public class StationServiceImpl implements StationServiceAPI {
                     .thenApply(
                         updatedStation -> {
                           JsonObject result = updatedStation.orElse(station);
-                          communicationPort.sendUpdate(result);
+                          stationCommunicationPort.sendUpdate(result);
                           return result;
                         }));
   }

@@ -86,7 +86,7 @@ public class BikeUpdateAdapter {
               });
 
         } catch (Exception e) {
-          logger.error("Error during Kafka polling: {}", e.getMessage());
+          logger.error("Error during Kafka polling: {}", (Object) e.getStackTrace());
         }
       }
 

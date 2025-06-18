@@ -12,14 +12,14 @@ public interface BikeCommunicationPort {
   /**
    * Sends an update for a single e-bike to the map service.
    *
-   * @param ebike a JsonObject representing the e-bike update.
+   * @param abike a JsonObject representing the e-bike update.
    */
-  void sendUpdate(JsonObject ebike);
+  void sendUpdate(ABike abike);
 
   /**
    * Sends updates for all e-bikes to the map service.
    *
-   * @param ebikes a JsonArray containing updates for multiple e-bikes.
+   * @param abikes a JsonArray containing updates for multiple e-bikes.
    */
-  void sendAllUpdates(List<ABike> ebikes);
+  void sendAllUpdates(List<ABike> abikes);
 }

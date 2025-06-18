@@ -1,6 +1,7 @@
 package infrastructure.adapters.web;
 
 import application.ports.ABikeServiceAPI;
+import domain.model.ABikeMapper;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -50,7 +51,7 @@ public class RESTABikeAdapter {
           .createABike(id)
           .thenAccept(
               result -> {
-                sendResponse(ctx, 201, result);
+                sendResponse(ctx, 201, ABikeMapper.toJson(result));
                 metricsManager.recordTimer(timer, "createABike");
               })
           .exceptionally(
@@ -80,7 +81,7 @@ public class RESTABikeAdapter {
         .thenAccept(
             result -> {
               if (result != null) {
-                sendResponse(ctx, 200, result);
+                sendResponse(ctx, 200, ABikeMapper.toJson(result));
                 metricsManager.recordTimer(timer, "rechargeABike");
               } else {
                 ctx.response().setStatusCode(404).end();

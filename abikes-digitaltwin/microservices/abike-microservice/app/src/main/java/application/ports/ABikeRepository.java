@@ -1,7 +1,10 @@
 package application.ports;
 
+import domain.model.ABike;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -11,18 +14,18 @@ public interface ABikeRepository {
   /**
    * Saves a new eBike.
    *
-   * @param ebike the eBike details to save as a JsonObject
+   * @param aBike the eBike details to save as a JsonObject
    * @return a CompletableFuture that completes when the save operation is done
    */
-  CompletableFuture<Void> save(JsonObject ebike);
+  CompletableFuture<Void> save(ABike aBike);
 
   /**
    * Updates an existing eBike.
    *
-   * @param ebike the eBike details to update as a JsonObject
+   * @param aBike the eBike details to update as a JsonObject
    * @return a CompletableFuture that completes when the update operation is done
    */
-  CompletableFuture<Void> update(JsonObject ebike);
+  CompletableFuture<Void> update(ABike aBike);
 
   /**
    * Finds an eBike by its id.
@@ -31,12 +34,12 @@ public interface ABikeRepository {
    * @return a CompletableFuture containing an Optional with the eBike as a JsonObject if found, or
    *     an empty Optional if not found
    */
-  CompletableFuture<Optional<JsonObject>> findById(String id);
+  CompletableFuture<Optional<ABike>> findById(String id);
 
   /**
    * Retrieves all eBikes.
    *
    * @return a CompletableFuture containing a JsonArray of all eBikes
    */
-  CompletableFuture<JsonArray> findAll();
+  CompletableFuture<List<ABike>> findAll();
 }

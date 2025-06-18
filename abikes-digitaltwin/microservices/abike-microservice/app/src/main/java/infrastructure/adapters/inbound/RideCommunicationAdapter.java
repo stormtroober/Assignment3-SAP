@@ -2,6 +2,8 @@ package infrastructure.adapters.inbound;
 
 import application.ports.ABikeServiceAPI;
 import application.ports.StationServiceAPI;
+import domain.model.ABike;
+import domain.model.ABikeMapper;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonObject;
@@ -76,13 +78,13 @@ public class RideCommunicationAdapter {
 
   private void processABikeRideUpdate(JsonObject updateJson) {
     try {
-      String id = updateJson.getString("id");
+      ABike aBike = ABikeMapper.fromJson(updateJson);
       aBikeService
-          .updateABike(updateJson)
-          .thenAccept(v -> logger.info("ABike {} updated successfully via Kafka consumer", id))
+          .updateABike(aBike)
+          .thenAccept(v -> logger.info("ABike {} updated successfully via Kafka consumer", aBike.getId()))
           .exceptionally(
               e -> {
-                logger.error("Failed to update ABike {}: {}", id, e.getMessage());
+                logger.error("Failed to update ABike {}: {}", aBike.getId(), e.getMessage());
                 return null;
               });
     } catch (Exception e) {

@@ -1,9 +1,6 @@
 import application.ABikeServiceImpl;
 import application.StationServiceImpl;
-import application.ports.ABikeServiceAPI;
-import application.ports.CommunicationPort;
-import application.ports.StationRepository;
-import application.ports.StationServiceAPI;
+import application.ports.*;
 import infrastructure.adapters.inbound.RideCommunicationAdapter;
 import infrastructure.adapters.outbound.BikeCommunicationAdapter;
 import infrastructure.adapters.outbound.StationCommunicationAdapter;
@@ -32,9 +29,9 @@ public class Main {
               MongoABikeRepository repository = new MongoABikeRepository(mongoClient);
               StationRepository repositoryStation = new MongoStationRepository(mongoClient);
 
-              CommunicationPort bikeMapCommunicationAdapter =
+              BikeCommunicationPort bikeMapCommunicationAdapter =
                   new BikeCommunicationAdapter(kafkaProperties);
-              CommunicationPort stationMapCommunicationAdapter =
+              StationCommunicationPort stationMapCommunicationAdapter =
                   new StationCommunicationAdapter(kafkaProperties);
               // Services
               StationServiceAPI stationService =

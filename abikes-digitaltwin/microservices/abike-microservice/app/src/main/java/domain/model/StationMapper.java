@@ -4,6 +4,8 @@ import static domain.model.StationFactory.MAX_SLOTS;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class StationMapper {
@@ -25,4 +27,28 @@ public class StationMapper {
         .put("slots", slots)
         .put("maxSlots", MAX_SLOTS);
   }
+
+  public static Station fromJson(JsonObject json) {
+    String id = json.getString("id");
+    JsonObject location = json.getJsonObject("location");
+    double x = location.getDouble("x");
+    double y = location.getDouble("y");
+    P2d position = new P2d(x, y);
+
+    JsonArray slotsArray = json.getJsonArray("slots", new JsonArray());
+    List<Slot> slots = new java.util.ArrayList<>();
+    for (int i = 0; i < slotsArray.size(); i++) {
+      JsonObject slotJson = slotsArray.getJsonObject(i);
+      String slotId = slotJson.getString("id");
+      String abikeId = slotJson.getString("abikeId");
+      Slot slot = new Slot(slotId);
+      if (abikeId != null) {
+        slot.occupy(abikeId);
+      }
+      slots.add(slot);
+    }
+
+    return new Station(id, position, slots);
+  }
+
 }

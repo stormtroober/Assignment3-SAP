@@ -34,11 +34,11 @@ public class Main {
                   new BikeUpdateAdapter(bikeService, kafkaProperties);
               StationUpdateAdapter stationUpdateAdapter =
                   new StationUpdateAdapter(stationMapService, kafkaProperties);
+                stationUpdateAdapter.init();
               RideUpdateAdapter rideUpdateAdapter =
                   new RideUpdateAdapter(bikeService, kafkaProperties);
               mapServiceVerticle.init();
               bikeUpdateAdapter.init();
-              stationUpdateAdapter.init();
               rideUpdateAdapter.init();
             });
   }

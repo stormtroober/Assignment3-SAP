@@ -1,14 +1,16 @@
 package infrastructure.adapters.outbound;
 
-import application.ports.BikeCommunicationPort;
 import application.ports.StationCommunicationPort;
+import domain.model.Station;
+import domain.model.StationMapper;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+
+import java.util.List;
 
 public class StationCommunicationAdapter implements StationCommunicationPort {
   private final Producer<String, String> producer;
@@ -19,18 +21,17 @@ public class StationCommunicationAdapter implements StationCommunicationPort {
   }
 
   @Override
-  public void sendUpdate(JsonObject station) {
+  public void sendUpdate(Station station) {
     System.out.println("Sending Station update to Kafka topic: " + topicName);
     producer.send(
-        new ProducerRecord<>(topicName, "station:" + station.getString("id"), station.encode()));
+        new ProducerRecord<>(topicName, "station:" + station.getId(), StationMapper.toJson(station).encode()));
   }
 
-  public void sendAllUpdates(JsonArray stations) {
+  public void sendAllUpdates(List<Station> stations) {
     System.out.println("Sending all Station updates to Kafka topic: " + topicName);
-    for (int i = 0; i < stations.size(); i++) {
-      JsonObject station = stations.getJsonObject(i);
+    for(Station station : stations) {
       producer.send(
-          new ProducerRecord<>(topicName, "station:" + station.getString("id"), station.encode()));
+          new ProducerRecord<>(topicName, "station:" + station.getId(), StationMapper.toJson(station).encode()));
     }
   }
 }

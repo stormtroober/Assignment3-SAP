@@ -43,7 +43,7 @@ public class Main {
                   .createStation("station1")
                   .thenAccept(
                       station ->
-                          System.out.println("Station1 created: " + station.encodePrettily()))
+                          System.out.println("Station1 created: " + station))
                   .exceptionally(
                       ex -> {
                         System.err.println("Failed to create station1: " + ex.getMessage());
@@ -54,7 +54,7 @@ public class Main {
                   .createStation("station2")
                   .thenAccept(
                       station ->
-                          System.out.println("Station1 created: " + station.encodePrettily()))
+                          System.out.println("Station1 created: " + station))
                   .exceptionally(
                       ex -> {
                         System.err.println("Failed to create station1: " + ex.getMessage());

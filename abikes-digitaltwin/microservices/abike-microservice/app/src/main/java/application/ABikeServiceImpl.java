@@ -35,35 +35,27 @@ public class ABikeServiceImpl implements ABikeServiceAPI {
   // Get all stations and pick a random one for the bike's location
   @Override
   public CompletableFuture<ABike> createABike(String id) {
-    return stationService
-        .findStationWithFreeSlot()
-        .thenCompose(
-            optStation ->
-                optStation
-                    .map(
-                        station ->
-                            stationService
-                                .assignBikeToStation(station.getString("id"), id)
-                                .thenApply(updated -> updated.getJsonObject("location")))
-                    .orElseGet(
-                        () ->
-                            CompletableFuture.completedFuture(
-                                new JsonObject()
-                                    .put("x", 100 * random.nextDouble())
-                                    .put("y", 100 * random.nextDouble()))))
-        .thenCompose(
-            location -> {
-              ABike abike =
-                  ABikeFactory.getInstance()
-                      .create(
-                          id,
-                          new P2d(location.getDouble("x"), location.getDouble("y")),
-                          ABikeState.AVAILABLE,
-                          MAX_BATTERY,
-                          BikeType.AUTONOMOUS);
-              bikeCommunicationAdapter.sendUpdate(abike);
-              return repository.save(abike).thenApply(v -> abike);
-            });
+      return stationService
+              .findStationWithFreeSlot()
+              .thenCompose(optStationJson ->
+                      optStationJson
+                              .map(stationJson ->
+                                      stationService.assignBikeToStation(stationJson.getString("id"), id)
+                                              .thenApply(station -> station != null ? station.getPosition() : null)
+                              )
+                              .orElseGet(() ->
+                                      CompletableFuture.completedFuture(
+                                              new P2d(100 * random.nextDouble(), 100 * random.nextDouble())
+                                      )
+                              )
+              )
+              .thenCompose(position -> {
+                  P2d bikePosition = position != null ? position : new P2d(100 * random.nextDouble(), 100 * random.nextDouble());
+                  ABike abike = ABikeFactory.getInstance()
+                          .create(id, bikePosition, ABikeState.AVAILABLE, MAX_BATTERY, BikeType.AUTONOMOUS);
+                  bikeCommunicationAdapter.sendUpdate(abike);
+                  return repository.save(abike).thenApply(v -> abike);
+              });
   }
 
   @Override

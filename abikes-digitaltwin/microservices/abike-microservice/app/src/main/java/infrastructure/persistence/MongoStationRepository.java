@@ -3,6 +3,8 @@ package infrastructure.persistence;
 import static domain.model.StationFactory.MAX_SLOTS;
 
 import application.ports.StationRepository;
+import domain.model.Station;
+import domain.model.StationMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
@@ -18,68 +20,64 @@ public class MongoStationRepository implements StationRepository {
   }
 
   @Override
-  public CompletableFuture<Void> save(JsonObject station) {
+  public CompletableFuture<Void> save(Station station) {
     CompletableFuture<Void> future = new CompletableFuture<>();
 
-    if (station == null || !station.containsKey("id")) {
+    if (station == null || station.getId() == null) {
       future.completeExceptionally(new IllegalArgumentException("Invalid station data"));
       return future;
     }
 
-    JsonObject document =
-        new JsonObject()
-            .put("_id", station.getString("id"))
-            .put("location", station.getJsonObject("location"))
-            .put("slots", convertSlotsToJsonArray(station.getJsonArray("slots", new JsonArray())))
-            .put("maxSlots", station.getInteger("maxSlots", MAX_SLOTS));
+    JsonObject document = StationMapper.toJson(station);
+    document.put("_id", station.getId());
+    document.remove("id"); // Mongo uses _id
 
     mongoClient
-        .insert(COLLECTION, document)
-        .onSuccess(result -> future.complete(null))
-        .onFailure(
-            error ->
-                future.completeExceptionally(
-                    new RuntimeException("Failed to save station: " + error.getMessage())));
+            .insert(COLLECTION, document)
+            .onSuccess(result -> future.complete(null))
+            .onFailure(
+                    error ->
+                            future.completeExceptionally(
+                                    new RuntimeException("Failed to save station: " + error.getMessage())));
 
     return future;
   }
 
   @Override
-  public CompletableFuture<Void> update(JsonObject station) {
+  public CompletableFuture<Void> update(Station station) {
     CompletableFuture<Void> future = new CompletableFuture<>();
 
-    if (station == null || !station.containsKey("id")) {
+    if (station == null || station.getId() == null) {
       future.completeExceptionally(new IllegalArgumentException("Invalid station data"));
       return future;
     }
 
-    JsonObject query = new JsonObject().put("_id", station.getString("id"));
-    JsonObject updateDoc = station.copy();
-    updateDoc.remove("id");
-    updateDoc.put("slots", convertSlotsToJsonArray(station.getJsonArray("slots", new JsonArray())));
+    JsonObject updateDoc = StationMapper.toJson(station);
+    updateDoc.put("_id", station.getId());
+    updateDoc.remove("id"); // Mongo uses _id
+
+    JsonObject query = new JsonObject().put("_id", station.getId());
     JsonObject update = new JsonObject().put("$set", updateDoc);
 
     mongoClient
-        .findOneAndUpdate(COLLECTION, query, update)
-        .onSuccess(
-            result -> {
+            .findOneAndUpdate(COLLECTION, query, update)
+            .onSuccess(result -> {
               if (result != null) {
                 future.complete(null);
               } else {
                 future.completeExceptionally(new RuntimeException("Station not found"));
               }
             })
-        .onFailure(
-            error ->
-                future.completeExceptionally(
-                    new RuntimeException("Failed to update station: " + error.getMessage())));
+            .onFailure(error ->
+                    future.completeExceptionally(
+                            new RuntimeException("Failed to update station: " + error.getMessage())));
 
     return future;
   }
 
   @Override
-  public CompletableFuture<Optional<JsonObject>> findById(String id) {
-    CompletableFuture<Optional<JsonObject>> future = new CompletableFuture<>();
+  public CompletableFuture<Optional<Station>> findById(String id) {
+    CompletableFuture<Optional<Station>> future = new CompletableFuture<>();
 
     if (id == null || id.trim().isEmpty()) {
       future.completeExceptionally(new IllegalArgumentException("Invalid id"));
@@ -93,7 +91,7 @@ public class MongoStationRepository implements StationRepository {
         .onSuccess(
             result -> {
               if (result != null) {
-                JsonObject station =
+                JsonObject stationJson =
                     new JsonObject()
                         .put("id", result.getString("_id"))
                         .put("location", result.getJsonObject("location"))
@@ -101,6 +99,7 @@ public class MongoStationRepository implements StationRepository {
                             "slots",
                             convertSlotsToJsonArray(result.getJsonArray("slots", new JsonArray())))
                         .put("maxSlots", result.getInteger("maxSlots", MAX_SLOTS));
+                Station station = StationMapper.fromJson(stationJson);
                 future.complete(Optional.of(station));
               } else {
                 future.complete(Optional.empty());
@@ -115,31 +114,25 @@ public class MongoStationRepository implements StationRepository {
   }
 
   @Override
-  public CompletableFuture<JsonArray> findAll() {
-    CompletableFuture<JsonArray> future = new CompletableFuture<>();
+  public CompletableFuture<java.util.List<Station>> findAll() {
+    CompletableFuture<java.util.List<Station>> future = new CompletableFuture<>();
     JsonObject query = new JsonObject();
 
     mongoClient
-        .find(COLLECTION, query)
-        .onSuccess(
-            results -> {
-              JsonArray stations = new JsonArray();
-              results.forEach(
-                  result -> {
-                    JsonObject station =
-                        new JsonObject()
-                            .put("id", result.getString("_id"))
-                            .put("location", result.getJsonObject("location"))
-                            .put(
-                                "slots",
-                                convertSlotsToJsonArray(
-                                    result.getJsonArray("slots", new JsonArray())))
-                            .put("maxSlots", result.getInteger("maxSlots", MAX_SLOTS));
-                    stations.add(station);
-                  });
+            .find(COLLECTION, query)
+            .onSuccess(results -> {
+              java.util.List<Station> stations = new java.util.ArrayList<>();
+              for (JsonObject result : results) {
+                JsonObject stationJson = new JsonObject()
+                        .put("id", result.getString("_id"))
+                        .put("location", result.getJsonObject("location"))
+                        .put("slots", convertSlotsToJsonArray(result.getJsonArray("slots", new JsonArray())))
+                        .put("maxSlots", result.getInteger("maxSlots", MAX_SLOTS));
+                stations.add(StationMapper.fromJson(stationJson));
+              }
               future.complete(stations);
             })
-        .onFailure(future::completeExceptionally);
+            .onFailure(future::completeExceptionally);
 
     return future;
   }

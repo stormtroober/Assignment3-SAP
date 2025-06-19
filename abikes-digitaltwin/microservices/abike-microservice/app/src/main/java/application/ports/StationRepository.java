@@ -1,16 +1,19 @@
 package application.ports;
 
+import domain.model.Station;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface StationRepository {
-  CompletableFuture<Void> save(JsonObject station);
+  CompletableFuture<Void> save(Station station);
 
-  CompletableFuture<Void> update(JsonObject station);
+  CompletableFuture<Void> update(Station station);
 
-  CompletableFuture<Optional<JsonObject>> findById(String id);
+  CompletableFuture<Optional<Station>> findById(String id);
 
-  CompletableFuture<JsonArray> findAll();
+  CompletableFuture<List<Station>> findAll();
 }

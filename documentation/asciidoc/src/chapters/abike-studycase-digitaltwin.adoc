@@ -114,6 +114,118 @@ It was decided to create a new microservice for the autonomous a-bike, that mana
 
 It follows the same architecture of the other microservices, using hexagonal architecture and an Event-Driven approach.
 
+==== Detailed Microservice Structure
+For explaining the structure of microservices, i'll detail the `abike-microservice`.
+
+The `abike-microservice` follows the **Hexagonal Architecture** pattern, which provides a clean separation between the business logic and external concerns. This architecture ensures that the domain logic remains independent of frameworks, databases, and external services.
+
+===== Architecture Overview
+
+The hexagonal architecture organizes the codebase into three main layers:
+
+1. **Domain Layer (Core)**: Contains the pure business logic and domain models
+2. **Application Layer**: Orchestrates use cases and coordinates between domain and infrastructure
+3. **Infrastructure Layer**: Handles external concerns like databases, message brokers, and external APIs
+
+===== Domain Layer
+
+The **Domain Layer** represents the core business logic and is completely independent of external frameworks or technologies. It contains:
+
+- **Domain Models**: Pure business entities like `ABike` and `Station` with their business rules
+- **Value Objects**: Immutable objects like `P2d` for coordinates and enums like `ABikeState`, `BikeType`
+- **Factories**: `ABikeFactory` and `StationFactory` for creating domain entities with proper validation
+- **Mappers**: `ABikeMapper` and `StationMapper` for converting between domain models and external representations
+
+[source,java]
+----
+// Domain model example
+public class ABike implements Aggregate<String> {
+    private final String id;
+    private final ABikeState state;
+    private final P2d location;
+    private final int batteryLevel;
+    private final BikeType type;
+    // Pure business logic methods
+}
+----
+
+The domain models are **immutable** and contain only business logic. They don't know about databases, JSON, or external systems.
+
+===== Application Layer
+
+The **Application Layer** orchestrates the business use cases and acts as a bridge between the domain and infrastructure layers. It contains:
+
+- **Service Implementations**: `ABikeServiceImpl` coordinates domain operations and external communications
+- **Port Interfaces**: Define contracts for external dependencies
+  - **Inbound Ports**: `ABikeServiceAPI` - interfaces that the application exposes
+  - **Outbound Ports**: `ABikeRepository`, `BikeCommunicationPort`, `StationServiceAPI` - interfaces for external dependencies
+
+[source,java]
+----
+// Application service coordinating domain and infrastructure
+public class ABikeServiceImpl implements ABikeServiceAPI {
+    private final ABikeRepository repository;           // Outbound port
+    private final BikeCommunicationPort communicationPort; // Outbound port
+    private final StationServiceAPI stationService;     // Outbound port
+    
+    public CompletableFuture<ABike> createABike(String bikeId) {
+        // Orchestrates domain creation and persistence
+        ABike abike = ABikeFactory.getInstance().create(...);
+        communicationPort.sendUpdate(abike);  // Uses domain model
+        return repository.save(abike);        // Uses domain model
+    }
+}
+----
+
+The application layer works exclusively with **domain models** internally, using mappers only at the boundaries when communicating with external systems.
+
+===== Infrastructure Layer
+
+The **Infrastructure Layer** contains all the technical implementations and external integrations. It's divided into:
+
+**Inbound Adapters** (receive data from external sources):
+- **REST Controllers**: Handle HTTP requests and convert them to domain operations
+- **Message Consumers**: `RideCommunicationAdapter` consumes Kafka messages and converts JSON to domain models before calling application services
+
+[source,java]
+----
+// Inbound adapter handling external messages
+private void processABikeRideUpdate(JsonObject updateJson) {
+    ABike aBike = ABikeMapper.fromJson(updateJson);  // Convert to domain
+    aBikeService.updateABike(aBike);                 // Use domain model
+}
+----
+
+**Outbound Adapters** (send data to external systems):
+- **Repository Implementations**: Handle persistence using the database technology
+- **Message Producers**: `BikeCommunicationAdapter` converts domain models to JSON before sending to Kafka
+
+[source,java]
+----
+// Outbound adapter sending data externally
+public void sendUpdate(ABike abike) {
+    JsonObject json = ABikeMapper.toJson(abike);     // Convert from domain
+    producer.send(new ProducerRecord<>(topic, json.encode()));
+}
+----
+
+
+===== Data Flow and Mapping Strategy
+
+The architecture ensures a clear **data transformation flow**:
+
+1. **External → Domain**: Inbound adapters convert external formats (JSON, HTTP requests) to domain models using mappers
+2. **Domain Processing**: Application services work exclusively with domain models
+3. **Domain → External**: Outbound adapters convert domain models back to external formats
+
+This mapping strategy provides several benefits:
+- **Domain Purity**: Business logic is not polluted with external format concerns
+- **Flexibility**: External formats can change without affecting domain logic
+- **Testability**: Domain logic can be tested independently of external systems
+- **Maintainability**: Clear separation of concerns makes the codebase easier to understand and modify
+
+The hexagonal architecture ensures that the domain remains the stable core while external technologies can be easily replaced or modified without affecting the business logic.
+
 ==== New Communication Flow and Topics
 
 Here we describe the new topics and communication flows introduced in the autonomous a-bike case study.

@@ -1,0 +1,66 @@
+@startuml application-uml
+
+package "application.ports" {
+    interface ABikeRepository {
+        + save(aBike : ABike) : CompletableFuture<Void>
+        + update(aBike : ABike) : CompletableFuture<Void>
+        + findById(id : String) : CompletableFuture<Optional<ABike>>
+        + findAll() : CompletableFuture<List<ABike>>
+    }
+
+    interface StationRepository {
+        + save(station : Station) : CompletableFuture<Void>
+        + update(station : Station) : CompletableFuture<Void>
+        + findById(id : String) : CompletableFuture<Optional<Station>>
+        + findAll() : CompletableFuture<List<Station>>
+    }
+
+    interface ABikeServiceAPI {
+        + createABike(id : String) : CompletableFuture<ABike>
+        + rechargeABike(id : String) : CompletableFuture<ABike>
+        + updateABike(abike : ABike) : CompletableFuture<ABike>
+    }
+
+    interface StationServiceAPI {
+        + createStation(id : String) : CompletableFuture<Station>
+        + updateStation(station : Station) : CompletableFuture<Station>
+        + getAllStations() : CompletableFuture<List<Station>>
+        + assignBikeToStation(stationId, bikeId) : CompletableFuture<Station>
+        + deassignBikeFromStation(bikeId) : CompletableFuture<Station>
+        + findStationWithFreeSlot() : CompletableFuture<Optional<Station>>
+    }
+
+    interface CommunicationPort<T> {
+        + sendUpdate(entity : T)
+        + sendAllUpdates(entities : List<T>)
+    }
+
+    interface BikeCommunicationPort
+    interface StationCommunicationPort
+
+    BikeCommunicationPort ..|> CommunicationPort
+    StationCommunicationPort ..|> CommunicationPort
+}
+
+package "application" {
+    class ABikeServiceImpl {
+        - repository : ABikeRepository
+        - bikeCommunicationAdapter : BikeCommunicationPort  
+        - stationService : StationServiceAPI
+    }
+
+    class StationServiceImpl {
+        - repository : StationRepository
+        - stationCommunicationPort : StationCommunicationPort
+    }
+
+    ABikeServiceImpl ..|> ABikeServiceAPI
+    ABikeServiceImpl --> ABikeRepository
+    ABikeServiceImpl --> BikeCommunicationPort
+    ABikeServiceImpl --> StationServiceAPI 
+
+    StationServiceImpl ..|> StationServiceAPI
+    StationServiceImpl --> StationRepository
+    StationServiceImpl --> StationCommunicationPort
+}
+@enduml

@@ -1,0 +1,75 @@
+@startuml domain-model
+package "domain.model" {
+    class ABike {
+        - id : String
+        - state : ABikeState
+        - location : P2d
+        - batteryLevel : int
+        - type : BikeType
+        + getId() : String
+        + getLocation() : P2d
+        + getBatteryLevel() : int
+        + getABikeState() : ABikeState
+        + getType() : BikeType
+    }
+
+    class ABikeFactory {
+        + create(id, location, state, batteryLevel, type) : ABike
+        {static}
+    }
+
+    class ABikeMapper {
+        + fromJson(json : JsonObject) : ABike
+        + toJson(abike : ABike) : JsonObject
+        {static}
+    }
+
+    class Station {
+        - id : String
+        - position : P2d
+        - slots : List<Slot>
+        + getId() : String
+        + getPosition() : P2d
+        + getSlots() : List<Slot>
+        + occupyFreeSlot(abikeId : String) : Optional<Slot>
+        + freeSlotByAbike(abikeId : String) : boolean
+    }
+
+    class StationFactory {
+        + createStandardStation(id : String) : Station
+        + createAlternativeStation(id : String) : Station
+        {static}
+    }
+
+    class StationMapper {
+        + toJson(station : Station) : JsonObject
+        + fromJson(json : JsonObject) : Station
+        {static}
+    }
+
+    class Slot {
+        - id : String
+        - abikeId : String
+        + getId() : String
+        + getAbikeId() : String
+        + isOccupied() : boolean
+        + occupy(abikeId : String)
+        + free()
+    }
+
+    class P2d {
+        - x : double
+        - y : double
+        + getX() : double
+        + getY() : double
+    }
+
+    ABikeFactory ..> ABike
+    ABikeMapper ..> ABike
+    StationFactory ..> Station
+    StationMapper ..> Station
+    Station --> "slots" Slot
+    Station --> P2d
+    ABike --> P2d
+}
+@enduml 

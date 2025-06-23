@@ -1,0 +1,22 @@
+@startuml infrastructure-uml
+package "infrastructure.adapters.outbound" {
+    class BikeCommunicationAdapter
+    class StationCommunicationAdapter
+
+    interface BikeCommunicationPort
+    interface StationCommunicationPort
+
+    BikeCommunicationAdapter ..|> BikeCommunicationPort
+    StationCommunicationAdapter ..|> StationCommunicationPort
+}
+
+package "infrastructure.adapters.inbound" {
+    class RideCommunicationAdapter
+
+    interface ABikeServiceAPI
+    interface StationServiceAPI
+
+    RideCommunicationAdapter --> ABikeServiceAPI
+    RideCommunicationAdapter --> StationServiceAPI
+}
+@enduml

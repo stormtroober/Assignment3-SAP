@@ -20,5 +20,5 @@ public interface StationServiceAPI {
 
   CompletableFuture<Station> deassignBikeFromStation(String bikeId);
 
-  CompletableFuture<Optional<JsonObject>> findStationWithFreeSlot();
+  CompletableFuture<Optional<Station>> findStationWithFreeSlot();
 }

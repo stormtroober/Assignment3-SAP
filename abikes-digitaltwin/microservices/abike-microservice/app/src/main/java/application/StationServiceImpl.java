@@ -5,9 +5,6 @@ import application.ports.StationRepository;
 import application.ports.StationServiceAPI;
 import domain.model.Station;
 import domain.model.StationFactory;
-import domain.model.StationMapper;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Optional;
@@ -92,16 +89,12 @@ public class StationServiceImpl implements StationServiceAPI {
                 });
     }
 
-    public CompletableFuture<Optional<JsonObject>> findStationWithFreeSlot() {
+
+    public CompletableFuture<Optional<Station>> findStationWithFreeSlot() {
         return getAllStations()
-                .thenApply(stations -> {
-                    for (Station station : stations) {
-                        boolean hasFreeSlot = station.getSlots().stream().anyMatch(slot -> !slot.isOccupied());
-                        if (hasFreeSlot) {
-                            return Optional.of(StationMapper.toJson(station));
-                        }
-                    }
-                    return Optional.empty();
-                });
+                .thenApply(stations -> stations.stream()
+                        .filter(station -> station.getSlots().stream().anyMatch(slot -> !slot.isOccupied()))
+                        .findFirst()
+                );
     }
 }

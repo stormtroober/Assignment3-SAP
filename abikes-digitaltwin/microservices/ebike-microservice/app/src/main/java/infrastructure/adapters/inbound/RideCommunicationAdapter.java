@@ -1,6 +1,8 @@
 package infrastructure.adapters.inbound;
 
 import application.ports.EBikeServiceAPI;
+import domain.model.EBike;
+import domain.model.EBikeMapper;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonObject;
@@ -65,8 +67,9 @@ public class RideCommunicationAdapter {
   private void handleRideUpdate(ConsumerRecord<String, String> record) {
     try {
       JsonObject updateJson = new JsonObject(record.value());
+      EBike bike = EBikeMapper.fromJson(updateJson);
       eBikeService
-          .updateEBike(updateJson)
+          .updateEBike(bike)
           .thenAccept(
               updated ->
                   logger.info(

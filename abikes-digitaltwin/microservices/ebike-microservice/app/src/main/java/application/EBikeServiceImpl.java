@@ -59,34 +59,31 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
   }
 
   @Override
-  public CompletableFuture<JsonObject> updateEBike(JsonObject ebike) {
+  public CompletableFuture<JsonObject> updateEBike(EBike ebike) {
 
-    if (ebike.containsKey("batteryLevel")) {
-      int newBattery = ebike.getInteger("batteryLevel");
-      int currentBattery = ebike.getInteger("batteryLevel");
-      if (newBattery < currentBattery) {
-        ebike.put("batteryLevel", newBattery);
-        if (newBattery == 0) {
-          ebike.put("state", "MAINTENANCE");
-        }
+    int newBattery = ebike.getBatteryLevel();
+    EBikeState newState = ebike.getState();
+
+    if(newBattery < EBike.MAX_BATTERY_LEVEL) {
+      if (newBattery == 0) {
+        newState = EBikeState.MAINTENANCE;
       }
     }
-    if (ebike.containsKey("state")) {
-      ebike.put("state", ebike.getString("state"));
-    }
-    if (ebike.containsKey("location")) {
-      ebike.put("location", ebike.getJsonObject("location"));
-    }
+    var updatedEBike = new EBike(ebike.getId(), ebike.getLocation(), newState, newBattery, ebike.getType());
+
+    //TODO: this is temporary
+    var bikeJson = EBikeMapper.toJson(updatedEBike);
+
     return repository
-        .update(ebike)
+        .update(bikeJson)
         .thenCompose(
             v ->
                 repository
-                    .findById(ebike.getString("id"))
+                    .findById(updatedEBike.getId())
                     .thenApply(
-                        updatedEbike -> {
-                          mapCommunicationAdapter.sendUpdate(updatedEbike.orElse(ebike));
-                          return ebike;
+                        foundUpdatedEbike -> {
+                          mapCommunicationAdapter.sendUpdate(foundUpdatedEbike.orElse(bikeJson));
+                          return foundUpdatedEbike.get();
                         }));
   }
 

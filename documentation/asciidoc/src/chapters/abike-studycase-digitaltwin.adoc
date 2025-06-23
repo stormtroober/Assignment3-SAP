@@ -129,6 +129,11 @@ The hexagonal architecture organizes the codebase into three main layers:
 
 ===== Domain Layer
 
+[plantuml, {diagramsdir}/abike-domain-uml, svg, title="Domain Layer UML of ABike Microservice", width=75%]
+----
+!include resources/puml/abike-domain-uml.puml
+----
+
 The **Domain Layer** represents the core business logic and is completely independent of external frameworks or technologies. It contains:
 
 - **Domain Models**: Pure business entities like `ABike` and `Station` with their business rules
@@ -152,6 +157,11 @@ public class ABike implements Aggregate<String> {
 The domain models are **immutable** and contain only business logic. They don't know about databases, JSON, or external systems.
 
 ===== Application Layer
+
+[plantuml, {diagramsdir}/abike-application-uml, svg, title="Application Layer UML of ABike Microservice", width=95%]
+----
+!include resources/puml/abike-application-uml.puml
+----
 
 The **Application Layer** orchestrates the business use cases and acts as a bridge between the domain and infrastructure layers. It contains:
 
@@ -181,9 +191,15 @@ The application layer works exclusively with **domain models** internally, using
 
 ===== Infrastructure Layer
 
+[plantuml, {diagramsdir}/abike-infrastructure-uml, svg, title="Infrastructure Layer UML of ABike Microservice", width=70%]
+----
+!include resources/puml/abike-infrastructure-uml.puml
+----
+
 The **Infrastructure Layer** contains all the technical implementations and external integrations. It's divided into:
 
 **Inbound Adapters** (receive data from external sources):
+
 - **REST Controllers**: Handle HTTP requests and convert them to domain operations
 - **Message Consumers**: `RideCommunicationAdapter` consumes Kafka messages and converts JSON to domain models before calling application services
 
@@ -197,6 +213,7 @@ private void processABikeRideUpdate(JsonObject updateJson) {
 ----
 
 **Outbound Adapters** (send data to external systems):
+
 - **Repository Implementations**: Handle persistence using the database technology
 - **Message Producers**: `BikeCommunicationAdapter` converts domain models to JSON before sending to Kafka
 
@@ -219,6 +236,7 @@ The architecture ensures a clear **data transformation flow**:
 3. **Domain → External**: Outbound adapters convert domain models back to external formats
 
 This mapping strategy provides several benefits:
+
 - **Domain Purity**: Business logic is not polluted with external format concerns
 - **Flexibility**: External formats can change without affecting domain logic
 - **Testability**: Domain logic can be tested independently of external systems

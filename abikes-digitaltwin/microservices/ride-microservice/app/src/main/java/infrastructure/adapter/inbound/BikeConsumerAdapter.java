@@ -1,5 +1,7 @@
 package infrastructure.adapter.inbound;
 
+import domain.model.ABikeMapper;
+import domain.model.EBikeMapper;
 import domain.model.repository.ABikeRepository;
 import domain.model.repository.EBikeRepository;
 import infrastructure.adapter.kafkatopic.Topics;
@@ -96,7 +98,7 @@ public class BikeConsumerAdapter {
               existingBike -> {
                 if (existingBike.isPresent()) {
                   abikeRepository
-                      .update(abikeJson)
+                      .update(ABikeMapper.fromJson(abikeJson))
                       .exceptionally(
                           ex -> {
                             logger.error("Failed to update ABike: {}", ex.getMessage(), ex);
@@ -104,7 +106,7 @@ public class BikeConsumerAdapter {
                           });
                 } else {
                   abikeRepository
-                      .save(abikeJson)
+                      .save(ABikeMapper.fromJson(abikeJson))
                       .exceptionally(
                           ex -> {
                             logger.error("Failed to save new ABike: {}", ex.getMessage(), ex);
@@ -133,7 +135,7 @@ public class BikeConsumerAdapter {
               existingBike -> {
                 if (existingBike.isPresent()) {
                   ebikeRepository
-                      .update(ebikeJson)
+                      .update(EBikeMapper.fromJson(ebikeJson))
                       .exceptionally(
                           ex -> {
                             logger.error("Failed to update EBike: {}", ex.getMessage(), ex);
@@ -141,7 +143,7 @@ public class BikeConsumerAdapter {
                           });
                 } else {
                   ebikeRepository
-                      .save(ebikeJson)
+                      .save(EBikeMapper.fromJson(ebikeJson))
                       .exceptionally(
                           ex -> {
                             logger.error("Failed to save new EBike: {}", ex.getMessage(), ex);

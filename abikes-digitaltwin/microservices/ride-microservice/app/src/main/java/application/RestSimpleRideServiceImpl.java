@@ -43,15 +43,17 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                 System.err.println("EBike not found");
                 return null;
               }
-
-              JsonObject ebikeJson = ebikeJsonOptional.get();
-              JsonObject location = ebikeJson.getJsonObject("location");
-              return new EBike(
-                  ebikeJson.getString("id"),
-                  location.getDouble("x"),
-                  location.getDouble("y"),
-                  EBikeState.valueOf(ebikeJson.getString("state")),
-                  ebikeJson.getInteger("batteryLevel"));
+              else{
+                  var ebike = ebikeJsonOptional.get();
+                  var location = ebike.getLocation();
+                  return new EBike(
+                        ebike.getId(),
+                        location.x(),
+                        location.y(),
+                        ebike.getState(),
+                        ebike.getBatteryLevel()
+                  );
+              }
             });
   }
 

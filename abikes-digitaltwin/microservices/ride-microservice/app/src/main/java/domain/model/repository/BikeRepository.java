@@ -5,12 +5,10 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public interface BikeRepository {
-  CompletableFuture<Void> save(JsonObject bike);
+public interface BikeRepository<T> {
+  CompletableFuture<Void> save(T bike);
 
-  CompletableFuture<Optional<JsonObject>> findById(String id);
+  CompletableFuture<Optional<T>> findById(String id);
 
-  CompletableFuture<JsonArray> findAll();
-
-  CompletableFuture<Void> update(JsonObject bike);
+  CompletableFuture<Void> update(T bike);
 }

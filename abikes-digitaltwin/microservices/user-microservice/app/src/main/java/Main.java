@@ -9,7 +9,7 @@ import infrastructure.adapters.web.UserVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.persistence.MongoEventStore;
 import infrastructure.utils.KafkaProperties;
-import infrastructure.utils.UserEventPublisherImpl;
+import application.UserEventPublisherImpl;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;

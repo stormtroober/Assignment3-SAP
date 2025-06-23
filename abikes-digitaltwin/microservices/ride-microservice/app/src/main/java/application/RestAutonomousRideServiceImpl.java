@@ -173,9 +173,9 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                           .thenAccept(
                               abikeJsonOpt -> {
                                 if (abikeJsonOpt.isPresent()) {
-                                  JsonObject abikeJson = abikeJsonOpt.get();
-                                  ABikeState state =
-                                      ABikeState.valueOf(abikeJson.getString("state"));
+//                                  JsonObject abikeJson = abikeJsonOpt.get();
+                                  var aBike = abikeJsonOpt.get();
+                                  ABikeState state = (ABikeState) aBike.getState();
                                   if (state == ABikeState.AVAILABLE) {
                                     vertx.cancelTimer(id);
                                     dispatchBikeToStation(
@@ -290,20 +290,14 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
     return abikeRepository
         .findById(bikeId)
         .thenApply(
-            abikeJsonOptional -> {
-              if (abikeJsonOptional.isEmpty()) {
+            abikeOptional -> {
+              if (abikeOptional.isEmpty()) {
                 System.err.println("ABike not found");
                 return null;
               }
-
-              JsonObject abikeJson = abikeJsonOptional.get();
-              JsonObject location = abikeJson.getJsonObject("location");
-              P2d loc = new P2d(location.getDouble("x"), location.getDouble("y"));
-              ABikeState state = ABikeState.valueOf(abikeJson.getString("state"));
-              int batteryLevel = abikeJson.getInteger("batteryLevel");
-              BikeType type = BikeType.valueOf(abikeJson.getString("type"));
-              return ABikeFactory.getInstance()
-                  .create(abikeJson.getString("id"), loc, state, batteryLevel, type);
+              else{
+                  return abikeOptional.get();
+              }
             });
   }
 }

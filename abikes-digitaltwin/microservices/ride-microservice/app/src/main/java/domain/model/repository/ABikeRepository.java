@@ -1,3 +1,5 @@
 package domain.model.repository;
 
-public interface ABikeRepository extends BikeRepository {}
+import domain.model.bike.ABike;
+
+public interface ABikeRepository extends BikeRepository<ABike> {}

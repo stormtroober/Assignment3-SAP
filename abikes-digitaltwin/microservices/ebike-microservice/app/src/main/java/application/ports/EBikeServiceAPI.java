@@ -1,5 +1,6 @@
 package application.ports;
 
+import domain.model.EBike;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
@@ -35,13 +36,7 @@ public interface EBikeServiceAPI {
    */
   CompletableFuture<JsonObject> rechargeEBike(String id);
 
-  /**
-   * Updates the details of an existing eBike.
-   *
-   * @param ebike the eBike details to update as a JsonObject
-   * @return a CompletableFuture containing the updated eBike as a JsonObject
-   */
-  CompletableFuture<JsonObject> updateEBike(JsonObject ebike);
+  CompletableFuture<JsonObject> updateEBike(EBike ebike);
 
   /**
    * Retrieves all eBikes.

@@ -10,6 +10,7 @@ public class EBike implements Aggregate<String>, Serializable {
   private final P2d location;
   private final int batteryLevel; // 0..100
   private final BikeType type;
+  public static final int MAX_BATTERY_LEVEL = 100;
 
   public EBike(String id, P2d location, EBikeState state, int battery, BikeType type) {
     this.id = id;
@@ -34,6 +35,10 @@ public class EBike implements Aggregate<String>, Serializable {
   public BikeType getType() {
     return type;
   }
+
+    public P2d getLocation() {
+        return location;
+    }
 
   @Override
   public String toString() {

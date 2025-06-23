@@ -1,6 +1,8 @@
 package infrastructure.adapters.outbound;
 
 import application.ports.BikeCommunicationPort;
+import domain.model.EBike;
+import domain.model.EBikeMapper;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonArray;
@@ -8,6 +10,8 @@ import io.vertx.core.json.JsonObject;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+
+import java.util.List;
 
 public class BikeUpdateAdapter implements BikeCommunicationPort {
   private final Producer<String, String> producer;
@@ -18,16 +22,17 @@ public class BikeUpdateAdapter implements BikeCommunicationPort {
   }
 
   @Override
-  public void sendUpdate(JsonObject ebike) {
+  public void sendUpdate(EBike ebike) {
     System.out.println("Sending EBike update to Kafka topic: " + topicName);
-    producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()));
+    var ebikeJson = EBikeMapper.toJson(ebike);
+    producer.send(new ProducerRecord<>(topicName, ebike.getId(), ebikeJson.encode()));
   }
 
-  public void sendAllUpdates(JsonArray ebikes) {
+  public void sendAllUpdates(List<EBike> ebikes) {
     System.out.println("Sending all EBike updates to Kafka topic: " + topicName);
-    for (int i = 0; i < ebikes.size(); i++) {
-      JsonObject ebike = ebikes.getJsonObject(i);
-      producer.send(new ProducerRecord<>(topicName, ebike.getString("id"), ebike.encode()));
+    for(EBike ebike : ebikes) {
+        var ebikeJson = EBikeMapper.toJson(ebike);
+        producer.send(new ProducerRecord<>(topicName, ebike.getId(), ebikeJson.encode()));
     }
   }
 }

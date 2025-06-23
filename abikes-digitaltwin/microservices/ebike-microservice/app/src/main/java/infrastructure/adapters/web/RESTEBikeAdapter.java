@@ -1,6 +1,7 @@
 package infrastructure.adapters.web;
 
 import application.ports.EBikeServiceAPI;
+import domain.model.EBikeMapper;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -53,7 +54,7 @@ public class RESTEBikeAdapter {
           .createEBike(id, x, y)
           .thenAccept(
               result -> {
-                sendResponse(ctx, 201, result);
+                sendResponse(ctx, 201, EBikeMapper.toJson(result));
                 metricsManager.recordTimer(timer, "createEBike");
               })
           .exceptionally(
@@ -83,7 +84,7 @@ public class RESTEBikeAdapter {
         .thenAccept(
             result -> {
               if (result != null) {
-                sendResponse(ctx, 200, result);
+                sendResponse(ctx, 200, EBikeMapper.toJson(result));
                 metricsManager.recordTimer(timer, "rechargeEBike");
               } else {
                 ctx.response().setStatusCode(404).end();

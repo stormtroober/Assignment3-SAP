@@ -1,7 +1,7 @@
 package application.ports;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import domain.model.EBike;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -11,32 +11,32 @@ public interface EBikeRepository {
   /**
    * Saves a new eBike.
    *
-   * @param ebike the eBike details to save as a JsonObject
+   * @param eBike the eBike to save
    * @return a CompletableFuture that completes when the save operation is done
    */
-  CompletableFuture<Void> save(JsonObject ebike);
+  CompletableFuture<Void> save(EBike eBike);
 
   /**
    * Updates an existing eBike.
    *
-   * @param ebike the eBike details to update as a JsonObject
+   * @param eBike the eBike to update
    * @return a CompletableFuture that completes when the update operation is done
    */
-  CompletableFuture<Void> update(JsonObject ebike);
+  CompletableFuture<Void> update(EBike eBike);
 
   /**
    * Finds an eBike by its id.
    *
    * @param id the unique identifier of the eBike
-   * @return a CompletableFuture containing an Optional with the eBike as a JsonObject if found, or
+   * @return a CompletableFuture containing an Optional with the EBike if found, or
    *     an empty Optional if not found
    */
-  CompletableFuture<Optional<JsonObject>> findById(String id);
+  CompletableFuture<Optional<EBike>> findById(String id);
 
   /**
    * Retrieves all eBikes.
    *
-   * @return a CompletableFuture containing a JsonArray of all eBikes
+   * @return a CompletableFuture containing a List of all EBikes
    */
-  CompletableFuture<JsonArray> findAll();
+  CompletableFuture<List<EBike>> findAll();
 }

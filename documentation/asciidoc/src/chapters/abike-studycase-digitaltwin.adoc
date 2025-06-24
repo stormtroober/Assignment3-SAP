@@ -11,7 +11,7 @@ Also, it was needed that the a-bike and the elements of the smart city (e.g., st
 
 === Requirements
 
-We report here only the Domain-Driven-Design parts that are new or changed compared to the original EBike case study.
+We report here only the Domain-Driven-Design parts that are new compared to the original EBike case study.
 
 1. The system must allow users to request an autonomous a-bike to reach their location.
 2. The system must allow users to view the real-time position and status of a-bikes.

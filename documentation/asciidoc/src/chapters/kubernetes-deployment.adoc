@@ -297,7 +297,7 @@ echo "✅ Deployment complete."
 
 === Key Benefits of Kubernetes Transformation
 
-Kubernetes transformation brings significant benefits. By leveraging replica sets, each microservice can be scaled independently to meet varying load patterns, ensuring reliable performance under heavy traffic. At the same time, Kubernetes resource management capabilities—such as defining CPU and memory requests and limits—provide fine-grained control over how cluster resources are allocated, leading to more efficient utilization and predictable application behavior. 
+Kubernetes transformation brings significant benefits. By leveraging replica sets, each microservice can be scaled independently to meet varying load patterns, ensuring reliable performance under heavy traffic.
 
 Configuration management is also greatly simplified: all environment-specific settings and sensitive data can be centralized in ConfigMaps and Secrets.
 

@@ -1,8 +1,8 @@
 package application;
 
 import application.ports.UserEventPublisher;
+import domain.model.User;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 
 public class UserEventPublisherImpl implements UserEventPublisher {
   private final Vertx vertx;
@@ -12,12 +12,12 @@ public class UserEventPublisherImpl implements UserEventPublisher {
   }
 
   @Override
-  public void publishUserUpdate(String username, JsonObject user) {
-    vertx.eventBus().publish(username, user);
+  public void publishUserUpdate(String username, User user) {
+    vertx.eventBus().publish(username, user.toJson());
   }
 
   @Override
-  public void publishAllUsersUpdates(JsonObject users) {
-    vertx.eventBus().publish("users.update", users);
+  public void publishAllUsersUpdates(User user) {
+    vertx.eventBus().publish("users.update", user.toJson());
   }
 }

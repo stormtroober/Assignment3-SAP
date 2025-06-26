@@ -1,8 +1,9 @@
 package application.ports;
 
 import domain.model.User;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import domain.model.UserType;
+
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /** Port for the User Service API. Provides methods to manage the Application domain. */
@@ -15,7 +16,7 @@ public interface UserServiceAPI {
    * @return a CompletableFuture containing the user details as a JsonObject if the sign-in is
    *     successful, or null if the sign-in fails
    */
-  CompletableFuture<JsonObject> signIn(String username);
+  CompletableFuture<User> signIn(String username);
 
   /**
    * Signs up a new user with the given username.
@@ -24,7 +25,7 @@ public interface UserServiceAPI {
    * @param type the type of the user
    * @return a CompletableFuture containing the created user details as a JsonObject
    */
-  CompletableFuture<JsonObject> signUp(String username, User.UserType type);
+  CompletableFuture<User> signUp(String username, UserType type);
 
   /**
    * Recharges the credit of a user.
@@ -33,7 +34,7 @@ public interface UserServiceAPI {
    * @param creditToAdd the amount of credit to add
    * @return a CompletableFuture containing the updated user as a JsonObject
    */
-  CompletableFuture<JsonObject> rechargeCredit(String username, int creditToAdd);
+  CompletableFuture<User> rechargeCredit(String username, int creditToAdd);
 
   /**
    * Updates the credit of a user to a specific value.
@@ -42,12 +43,12 @@ public interface UserServiceAPI {
    * @param newCredit the new credit value to set
    * @return a CompletableFuture containing the updated user as a JsonObject
    */
-  CompletableFuture<JsonObject> updateCredit(String username, int newCredit);
+  CompletableFuture<User> updateCredit(String username, int newCredit);
 
   /**
    * Retrieves all users.
    *
    * @return a CompletableFuture containing a JsonArray of all users
    */
-  CompletableFuture<JsonArray> getAllUsers();
+  CompletableFuture<List<User>> getAllUsers();
 }

@@ -1,6 +1,6 @@
 package application.ports;
 
-import io.vertx.core.json.JsonObject;
+import domain.model.User;
 
 /** Port representing an event publisher for user updates. */
 public interface UserEventPublisher {
@@ -11,12 +11,12 @@ public interface UserEventPublisher {
    * @param username the username of the user.
    * @param user a JsonObject representing the user update.
    */
-  void publishUserUpdate(String username, JsonObject user);
+  void publishUserUpdate(String username, User user);
 
   /**
    * Publishes updates for all users.
    *
    * @param users a JsonObject containing updates for all users.
    */
-  void publishAllUsersUpdates(JsonObject users);
+  void publishAllUsersUpdates(User users);
 }

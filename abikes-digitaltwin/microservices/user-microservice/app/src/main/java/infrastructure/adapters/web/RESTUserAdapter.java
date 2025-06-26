@@ -1,6 +1,7 @@
 package infrastructure.adapters.web;
 
 import application.ports.UserServiceAPI;
+import domain.model.UserType;
 import domain.model.User;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.Vertx;
@@ -56,7 +57,7 @@ public class RESTUserAdapter {
           .signIn(username)
           .thenAccept(
               result -> {
-                sendResponse(ctx, 200, result);
+                sendResponse(ctx, 200, result.toJson());
                 metricsManager.recordTimer(timer, "signIn");
               })
           .exceptionally(
@@ -87,10 +88,10 @@ public class RESTUserAdapter {
       String type = body.getString("type");
 
       userService
-          .signUp(username, User.UserType.valueOf(type))
+          .signUp(username, UserType.valueOf(type))
           .thenAccept(
               result -> {
-                sendResponse(ctx, 201, result);
+                sendResponse(ctx, 201, result.toJson());
                 metricsManager.recordTimer(timer, "signUp");
               })
           .exceptionally(
@@ -127,7 +128,7 @@ public class RESTUserAdapter {
         .thenAccept(
             result -> {
               if (result != null) {
-                sendResponse(ctx, 200, result);
+                sendResponse(ctx, 200, result.toJson());
                 metricsManager.recordTimer(timer, "rechargeCredit");
               } else {
                 ctx.response().setStatusCode(404).end();
@@ -160,9 +161,9 @@ public class RESTUserAdapter {
                     .getAllUsers()
                     .thenAccept(
                         users -> {
-                          for (int i = 0; i < users.size(); i++) {
-                            JsonObject user = users.getJsonObject(i);
-                            webSocket.writeTextMessage(user.encode());
+                          for (User user : users) {
+                            JsonObject userJson = user.toJson();
+                            webSocket.writeTextMessage(userJson.encode());
                           }
                         });
                 var consumer =

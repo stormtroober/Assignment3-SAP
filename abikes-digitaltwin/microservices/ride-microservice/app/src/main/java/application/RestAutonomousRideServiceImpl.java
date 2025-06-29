@@ -159,8 +159,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                                     .map(
                                         station ->
                                             new P2d(
-                                                station.getJsonObject("location").getDouble("x"),
-                                                station.getJsonObject("location").getDouble("y")))
+                                                    station.getLocation().x(),
+                                                station.getLocation().y()))
                                     .orElse(new P2d(0, 0))) // Default to (0,0) if no station found
                         .join();
                 // Poll every 500ms to check if the ABike came back available from ABike-Service
@@ -213,7 +213,7 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
             .findClosestStation(stationLocation)
             .thenApply(
                 stationOpt ->
-                    stationOpt.map(station -> station.getString("id")).orElse("unknown-station"));
+                    stationOpt.map(Station::getId).orElse("unknown-station"));
 
     return CompletableFuture.allOf(bikeFuture, userFuture)
         .thenCompose(

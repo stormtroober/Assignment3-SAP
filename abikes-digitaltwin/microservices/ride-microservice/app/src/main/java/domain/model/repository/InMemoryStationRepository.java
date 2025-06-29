@@ -1,8 +1,7 @@
 package domain.model.repository;
 
 import domain.model.P2d;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import domain.model.Station;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -12,65 +11,48 @@ import org.slf4j.LoggerFactory;
 
 public class InMemoryStationRepository implements StationRepository {
   private static final Logger logger = LoggerFactory.getLogger(InMemoryStationRepository.class);
-  private final Map<String, JsonObject> stations = new ConcurrentHashMap<>();
+  private final Map<String, Station> stations = new ConcurrentHashMap<>();
 
   @Override
-  public CompletableFuture<Void> save(JsonObject station) {
-    String id = station.getString("id");
-    stations.put(id, station);
-    logger.info("Station saved: {}", station);
+  public CompletableFuture<Void> save(Station station) {
+    stations.put(station.getId(), station);
+    logger.info("Station saved: {}", station.getId());
     return CompletableFuture.completedFuture(null);
   }
 
   @Override
-  public CompletableFuture<Optional<JsonObject>> findById(String id) {
+  public CompletableFuture<Optional<Station>> findById(String id) {
     return CompletableFuture.completedFuture(Optional.ofNullable(stations.get(id)));
   }
 
   @Override
-  public CompletableFuture<JsonArray> findAll() {
-    JsonArray array = new JsonArray();
-    stations.values().forEach(array::add);
-    return CompletableFuture.completedFuture(array);
-  }
-
-  @Override
-  public CompletableFuture<Void> update(JsonObject station) {
+  public CompletableFuture<Void> update(Station station) {
     return save(station);
   }
 
   @Override
-  public CompletableFuture<Optional<JsonObject>> findClosestStation(P2d bikePosition) {
+  public CompletableFuture<Optional<Station>> findClosestStation(P2d bikePosition) {
     if (stations.isEmpty()) {
       return CompletableFuture.completedFuture(Optional.empty());
     }
 
-    JsonObject closestStation = null;
+    Station closestStation = null;
     double minDistance = Double.MAX_VALUE;
 
-    for (JsonObject station : stations.values()) {
-      JsonObject location = station.getJsonObject("location");
-      if (location != null) {
-        double stationX = location.getDouble("x");
-        double stationY = location.getDouble("y");
+    for (Station station : stations.values()) {
+      P2d location = station.getLocation();
+      double distance = Math.sqrt(
+              Math.pow(location.x() - bikePosition.x(), 2) +
+                      Math.pow(location.y() - bikePosition.y(), 2));
 
-        // Calculate Euclidean distance
-        double distance =
-            Math.sqrt(
-                Math.pow(stationX - bikePosition.x(), 2)
-                    + Math.pow(stationY - bikePosition.y(), 2));
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestStation = station;
-        }
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestStation = station;
       }
     }
 
-    logger.info(
-        "Found closest station at distance {}: {}",
-        minDistance,
-        closestStation != null ? closestStation.getString("id") : "none");
+    logger.info("Found closest station at distance {}: {}",
+            minDistance, closestStation != null ? closestStation.getId() : "none");
 
     return CompletableFuture.completedFuture(Optional.ofNullable(closestStation));
   }

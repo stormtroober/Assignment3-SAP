@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package station;
+
+option java_package = "infrastructure.proto";
+option java_outer_classname = "StationProtos";
+
+message Location {
+  double x = 1;
+  double y = 2;
+}
+
+message Slot {
+  string id = 1;
+  string abike_id = 2;
+}
+
+message Station {
+  string id = 1;
+  Location location = 2;
+  repeated Slot slots = 3;
+  int32 max_slots = 4;
+}

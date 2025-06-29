@@ -74,6 +74,7 @@ public class UserVerticle extends AbstractVerticle {
 
     private void handleUpdateFromUser(String message){
         JsonObject update = new JsonObject(message);
+        System.out.println("UserVerticle handleUpdateFromUser: " + update);
         if (update.containsKey("positionX")) {
             handleBikeDispatch(message);
         }

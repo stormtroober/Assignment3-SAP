@@ -120,7 +120,13 @@ public class RideConsumerAdapter {
   private void processBikeDispatch(String username, BikeDispatch bikeDispatch) {
     logger.info("Dispatching bike to user via EventBus: {}", bikeDispatch);
     if (username != null && !username.isBlank()) {
-      vertx.eventBus().publish(username, bikeDispatch.toString());
+      io.vertx.core.json.JsonObject jsonMessage = new io.vertx.core.json.JsonObject()
+              .put("positionX", bikeDispatch.getPositionX())
+              .put("positionY", bikeDispatch.getPositionY())
+              .put("bikeId", bikeDispatch.getBikeId())
+              .put("status", bikeDispatch.getStatus());
+
+      vertx.eventBus().publish(username, jsonMessage);
     } else {
       logger.error("BikeDispatch missing username: {}", bikeDispatch);
     }

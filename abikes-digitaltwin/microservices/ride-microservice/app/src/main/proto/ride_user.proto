@@ -7,17 +7,16 @@ message RideUserUpdate {
   int32 credit = 2;
 }
 
-// Enum for bike status
-enum BikeStatus {
-  dispatch = 0;
-  arrived = 1;
-  notArrived = 2;
-}
-
 // Message for bike dispatch
 message BikeDispatch {
   double positionX = 1;
   double positionY = 2;
   string bikeId = 3;
   string status = 4;
+}
+
+message UserRideUpdate{
+  string username = 1;
+  int32 credit = 2;
+  string type = 3;
 }

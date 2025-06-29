@@ -5,7 +5,7 @@ import static infrastructure.adapter.kafkatopic.Topics.USER_UPDATE;
 import domain.model.User;
 import domain.model.repository.UserRepository;
 import infrastructure.utils.KafkaProperties;
-import io.vertx.core.json.JsonObject;
+import ride.RideUser.UserRideUpdate;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -41,29 +41,29 @@ public class UserConsumerAdapter {
   }
 
   private void runKafkaConsumer() {
-    try (KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(kafkaProperties.getConsumerProperties())) {
+    try (KafkaConsumer<String, byte[]> consumer =
+                 new KafkaConsumer<>(kafkaProperties.getProtobufConsumerProperties())) {
       consumer.subscribe(List.of(USER_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", USER_UPDATE.getTopicName());
 
       while (running.get()) {
         try {
-          ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-          for (ConsumerRecord<String, String> record : records) {
+          ConsumerRecords<String, byte[]> records = consumer.poll(Duration.ofMillis(100));
+          for (ConsumerRecord<String, byte[]> record : records) {
             try {
-              JsonObject userJson = new JsonObject(record.value());
-              processUserUpdate(userJson);
+              UserRideUpdate userUpdate = UserRideUpdate.parseFrom(record.value());
+              processUserUpdate(userUpdate);
             } catch (Exception e) {
               logger.error("Error processing user update from Kafka: {}", e.getMessage(), e);
             }
           }
 
           consumer.commitAsync(
-              (offsets, exception) -> {
-                if (exception != null) {
-                  logger.error("Failed to commit offsets: {}", exception.getMessage());
-                }
-              });
+                  (offsets, exception) -> {
+                    if (exception != null) {
+                      logger.error("Failed to commit offsets: {}", exception.getMessage());
+                    }
+                  });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage(), e);
         }
@@ -73,12 +73,13 @@ public class UserConsumerAdapter {
     }
   }
 
-  private void processUserUpdate(JsonObject userJson) {
+  private void processUserUpdate(UserRideUpdate userUpdate) {
     try {
-      String username = userJson.getString("username");
-      int credit = userJson.getInteger("credit", 0);
+      String username = userUpdate.getUsername();
+      int credit = userUpdate.getCredit();
 
-      logger.info("Received user update: username={}, credit={}", username, credit);
+      logger.info("Received user update: username={}, credit={}, type={}",
+              username, credit, userUpdate.getType());
 
       User user = new User(username, credit);
       userRepository.save(user);

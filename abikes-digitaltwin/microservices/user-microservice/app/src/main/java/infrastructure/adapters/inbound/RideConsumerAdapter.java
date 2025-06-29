@@ -4,7 +4,6 @@ import static infrastructure.adapters.kafkatopic.Topics.RIDE_BIKE_DISPATCH;
 import static infrastructure.adapters.kafkatopic.Topics.RIDE_USER_UPDATE;
 
 import application.ports.UserServiceAPI;
-import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.Vertx;
 import java.time.Duration;
@@ -47,7 +46,7 @@ public class RideConsumerAdapter {
 
   private void runKafkaConsumer() {
     KafkaConsumer<String, byte[]> consumer =
-            new KafkaConsumer<>(kafkaProperties.getProtobufConsumerProperties());
+            new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
 
     try (consumer) {
       List<String> topicsToSubscribe = List.of(

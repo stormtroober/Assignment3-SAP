@@ -1,29 +1,39 @@
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
     java
     application
+    id("com.google.protobuf") version "0.9.4"
     id("com.diffplug.spotless") version "6.25.0"
 }
 
-java{
-    // Use Java 21.
+java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 repositories {
     mavenCentral()
 }
 
+tasks.withType<Copy> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 dependencies {
+    // Kafka
     implementation("org.apache.kafka:kafka-clients:3.7.1")
-    // Vertx
+    implementation("com.google.protobuf:protobuf-java:4.28.2")
+
+    // Vert.x
     implementation(platform("io.vertx:vertx-stack-depchain:4.4.0"))
     implementation("io.vertx:vertx-core")
     implementation("io.vertx:vertx-web")
     implementation("io.vertx:vertx-web-client")
     implementation("io.vertx:vertx-mongo-client")
     implementation("io.vertx:vertx-config:4.4.0")
+    implementation("io.vertx:vertx-micrometer-metrics:4.4.0")
 
     // Logging
     implementation("org.slf4j:slf4j-api:2.0.9")
@@ -32,29 +42,47 @@ dependencies {
     // MongoDB
     implementation("org.mongodb:mongodb-driver-reactivestreams:4.11.1")
 
+    // Metrics
+    implementation("io.micrometer:micrometer-core:1.12.3")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.12.3")
+
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation("io.vertx:vertx-junit5")
     testImplementation("org.mockito:mockito-core:5.3.1")
+}
 
-    // Add Micrometer and Prometheus dependencies
-    implementation("io.micrometer:micrometer-core:1.12.3")
-    implementation("io.micrometer:micrometer-registry-prometheus:1.12.3")
-    implementation("io.vertx:vertx-micrometer-metrics:4.4.0")
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.3"
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins.named("java").configure {
+                // option("lite") // optional
+            }
+        }
+    }
+}
+
+
+sourceSets {
+    main {
+        proto {
+            srcDir("src/main/proto")
+        }
+        java {
+            srcDir("build/generated/source/proto/main/java")
+        }
+    }
 }
 
 tasks.test {
     useJUnitPlatform()
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
 application {
-    mainClass = "Main"
+    mainClass.set("Main")
 }
 
 tasks.jar {
@@ -62,15 +90,13 @@ tasks.jar {
     manifest {
         attributes["Main-Class"] = application.mainClass.get()
     }
-
-    // Include dependencies
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 spotless {
     java {
-        googleJavaFormat() // or eclipse().configFile("...")
+        googleJavaFormat()
         target("src/**/*.java")
     }
 }

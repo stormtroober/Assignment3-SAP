@@ -1,7 +1,5 @@
 package domain.model.repository;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 

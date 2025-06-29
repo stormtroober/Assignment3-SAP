@@ -1,5 +1,7 @@
 package application;
 
+import static domain.model.repository.SimulationType.NORMAL_SIM;
+
 import application.ports.*;
 import domain.model.*;
 import domain.model.bike.BikeType;
@@ -42,17 +44,15 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
               if (ebikeJsonOptional.isEmpty()) {
                 System.err.println("EBike not found");
                 return null;
-              }
-              else{
-                  var ebike = ebikeJsonOptional.get();
-                  var location = ebike.getLocation();
-                  return new EBike(
-                        ebike.getId(),
-                        location.x(),
-                        location.y(),
-                        ebike.getState(),
-                        ebike.getBatteryLevel()
-                  );
+              } else {
+                var ebike = ebikeJsonOptional.get();
+                var location = ebike.getLocation();
+                return new EBike(
+                    ebike.getId(),
+                    location.x(),
+                    location.y(),
+                    ebike.getState(),
+                    ebike.getBatteryLevel());
               }
             });
   }
@@ -100,13 +100,10 @@ public class RestSimpleRideServiceImpl implements RestSimpleRideService {
                         + " and bike: "
                         + bikeId
                         + "-"
-                        + SimulationType.NORMAL_SIM);
+                        + NORMAL_SIM);
                 Ride ride =
-                    new Ride(
-                        "ride-" + userId + "-" + bikeId + "-" + SimulationType.NORMAL_SIM,
-                        user,
-                        ebike);
-                rideRepository.addNormalRide(ride, SimulationType.NORMAL_SIM, Optional.empty());
+                    new Ride("ride-" + userId + "-" + bikeId + "-" + NORMAL_SIM, user, ebike);
+                rideRepository.addNormalRide(ride, NORMAL_SIM, Optional.empty());
                 rideRepository
                     .getRideSimulation(ride.getId())
                     .startSimulation(Optional.empty())

@@ -2,7 +2,6 @@ package application.ports;
 
 import domain.model.User;
 import domain.model.UserType;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 

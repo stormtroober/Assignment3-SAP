@@ -51,7 +51,7 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
                     EBikeState.AVAILABLE,
                     EBike.MAX_BATTERY_LEVEL,
                     ebike.getType());
-                mapCommunicationAdapter.sendUpdate(ebike);
+                mapCommunicationAdapter.sendUpdate(newEBike);
                 return repository.update(newEBike).thenApply(v -> newEBike);
               }
               return CompletableFuture.completedFuture(null);

@@ -3,6 +3,7 @@ plugins {
     java
     application
     id("com.diffplug.spotless") version "6.25.0"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
 }
 
 java{
@@ -13,10 +14,14 @@ java{
 
 repositories {
     mavenCentral()
+    maven("https://packages.confluent.io/maven/")
 }
 
 dependencies {
-    implementation("org.apache.kafka:kafka-clients:3.7.1")
+    // Kafka + Avro + Schema Registry
+    implementation("org.apache.kafka:kafka-clients:3.9.0")
+    implementation("org.apache.avro:avro:1.11.3")
+    implementation("io.confluent:kafka-avro-serializer:7.5.0")
     // Vertx
     implementation(platform("io.vertx:vertx-stack-depchain:4.4.0"))
     implementation("io.vertx:vertx-core")
@@ -45,6 +50,12 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+avro {
+    stringType.set("String") // Buona pratica per Java
+    fieldVisibility.set("PUBLIC") // Default, meglio NON cambiare
+    // src/main/avro è il default path degli .avsc
 }
 
 java {

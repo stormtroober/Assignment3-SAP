@@ -9,10 +9,11 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import domain.events.UserUpdate;
 
 public class RideProducerAdapter {
   private static final Logger logger = LoggerFactory.getLogger(RideProducerAdapter.class);
-  private final Producer<String, String> producer;
+  private final Producer<String, Object> producer;
   private final String topicName = Topics.USER_UPDATE.getTopicName();
   private final Vertx vertx;
 
@@ -29,18 +30,21 @@ public class RideProducerAdapter {
             "users.update",
             message -> {
               try {
-                String userUpdateJson = message.body().toString();
-                JsonObject userUpdate = new JsonObject(userUpdateJson);
+                JsonObject json = new JsonObject(message.body().toString());
 
-                String key =
-                    userUpdate.containsKey("username")
-                        ? userUpdate.getString("username")
-                        : "default-user-key";
+                // Build the Avro record from JSON
+                UserUpdate userUpdate = UserUpdate.newBuilder()
+                        .setUsername(json.getString("username"))
+                        .setType(json.getString("type"))
+                        .setCredit(json.getInteger("credit"))
+                        .build();
 
-                logger.info("Forwarding user update to Kafka topic: {}", topicName);
-                producer.send(new ProducerRecord<>(topicName, key, userUpdateJson));
+                String key = json.getString("username", "default-user-key");
+
+                logger.info("Sending Avro message to topic: {}", topicName);
+                producer.send(new ProducerRecord<>(topicName, key, userUpdate));
               } catch (Exception e) {
-                logger.error("Error publishing user update to Kafka", e);
+                logger.error("Failed to send Avro message", e);
               }
             });
     logger.info("User update Kafka producer started");

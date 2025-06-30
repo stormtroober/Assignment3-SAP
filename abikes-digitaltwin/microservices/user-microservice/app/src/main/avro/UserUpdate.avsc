@@ -1,0 +1,10 @@
+{
+  "namespace": "domain.events",
+  "type": "record",
+  "name": "UserUpdate",
+  "fields": [
+    { "name": "username", "type": "string" },
+    { "name": "type", "type": "string" },
+    { "name": "credit", "type": "int" }
+  ]
+}

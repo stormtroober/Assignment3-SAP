@@ -25,12 +25,14 @@ public class KafkaProperties {
     props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
     props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
     props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
-    props.put(
-        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-        "org.apache.kafka.common.serialization.StringSerializer");
-    props.put(
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-        "org.apache.kafka.common.serialization.StringSerializer");
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+            "org.apache.kafka.common.serialization.StringSerializer");
+
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+            "io.confluent.kafka.serializers.KafkaAvroSerializer");
+
+    props.put("schema.registry.url", "http://schema-registry:8081");
+
     return props;
   }
 

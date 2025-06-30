@@ -2,6 +2,7 @@ package infrastructure.adapter.inbound;
 
 import static infrastructure.adapter.kafkatopic.Topics.USER_UPDATE;
 
+import domain.events.UserUpdate;
 import domain.model.User;
 import domain.model.repository.UserRepository;
 import infrastructure.utils.KafkaProperties;
@@ -41,29 +42,29 @@ public class UserConsumerAdapter {
   }
 
   private void runKafkaConsumer() {
-    try (KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(kafkaProperties.getConsumerProperties())) {
+    try (KafkaConsumer<String, UserUpdate> consumer =
+                 new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties())) {
+
       consumer.subscribe(List.of(USER_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", USER_UPDATE.getTopicName());
 
       while (running.get()) {
         try {
-          ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-          for (ConsumerRecord<String, String> record : records) {
+          ConsumerRecords<String, UserUpdate> records = consumer.poll(Duration.ofMillis(100));
+          for (ConsumerRecord<String, UserUpdate> record : records) {
             try {
-              JsonObject userJson = new JsonObject(record.value());
-              processUserUpdate(userJson);
+              UserUpdate userUpdate = record.value();
+              processUserUpdate(userUpdate);
             } catch (Exception e) {
-              logger.error("Error processing user update from Kafka: {}", e.getMessage(), e);
+              logger.error("Error processing Avro user update: {}", e.getMessage(), e);
             }
           }
 
-          consumer.commitAsync(
-              (offsets, exception) -> {
-                if (exception != null) {
-                  logger.error("Failed to commit offsets: {}", exception.getMessage());
-                }
-              });
+          consumer.commitAsync((offsets, exception) -> {
+            if (exception != null) {
+              logger.error("Failed to commit offsets: {}", exception.getMessage());
+            }
+          });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage(), e);
         }
@@ -73,17 +74,17 @@ public class UserConsumerAdapter {
     }
   }
 
-  private void processUserUpdate(JsonObject userJson) {
+  private void processUserUpdate(UserUpdate userUpdate) {
     try {
-      String username = userJson.getString("username");
-      int credit = userJson.getInteger("credit", 0);
+      String username = userUpdate.getUsername();
+      int credit = userUpdate.getCredit();
 
-      logger.info("Received user update: username={}, credit={}", username, credit);
+      logger.info("Received Avro user update: username={}, credit={}", username, credit);
 
       User user = new User(username, credit);
       userRepository.save(user);
     } catch (Exception e) {
-      logger.error("Failed to process user update: {}", e.getMessage(), e);
+      logger.error("Failed to process Avro user update: {}", e.getMessage(), e);
     }
   }
 

@@ -1,5 +1,6 @@
 package domain.model;
 
+import domain.events.EBikeUpdate;
 import domain.model.bike.BikeType;
 import domain.model.bike.EBike;
 import domain.model.bike.EBikeState;
@@ -29,5 +30,15 @@ public class EBikeMapper {
                         .put("y", ebike.getLocation().y())
                 .put("type", BikeType.NORMAL)
                 );
+    }
+
+    public static EBike fromAvro(EBikeUpdate avro) {
+        String id = avro.getId();
+        double x = avro.getLocation().getX();
+        double y = avro.getLocation().getY();
+        EBikeState state = EBikeState.valueOf(avro.getState());
+        int batteryLevel = avro.getBatteryLevel();
+        // If you have a type field in Avro, map it here; otherwise, use default
+        return new EBike(id, x, y, state, batteryLevel);
     }
 }

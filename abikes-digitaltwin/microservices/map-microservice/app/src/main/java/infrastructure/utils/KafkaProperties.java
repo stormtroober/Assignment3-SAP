@@ -54,7 +54,7 @@ public class KafkaProperties {
   public Properties getAvroConsumerProperties() {
     Properties props = new Properties();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddress);
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, "map-group");
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, "map-group" + UUID.randomUUID());
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
     props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000");
 

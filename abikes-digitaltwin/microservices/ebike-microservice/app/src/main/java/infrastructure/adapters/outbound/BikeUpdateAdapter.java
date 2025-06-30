@@ -1,6 +1,7 @@
 package infrastructure.adapters.outbound;
 
 import application.ports.BikeCommunicationPort;
+import domain.events.EBikeUpdate;
 import domain.model.EBike;
 import domain.model.EBikeMapper;
 import infrastructure.adapters.kafkatopic.Topics;
@@ -13,8 +14,10 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.List;
 
+import static domain.model.EBikeMapper.toAvro;
+
 public class BikeUpdateAdapter implements BikeCommunicationPort {
-  private final Producer<String, String> producer;
+  private final Producer<String, EBikeUpdate> producer;
   private final String topicName = Topics.EBIKE_UPDATES.getTopicName();
 
   public BikeUpdateAdapter(KafkaProperties kafkaProperties) {
@@ -24,15 +27,15 @@ public class BikeUpdateAdapter implements BikeCommunicationPort {
   @Override
   public void sendUpdate(EBike ebike) {
     System.out.println("Sending EBike update to Kafka topic: " + topicName);
-    var ebikeJson = EBikeMapper.toJson(ebike);
-    producer.send(new ProducerRecord<>(topicName, ebike.getId(), ebikeJson.encode()));
+    EBikeUpdate avroUpdate = toAvro(ebike);
+    producer.send(new ProducerRecord<>(topicName, ebike.getId(), avroUpdate));
   }
 
   public void sendAllUpdates(List<EBike> ebikes) {
     System.out.println("Sending all EBike updates to Kafka topic: " + topicName);
-    for(EBike ebike : ebikes) {
-        var ebikeJson = EBikeMapper.toJson(ebike);
-        producer.send(new ProducerRecord<>(topicName, ebike.getId(), ebikeJson.encode()));
+    for (EBike ebike : ebikes) {
+      EBikeUpdate avroUpdate = toAvro(ebike);
+      producer.send(new ProducerRecord<>(topicName, ebike.getId(), avroUpdate));
     }
   }
 }

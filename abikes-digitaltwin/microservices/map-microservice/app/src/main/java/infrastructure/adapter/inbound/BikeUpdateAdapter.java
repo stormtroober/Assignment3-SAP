@@ -1,20 +1,23 @@
 package infrastructure.adapter.inbound;
 
 import application.ports.BikeMapServiceAPI;
+import domain.events.EBikeUpdate;
 import domain.model.*;
 import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.vertx.core.json.JsonObject;
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BikeUpdateAdapter {
 
@@ -36,81 +39,67 @@ public class BikeUpdateAdapter {
   }
 
   private void runKafkaConsumer() {
-    KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
+    // EBike consumer (Avro)
+    KafkaConsumer<String, EBikeUpdate> ebikeConsumer =
+            new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
+    ebikeConsumer.subscribe(List.of(Topics.EBIKE_UPDATES.getTopicName()));
 
-    try (consumer) {
-      consumer.subscribe(
-          List.of(Topics.EBIKE_UPDATES.getTopicName(), Topics.ABIKE_UPDATES.getTopicName()));
+    // ABike consumer (JSON)
+    KafkaConsumer<String, String> abikeConsumer =
+            new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
+    abikeConsumer.subscribe(List.of(Topics.ABIKE_UPDATES.getTopicName()));
 
+    try (ebikeConsumer; abikeConsumer) {
       while (running.get()) {
-        try {
-          ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-          for (ConsumerRecord<String, String> record : records) {
-
-            JsonObject body = new JsonObject(record.value());
-            String topic = record.topic();
-
-            if (Topics.EBIKE_UPDATES.getTopicName().equals(topic)) {
-              EBike bike = createEBikeFromJson(body);
-              bikeMapServiceAPI
+        // EBike updates
+        ConsumerRecords<String, EBikeUpdate> ebikeRecords =
+                ebikeConsumer.poll(Duration.ofMillis(100));
+        for (ConsumerRecord<String, EBikeUpdate> record : ebikeRecords) {
+          EBikeUpdate avroUpdate = record.value();
+          EBike bike = EBikeMapper.fromAvro(avroUpdate);
+          bikeMapServiceAPI
                   .updateEBike(bike)
                   .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
                   .exceptionally(
-                      ex -> {
-                        logger.error(
-                            "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
-                        return null;
-                      });
-            } else if (Topics.ABIKE_UPDATES.getTopicName().equals(topic)) {
-              ABike bike = createABikeFromJson(body);
-              bikeMapServiceAPI
+                          ex -> {
+                            logger.error(
+                                    "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
+                            return null;
+                          });
+        }
+        ebikeConsumer.commitAsync(
+                (offsets, exception) -> {
+                  if (exception != null) {
+                    logger.error("Failed to commit EBike offsets: {}", exception.getMessage());
+                  }
+                });
+
+        // ABike updates
+        ConsumerRecords<String, String> abikeRecords =
+                abikeConsumer.poll(Duration.ofMillis(100));
+        for (ConsumerRecord<String, String> record : abikeRecords) {
+          JsonObject body = new JsonObject(record.value());
+          ABike bike = createABikeFromJson(body);
+          bikeMapServiceAPI
                   .updateABike(bike)
                   .thenAccept(v -> logger.info("ABike {} updated successfully", bike.getId()))
                   .exceptionally(
-                      ex -> {
-                        logger.error(
-                            "Failed to update ABike {}: {}", bike.getId(), ex.getMessage());
-                        return null;
-                      });
-            } else {
-              logger.warn("Received message from unknown topic: {}", topic);
-            }
-          }
-
-          consumer.commitAsync(
-              (offsets, exception) -> {
-                if (exception != null) {
-                  logger.error("Failed to commit offsets: {}", exception.getMessage());
-                }
-              });
-
-        } catch (Exception e) {
-          logger.error("Error during Kafka polling: {}", (Object) e.getStackTrace());
+                          ex -> {
+                            logger.error(
+                                    "Failed to update ABike {}: {}", bike.getId(), ex.getMessage());
+                            return null;
+                          });
         }
+        abikeConsumer.commitAsync(
+                (offsets, exception) -> {
+                  if (exception != null) {
+                    logger.error("Failed to commit ABike offsets: {}", exception.getMessage());
+                  }
+                });
       }
-
     } catch (Exception e) {
-      logger.error("Error setting up Kafka consumer: {}", e.getMessage());
+      logger.error("Error setting up Kafka consumers: {}", e.getMessage());
     }
-  }
-
-  private EBike createEBikeFromJson(JsonObject body) {
-    String bikeName = body.getString("id");
-    JsonObject location = body.getJsonObject("location");
-    double x = location.getDouble("x");
-    double y = location.getDouble("y");
-    EBikeState state = EBikeState.valueOf(body.getString("state"));
-    int batteryLevel = body.getInteger("batteryLevel");
-    // Extract type, default to NORMAL if missing
-    BikeType type = BikeType.NORMAL;
-    if (body.containsKey("type")) {
-      type = BikeType.valueOf(body.getString("type"));
-    }
-
-    EBikeFactory factory = EBikeFactory.getInstance();
-    return factory.create(
-        bikeName, new domain.model.P2d((float) x, (float) y), state, batteryLevel, type);
   }
 
   private ABike createABikeFromJson(JsonObject body) {

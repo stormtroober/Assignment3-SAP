@@ -1,5 +1,7 @@
 package domain.model;
 
+import domain.events.EBikeUpdate;
+import domain.events.Location;
 import io.vertx.core.json.JsonObject;
 
 public class EBikeMapper {
@@ -38,5 +40,22 @@ public class EBikeMapper {
         int battery = batteryLevel != null ? batteryLevel : 0;
         BikeType type = BikeType.NORMAL;
         return EBikeFactory.getInstance().create(id, location, state, battery, type);
+    }
+
+    public static EBikeUpdate toAvro(EBike ebike) {
+        Location location = null;
+        if (ebike.getLocation() != null) {
+            location = Location.newBuilder()
+                    .setX(ebike.getLocation().getX())
+                    .setY(ebike.getLocation().getY())
+                    .build();
+        }
+        return EBikeUpdate.newBuilder()
+                .setId(ebike.getId())
+                .setState(ebike.getState().name())
+                .setLocation(location)
+                .setBatteryLevel(ebike.getBatteryLevel())
+                .setType(ebike.getType().name())
+                .build();
     }
 }

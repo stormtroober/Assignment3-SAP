@@ -5,9 +5,11 @@ import application.ports.StationServiceAPI;
 import domain.model.ABike;
 import domain.model.ABikeMapper;
 import domain.events.BikeRideUpdate;
+import domain.events.RideUpdate;
+import domain.events.BikeActionUpdate;
+import domain.events.BikeStationUpdate;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
-import io.vertx.core.json.JsonObject;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -47,14 +49,14 @@ public class RideCommunicationAdapter {
     try (
             KafkaConsumer<String, BikeRideUpdate> avroConsumer =
                     new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
-            KafkaConsumer<String, String> stringConsumer =
-                    new KafkaConsumer<>(kafkaProperties.getConsumerProperties())
+            KafkaConsumer<String, RideUpdate> rideUpdateAvroConsumer =
+                    new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties())
     ) {
       avroConsumer.subscribe(List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName()));
-      stringConsumer.subscribe(List.of(Topics.RIDE_UPDATE.getTopicName()));
+      rideUpdateAvroConsumer.subscribe(List.of(Topics.RIDE_UPDATE.getTopicName()));
 
       while (running.get()) {
-        // Handle Avro updates
+        // Handle ABike Avro updates
         ConsumerRecords<String, BikeRideUpdate> avroRecords =
                 avroConsumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, BikeRideUpdate> record : avroRecords) {
@@ -62,17 +64,13 @@ public class RideCommunicationAdapter {
         }
         avroConsumer.commitAsync();
 
-        // Handle String (JSON) updates
-        ConsumerRecords<String, String> stringRecords =
-                stringConsumer.poll(Duration.ofMillis(100));
-        for (ConsumerRecord<String, String> record : stringRecords) {
-          try {
-            processRideUpdate(new JsonObject(record.value()));
-          } catch (Exception e) {
-            logger.error("Failed to parse RIDE_UPDATE message: {}", e.getMessage());
-          }
+        // Handle RideUpdate Avro messages
+        ConsumerRecords<String, RideUpdate> rideUpdateRecords =
+                rideUpdateAvroConsumer.poll(Duration.ofMillis(100));
+        for (ConsumerRecord<String, RideUpdate> record : rideUpdateRecords) {
+          processRideUpdate(record.value());
         }
-        stringConsumer.commitAsync();
+        rideUpdateAvroConsumer.commitAsync();
       }
     } catch (Exception e) {
       logger.error("Error in Kafka consumer loop: {}", e.getMessage(), e);
@@ -94,21 +92,29 @@ public class RideCommunicationAdapter {
     }
   }
 
-  private void processRideUpdate(JsonObject rideUpdate) {
-    String bikeId = rideUpdate.getString("bikeName");
-    if (bikeId == null) {
-      logger.error("Incomplete ride update data: {}", rideUpdate);
-      return;
-    }
-    if (rideUpdate.containsKey("action")) {
-      String action = rideUpdate.getString("action");
+  private void processRideUpdate(RideUpdate rideUpdate) {
+    if (rideUpdate == null) return;
+    Object payload = rideUpdate.getPayload();
+    if (payload instanceof BikeActionUpdate actionUpdate) {
+      String bikeId = actionUpdate.getBikeName();
+      String action = actionUpdate.getAction();
+      if (bikeId == null) {
+        logger.error("Incomplete BikeActionUpdate data: {}", actionUpdate);
+        return;
+      }
       if ("start".equals(action)) {
         stationService.deassignBikeFromStation(bikeId);
       }
-    }
-    if (rideUpdate.containsKey("stationId")) {
-      String stationId = rideUpdate.getString("stationId");
+    } else if (payload instanceof BikeStationUpdate stationUpdate) {
+      String bikeId = stationUpdate.getBikeName();
+      String stationId = stationUpdate.getStationId();
+      if (bikeId == null || stationId == null) {
+        logger.error("Incomplete BikeStationUpdate data: {}", stationUpdate);
+        return;
+      }
       stationService.assignBikeToStation(stationId, bikeId);
+    } else {
+      logger.error("Unknown payload type in RideUpdate: {}", payload != null ? payload.getClass() : "null");
     }
   }
 

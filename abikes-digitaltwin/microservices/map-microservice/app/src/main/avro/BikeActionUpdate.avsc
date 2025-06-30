@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "BikeActionUpdate",
+  "namespace": "domain.events",
+  "fields": [
+    {"name": "username", "type": ["null", "string"], "default": null},
+    {"name": "bikeName", "type": "string"},
+    {"name": "bikeType", "type": "string"},
+    {"name": "action", "type": "string"}
+  ]
+}

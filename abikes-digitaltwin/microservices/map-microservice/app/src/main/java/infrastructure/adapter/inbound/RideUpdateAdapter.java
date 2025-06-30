@@ -3,10 +3,12 @@ package infrastructure.adapter.inbound;
 import static infrastructure.adapter.kafkatopic.Topics.RIDE_UPDATE;
 
 import application.ports.BikeMapServiceAPI;
+import domain.events.BikeActionUpdate;
+import domain.events.BikeStationUpdate;
+import domain.events.RideUpdate;
 import domain.model.BikeType;
 import infrastructure.utils.KafkaProperties;
 import infrastructure.utils.MetricsManager;
-import io.vertx.core.json.JsonObject;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -46,34 +48,31 @@ public class RideUpdateAdapter {
   }
 
   private void runKafkaConsumer() {
-    KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
+    KafkaConsumer<String, RideUpdate> consumer =
+            new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
 
     try (consumer) {
-      // Subscribe to both topics
       consumer.subscribe(List.of(RIDE_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", RIDE_UPDATE.getTopicName());
 
       while (running.get()) {
         try {
-          ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-          for (ConsumerRecord<String, String> record : records) {
+          ConsumerRecords<String, RideUpdate> records = consumer.poll(Duration.ofMillis(100));
+          for (ConsumerRecord<String, RideUpdate> record : records) {
             try {
-              if (record.topic().equals(RIDE_UPDATE.getTopicName())) {
-                JsonObject rideUpdate = new JsonObject(record.value());
-                logger.info("Received ride update from Kafka: {}", rideUpdate);
-                processRideUpdate(rideUpdate);
-              }
+              RideUpdate rideUpdate = record.value();
+              if (rideUpdate == null) continue;
+              processRideUpdate(rideUpdate);
             } catch (Exception e) {
               logger.error("Invalid data from Kafka: {}", e.getMessage());
             }
           }
           consumer.commitAsync(
-              (offsets, exception) -> {
-                if (exception != null) {
-                  logger.error("Failed to commit offsets: {}", exception.getMessage());
-                }
-              });
+                  (offsets, exception) -> {
+                    if (exception != null) {
+                      logger.error("Failed to commit offsets: {}", exception.getMessage());
+                    }
+                  });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage());
         }
@@ -83,14 +82,27 @@ public class RideUpdateAdapter {
     }
   }
 
-  private void processRideUpdate(JsonObject rideUpdate) {
-    String action = rideUpdate.getString("action");
-    String username = rideUpdate.getString("username");
-    String bikeName = rideUpdate.getString("bikeName");
-    String bikeTypeStr = rideUpdate.getString("bikeType");
+  private void processRideUpdate(RideUpdate rideUpdate) {
+    Object payload = rideUpdate.getPayload();
+    if (payload instanceof BikeActionUpdate actionUpdate) {
+      processBikeActionUpdate(actionUpdate);
+    } else if (payload instanceof BikeStationUpdate stationUpdate) {
+      logger.info("Received BikeStationUpdate: bikeName={}, stationId={}",
+              stationUpdate.getBikeName(), stationUpdate.getStationId());
+      // Add handling if needed
+    } else {
+      logger.error("Unknown payload type in RideUpdate: {}", payload != null ? payload.getClass() : "null");
+    }
+  }
+
+  private void processBikeActionUpdate(BikeActionUpdate actionUpdate) {
+    String action = actionUpdate.getAction();
+    String username = actionUpdate.getUsername();
+    String bikeName = actionUpdate.getBikeName();
+    String bikeTypeStr = actionUpdate.getBikeType();
 
     if (action == null || bikeName == null || bikeTypeStr == null) {
-      logger.error("Incomplete ride update data: {}", rideUpdate);
+      logger.error("Incomplete BikeActionUpdate data: {}", actionUpdate);
       return;
     }
 
@@ -99,9 +111,9 @@ public class RideUpdateAdapter {
       bikeType = BikeType.valueOf(bikeTypeStr.toUpperCase());
     } catch (IllegalArgumentException e) {
       logger.error(
-          "Invalid bike type: {}. Must be one of: {}",
-          bikeTypeStr,
-          Arrays.stream(BikeType.values()).map(Enum::name).collect(Collectors.joining(", ")));
+              "Invalid bike type: {}. Must be one of: {}",
+              bikeTypeStr,
+              Arrays.stream(BikeType.values()).map(Enum::name).collect(Collectors.joining(", ")));
       return;
     }
 
@@ -115,11 +127,11 @@ public class RideUpdateAdapter {
       case "public_start":
         notifyStartPublicRide(bikeName, bikeType);
         break;
-      case "public_stop":
+      case "public_end":
         notifyStopPublicRide(bikeName, bikeType);
         break;
       default:
-        logger.error("Unknown action in ride update: {}", action);
+        logger.error("Unknown action in BikeActionUpdate: {}", action);
     }
   }
 
@@ -130,18 +142,18 @@ public class RideUpdateAdapter {
     logger.info("Processing public start ride notification for bike: {}", bikeName);
 
     bikeMapService
-        .notifyStartPublicRide(bikeName, bikeType)
-        .thenAccept(
-            v -> {
-              logger.info("Public start ride notification processed successfully");
-              metricsManager.recordTimer(timer, "notifyStartPublicRide");
-            })
-        .exceptionally(
-            ex -> {
-              logger.error("Error processing public start ride notification: {}", ex.getMessage());
-              metricsManager.recordError(timer, "notifyStartPublicRide", ex);
-              return null;
-            });
+            .notifyStartPublicRide(bikeName, bikeType)
+            .thenAccept(
+                    v -> {
+                      logger.info("Public start ride notification processed successfully");
+                      metricsManager.recordTimer(timer, "notifyStartPublicRide");
+                    })
+            .exceptionally(
+                    ex -> {
+                      logger.error("Error processing public start ride notification: {}", ex.getMessage());
+                      metricsManager.recordError(timer, "notifyStartPublicRide", ex);
+                      return null;
+                    });
   }
 
   private void notifyStopPublicRide(String bikeName, BikeType bikeType) {
@@ -151,18 +163,18 @@ public class RideUpdateAdapter {
     logger.info("Processing public stop ride notification for bike: {}", bikeName);
 
     bikeMapService
-        .notifyStopPublicRide(bikeName, bikeType)
-        .thenAccept(
-            v -> {
-              logger.info("Public stop ride notification processed successfully");
-              metricsManager.recordTimer(timer, "notifyStopPublicRide");
-            })
-        .exceptionally(
-            ex -> {
-              logger.error("Error processing public stop ride notification: {}", ex.getMessage());
-              metricsManager.recordError(timer, "notifyStopPublicRide", ex);
-              return null;
-            });
+            .notifyStopPublicRide(bikeName, bikeType)
+            .thenAccept(
+                    v -> {
+                      logger.info("Public stop ride notification processed successfully");
+                      metricsManager.recordTimer(timer, "notifyStopPublicRide");
+                    })
+            .exceptionally(
+                    ex -> {
+                      logger.error("Error processing public stop ride notification: {}", ex.getMessage());
+                      metricsManager.recordError(timer, "notifyStopPublicRide", ex);
+                      return null;
+                    });
   }
 
   private void notifyStartRide(String username, String bikeName, BikeType bikeType) {
@@ -172,18 +184,18 @@ public class RideUpdateAdapter {
     logger.info("Processing start ride notification for user: {} and bike: {}", username, bikeName);
 
     bikeMapService
-        .notifyStartRide(username, bikeName, bikeType)
-        .thenAccept(
-            v -> {
-              logger.info("Start ride notification processed successfully");
-              metricsManager.recordTimer(timer, "notifyStartRide");
-            })
-        .exceptionally(
-            ex -> {
-              logger.error("Error processing start ride notification: {}", ex.getMessage());
-              metricsManager.recordError(timer, "notifyStartRide", ex);
-              return null;
-            });
+            .notifyStartRide(username, bikeName, bikeType)
+            .thenAccept(
+                    v -> {
+                      logger.info("Start ride notification processed successfully");
+                      metricsManager.recordTimer(timer, "notifyStartRide");
+                    })
+            .exceptionally(
+                    ex -> {
+                      logger.error("Error processing start ride notification: {}", ex.getMessage());
+                      metricsManager.recordError(timer, "notifyStartRide", ex);
+                      return null;
+                    });
   }
 
   private void notifyStopRide(String username, String bikeName, BikeType bikeType) {
@@ -193,18 +205,18 @@ public class RideUpdateAdapter {
     logger.info("Processing stop ride notification for user: {} and bike: {}", username, bikeName);
 
     bikeMapService
-        .notifyStopRide(username, bikeName, bikeType)
-        .thenAccept(
-            v -> {
-              logger.info("Stop ride notification processed successfully");
-              metricsManager.recordTimer(timer, "notifyStopRide");
-            })
-        .exceptionally(
-            ex -> {
-              logger.error("Error processing stop ride notification: {}", ex.getMessage());
-              metricsManager.recordError(timer, "notifyStopRide", ex);
-              return null;
-            });
+            .notifyStopRide(username, bikeName, bikeType)
+            .thenAccept(
+                    v -> {
+                      logger.info("Stop ride notification processed successfully");
+                      metricsManager.recordTimer(timer, "notifyStopRide");
+                    })
+            .exceptionally(
+                    ex -> {
+                      logger.error("Error processing stop ride notification: {}", ex.getMessage());
+                      metricsManager.recordError(timer, "notifyStopRide", ex);
+                      return null;
+                    });
   }
 
   public void stop() {

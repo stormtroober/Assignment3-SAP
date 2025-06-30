@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "BikeStationUpdate",
+  "namespace": "domain.events",
+  "fields": [
+    {"name": "bikeName", "type": "string"},
+    {"name": "stationId", "type": "string"}
+  ]
+}

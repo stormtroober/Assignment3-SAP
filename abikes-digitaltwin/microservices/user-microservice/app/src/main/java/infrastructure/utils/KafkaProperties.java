@@ -36,25 +36,10 @@ public class KafkaProperties {
     return props;
   }
 
-  public Properties getConsumerProperties() {
-    Properties props = new Properties();
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddress);
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, "ebike-map-group");
-    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-    props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000");
-    props.put(
-        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-        "org.apache.kafka.common.serialization.StringDeserializer");
-    props.put(
-        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-        "org.apache.kafka.common.serialization.StringDeserializer");
-    return props;
-  }
-
   public Properties getAvroConsumerProperties() {
     Properties props = new Properties();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddress);
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, "ride-group");
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, "user-group");
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
     props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000");
 

@@ -43,16 +43,28 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
                     if (message.body() instanceof JsonObject update) {
                         System.out.println("Received ABike station update: " + update.encode());
                         if (update.containsKey("bikeName") && update.containsKey("stationId")) {
-                            String bikeId = update.getString("bikeName");
-                            stringProducer.send(
+                            // Build BikeStationUpdate Avro object
+                            domain.events.BikeStationUpdate stationUpdate = domain.events.BikeStationUpdate.newBuilder()
+                                    .setBikeName(update.getString("bikeName"))
+                                    .setStationId(update.getString("stationId"))
+                                    .build();
+
+                            // Wrap in RideUpdate Avro object
+                            domain.events.RideUpdate rideUpdate = domain.events.RideUpdate.newBuilder()
+                                    .setPayload(stationUpdate)
+                                    .build();
+
+                            producer.send(
                                     new ProducerRecord<>(
-                                            Topics.RIDE_UPDATE.getTopicName(), bikeId, update.encode()),
+                                            Topics.RIDE_UPDATE.getTopicName(),
+                                            update.getString("bikeName"),
+                                            rideUpdate),
                                     (metadata, exception) -> {
                                         if (exception == null) {
-                                            System.out.println("ABike station update sent successfully");
+                                            System.out.println("ABike station update sent successfully (Avro)");
                                         } else {
                                             System.err.println(
-                                                    "Failed to send ABike station update: " + exception.getMessage());
+                                                    "Failed to send ABike station update (Avro): " + exception.getMessage());
                                         }
                                     });
                         }

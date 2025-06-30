@@ -169,7 +169,10 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
     if (bikeType == BikeType.NORMAL) {
       return eBikeRepository
           .getBike(bikeName)
-          .thenCompose(bike -> eBikeRepository.assignBikeToUser(username, bike))
+              .thenCompose(bike -> {
+                  System.out.println("Assigning bike " + bike.getId() + " to user " + username);
+                  return eBikeRepository.assignBikeToUser(username, bike);
+              })
           .thenAccept(
               v -> {
                 eBikeRepository
@@ -179,7 +182,10 @@ public class BikeMapServiceAPIImpl implements BikeMapServiceAPI {
     } else if (bikeType == BikeType.AUTONOMOUS) {
       return aBikeRepository
           .getBike(bikeName)
-          .thenCompose(bike -> aBikeRepository.assignBikeToUser(username, bike))
+              .thenCompose(bike -> {
+                  System.out.println("Assigning aBike " + bike.getId() + " to user " + username);
+                  return aBikeRepository.assignBikeToUser(username, bike);
+              })
           .thenAccept(
               v -> {
                 aBikeRepository

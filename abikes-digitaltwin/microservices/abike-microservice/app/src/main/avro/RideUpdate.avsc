@@ -1,0 +1,14 @@
+{
+          "type": "record",
+          "name": "RideUpdate",
+          "namespace": "domain.events",
+          "fields": [
+            {
+              "name": "payload",
+              "type": [
+                "domain.events.BikeActionUpdate",
+                "domain.events.BikeStationUpdate"
+              ]
+            }
+          ]
+        }

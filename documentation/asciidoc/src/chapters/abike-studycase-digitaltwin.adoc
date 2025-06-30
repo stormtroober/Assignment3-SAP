@@ -244,10 +244,67 @@ This mapping strategy provides several benefits:
 
 The hexagonal architecture ensures that the domain remains the stable core while external technologies can be easily replaced or modified without affecting the business logic.
 
+==== Event Data Definition
+In this project, we use Avro to define the data structure of the events exchanged between microservices. 
+
+For example, the following Avro schema defines the structure of a bike action update event:
+
+[source,avro]
+----
+{
+  "type": "record",
+  "name": "BikeActionUpdate",
+  "namespace": "domain.events",
+  "fields": [
+    {"name": "username", "type": ["null", "string"], "default": null},
+    {"name": "bikeName", "type": "string"},
+    {"name": "bikeType", "type": "string"},
+    {"name": "action", "type": "string"}
+  ]
+}
+----
+
+All the topics uses Avro schemas to ensure a consistent data structure across the system, made exception for the topics related to the Digital Twin, which uses JSON payloads, to allow easier communication with the Eclipse Ditto platform.
+
+Avro also enforces type safety in the code. For example, in the Kafka consumer adapter, the type of the consumed message is statically checked:
+
+[source,java]
+----
+// Only BikeRideUpdate Avro records can be consumed here
+KafkaConsumer<String, BikeRideUpdate> avroConsumer =
+    new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
+avroConsumer.subscribe(List.of("abike-ride-update"));
+
+while (running.get()) {
+    ConsumerRecords<String, BikeRideUpdate> records = avroConsumer.poll(Duration.ofMillis(100));
+    for (ConsumerRecord<String, BikeRideUpdate> record : records) {
+        BikeRideUpdate update = record.value(); // update is type-safe, matches Avro schema
+        // ...process update...
+    }
+}
+----
+
+This ensures that only messages conforming to the Avro schema are processed, reducing runtime errors due to unexpected data types.
+
+Similarly, Avro enforces type safety on the producer side. For example, when sending an update, only objects matching the Avro schema can be sent:
+
+[source,java]
+----
+// Only EBikeUpdate Avro records can be sent here
+Producer<String, EBikeUpdate> producer =
+    new KafkaProducer<>(kafkaProperties.getProducerProperties());
+EBikeUpdate avroUpdate = EBikeMapper.toAvro(ebike); // type-safe conversion
+producer.send(new ProducerRecord<>(topicName, ebike.getId(), avroUpdate));
+----
+
+This guarantees that only Avro-encoded messages matching the schema are produced, preventing accidental schema mismatches at compile time.
+
 ==== New Communication Flow and Topics
 
 Here we describe the new topics and communication flows introduced in the autonomous a-bike case study.
 It was decided to duplicate some topics, even though it would have been possible to use the same topics as those used for E-Bikes. However, having separate topics for the autonomous a-bike was considered more appropriate to avoid confusion and to better support future extensions of the smart city system.
+
+
 
 [plantuml, {diagramsdir}/kafka-comm-abike, svg, title="Microservices communications of ABike System using Kafka", width=50%]
 ----
@@ -358,4 +415,4 @@ This mapper creates digital twin representations where each bike becomes a "thin
 The real-time synchronization ensures that the digital twin always reflects the current state of the physical bike-sharing system, enabling operators to monitor fleet status, track bike locations, and manage station capacity through the digital twin interface.
 
 .Ditto Explorer with Things
-image::../resources/png/ditto-explorer.png[Ditto Explorer with Things, width=70%]
+image::../resources/png/ditto-explorer.png[Ditto Explorer with Things, width=85%]

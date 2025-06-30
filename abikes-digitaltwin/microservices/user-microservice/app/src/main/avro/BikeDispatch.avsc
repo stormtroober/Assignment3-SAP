@@ -1,0 +1,11 @@
+{
+  "namespace": "domain.events",
+  "type": "record",
+  "name": "BikeDispatch",
+  "fields": [
+    { "name": "positionX", "type": "double" },
+    { "name": "positionY", "type": "double" },
+    { "name": "bikeId", "type": "string" },
+    { "name": "status", "type": "string" }
+  ]
+}

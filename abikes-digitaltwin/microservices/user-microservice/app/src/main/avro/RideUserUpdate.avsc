@@ -1,0 +1,9 @@
+{
+  "namespace": "domain.events",
+  "type": "record",
+  "name": "RideUserUpdate",
+  "fields": [
+    { "name": "username", "type": "string" },
+    { "name": "credit", "type": "int" }
+  ]
+}

@@ -14,19 +14,21 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import domain.events.RideUserUpdate;
+import domain.events.BikeDispatch;
 
 public class UserCommunicationAdapter implements UserCommunicationPort {
   private final Vertx vertx;
-  private Producer<String, String> producer;
+  private Producer<String, Object> producer;
   private final UserRepository userRepository;
   private final DispatchRepository dispatchRepository;
   private final KafkaProperties kafkaProperties;
 
   public UserCommunicationAdapter(
-      Vertx vertx,
-      UserRepository userRepository,
-      DispatchRepository dispatchRepository,
-      KafkaProperties kafkaProperties) {
+          Vertx vertx,
+          UserRepository userRepository,
+          DispatchRepository dispatchRepository,
+          KafkaProperties kafkaProperties) {
     this.vertx = vertx;
     this.userRepository = userRepository;
     this.dispatchRepository = dispatchRepository;
@@ -34,40 +36,43 @@ public class UserCommunicationAdapter implements UserCommunicationPort {
   }
 
   public void init() {
-    producer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
+    producer = new KafkaProducer<>(kafkaProperties.getAvroProducerProperties());
     vertx
-        .eventBus()
-        .consumer(
-            EventPublisher.RIDE_UPDATE_ADDRESS_USER,
-            message -> {
-              if (message.body() instanceof JsonObject update) {
-                if (update.containsKey("username")) {
-                  sendUpdate(update);
-                }
-              }
-            });
+            .eventBus()
+            .consumer(
+                    EventPublisher.RIDE_UPDATE_ADDRESS_USER,
+                    message -> {
+                      if (message.body() instanceof JsonObject update) {
+                        if (update.containsKey("username")) {
+                          sendUpdate(update);
+                        }
+                      }
+                    });
   }
 
   @Override
   public void sendUpdate(JsonObject user) {
     String topicName = Topics.RIDE_USER_UPDATE.getTopicName();
-    System.out.println("Sending User update to Kafka topic: " + topicName);
+    RideUserUpdate avroUserUpdate = RideUserUpdate.newBuilder()
+            .setUsername(user.getString("username"))
+            .setCredit(user.getInteger("credit"))
+            .build();
     producer.send(
-        new ProducerRecord<>(topicName, user.getString("username"), user.encode()),
-        (metadata, exception) -> {
-          if (exception == null) {
-            System.out.println("User update sent successfully");
-          } else {
-            System.err.println("Failed to send User update: " + exception.getMessage());
-          }
-        });
+            new ProducerRecord<>(topicName, user.getString("username"), avroUserUpdate),
+            (metadata, exception) -> {
+              if (exception == null) {
+                System.out.println("User update sent successfully");
+              } else {
+                System.err.println("Failed to send User update: " + exception.getMessage());
+              }
+            });
   }
 
   @Override
   public void addDispatch(String userId, String bikeId, P2d userPosition) {
     User user = userRepository.findById(userId).orElse(null);
     if (user != null) {
-      dispatchRepository.saveDispatchPosition(userId, bikeId, userPosition); // Save dispatch
+      dispatchRepository.saveDispatchPosition(userId, bikeId, userPosition);
       sendDispatchMessage(user, bikeId, userPosition, "dispatch");
     } else {
       System.err.println("User not found for dispatch: " + userId);
@@ -95,21 +100,22 @@ public class UserCommunicationAdapter implements UserCommunicationPort {
   private void sendDispatchMessage(User user, String bikeId, P2d userPosition, String status) {
     String topicName = Topics.RIDE_BIKE_DISPATCH.getTopicName();
     CompletableFuture<Void> result = new CompletableFuture<>();
-    JsonObject message = new JsonObject();
-    message.put("positionX", userPosition.x());
-    message.put("positionY", userPosition.y());
-    message.put("bikeId", bikeId);
-    message.put("status", status);
+    BikeDispatch avroDispatch = BikeDispatch.newBuilder()
+            .setPositionX(userPosition.x())
+            .setPositionY(userPosition.y())
+            .setBikeId(bikeId)
+            .setStatus(status)
+            .build();
     producer.send(
-        new ProducerRecord<>(topicName, user.getId(), message.encode()),
-        (metadata, exception) -> {
-          if (exception == null) {
-            System.out.println(status + " message sent successfully");
-            result.complete(null);
-          } else {
-            System.err.println("Failed to send " + status + " message: " + exception.getMessage());
-            result.completeExceptionally(exception);
-          }
-        });
+            new ProducerRecord<>(topicName, user.getId(), avroDispatch),
+            (metadata, exception) -> {
+              if (exception == null) {
+                System.out.println(status + " message sent successfully");
+                result.complete(null);
+              } else {
+                System.err.println("Failed to send " + status + " message: " + exception.getMessage());
+                result.completeExceptionally(exception);
+              }
+            });
   }
 }

@@ -26,4 +26,17 @@ public class EBikeMapper {
                         .put("y", ebike.getLocation().getY()))
                 .put("type", ebike.getType().name());
     }
+
+    public static EBike fromAvro(domain.events.BikeRideUpdate update) {
+        String id = update.getId();
+        domain.events.Location avroLoc = update.getLocation();
+        P2d location = avroLoc != null
+                ? new P2d((float) avroLoc.getX(), (float) avroLoc.getY())
+                : null;
+        EBikeState state = EBikeState.valueOf(update.getState());
+        Integer batteryLevel = update.getBatteryLevel();
+        int battery = batteryLevel != null ? batteryLevel : 0;
+        BikeType type = BikeType.NORMAL;
+        return EBikeFactory.getInstance().create(id, location, state, battery, type);
+    }
 }

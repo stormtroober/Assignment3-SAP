@@ -1,20 +1,27 @@
 plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
     java
     application
     id("com.diffplug.spotless") version "6.25.0"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
 }
 
-java {
+java{
+    // Use Java 21.
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
     mavenCentral()
+    maven("https://packages.confluent.io/maven/")
 }
 
 dependencies {
-    implementation("org.apache.kafka:kafka-clients:3.7.1")
+    // Kafka + Avro + Schema Registry
+    implementation("org.apache.kafka:kafka-clients:3.9.0")
+    implementation("org.apache.avro:avro:1.11.4")
+    implementation("io.confluent:kafka-avro-serializer:7.5.0")
     // Vertx
     implementation(platform("io.vertx:vertx-stack-depchain:4.4.0"))
     implementation("io.vertx:vertx-core")
@@ -22,12 +29,13 @@ dependencies {
     implementation("io.vertx:vertx-web-client")
     implementation("io.vertx:vertx-mongo-client")
     implementation("io.vertx:vertx-config:4.4.0")
-    // MongoDB
-    implementation("org.mongodb:mongodb-driver-reactivestreams:4.11.1")
 
     // Logging
     implementation("org.slf4j:slf4j-api:2.0.9")
     implementation("ch.qos.logback:logback-classic:1.4.11")
+
+    // MongoDB
+    implementation("org.mongodb:mongodb-driver-reactivestreams:4.11.1")
 
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
@@ -44,8 +52,20 @@ tasks.test {
     useJUnitPlatform()
 }
 
+avro {
+    stringType.set("String") // Buona pratica per Java
+    fieldVisibility.set("PUBLIC") // Default, meglio NON cambiare
+    // src/main/avro è il default path degli .avsc
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 application {
-    mainClass.set("Main")
+    mainClass = "Main"
 }
 
 tasks.jar {

@@ -3,9 +3,9 @@ package infrastructure.adapters.inbound;
 import application.ports.EBikeServiceAPI;
 import domain.model.EBike;
 import domain.model.EBikeMapper;
+import domain.events.BikeRideUpdate;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
-import io.vertx.core.json.JsonObject;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -37,24 +37,24 @@ public class RideCommunicationAdapter {
   }
 
   private void runKafkaConsumer() {
-    KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
+    KafkaConsumer<String, BikeRideUpdate> consumer =
+            new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
     try (consumer) {
       consumer.subscribe(List.of(Topics.EBIKE_RIDE_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", Topics.EBIKE_RIDE_UPDATE.getTopicName());
 
       while (running.get()) {
         try {
-          ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-          for (ConsumerRecord<String, String> record : records) {
+          ConsumerRecords<String, BikeRideUpdate> records = consumer.poll(Duration.ofMillis(100));
+          for (ConsumerRecord<String, BikeRideUpdate> record : records) {
             handleRideUpdate(record);
           }
           consumer.commitAsync(
-              (offsets, exception) -> {
-                if (exception != null) {
-                  logger.error("Failed to commit offsets: {}", exception.getMessage());
-                }
-              });
+                  (offsets, exception) -> {
+                    if (exception != null) {
+                      logger.error("Failed to commit offsets: {}", exception.getMessage());
+                    }
+                  });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage());
         }
@@ -64,23 +64,24 @@ public class RideCommunicationAdapter {
     }
   }
 
-  private void handleRideUpdate(ConsumerRecord<String, String> record) {
+  private void handleRideUpdate(ConsumerRecord<String, BikeRideUpdate> record) {
     try {
-      JsonObject updateJson = new JsonObject(record.value());
-      EBike bike = EBikeMapper.fromJson(updateJson);
+      BikeRideUpdate update = record.value();
+      // Map Avro BikeRideUpdate to your EBike domain model as needed
+      EBike bike = EBikeMapper.fromAvro(update);
       eBikeService
-          .updateEBike(bike)
-          .thenAccept(
-              updated ->
-                  logger.info(
-                      "EBike {} updated successfully via Kafka consumer",
-                      updateJson.getString("id")))
-          .exceptionally(
-              e -> {
-                logger.error(
-                    "Failed to update EBike {}: {}", updateJson.getString("id"), e.getMessage());
-                return null;
-              });
+              .updateEBike(bike)
+              .thenAccept(
+                      updated ->
+                              logger.info(
+                                      "EBike {} updated successfully via Kafka consumer",
+                                      update.getId()))
+              .exceptionally(
+                      e -> {
+                        logger.error(
+                                "Failed to update EBike {}: {}", update.getId(), e.getMessage());
+                        return null;
+                      });
     } catch (Exception e) {
       logger.error("Invalid EBike data from Kafka: {}", e.getMessage());
     }

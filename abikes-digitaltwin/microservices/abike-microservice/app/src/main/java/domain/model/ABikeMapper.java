@@ -26,4 +26,17 @@ public class ABikeMapper {
                 .put("location", location)
                 .put("type", abike.getType() != null ? abike.getType().name() : null);
     }
+
+    public static ABike fromAvro(domain.events.BikeRideUpdate update) {
+        String id = update.getId();
+        domain.events.Location avroLoc = update.getLocation();
+        P2d location = avroLoc != null
+                ? new P2d((float) avroLoc.getX(), (float) avroLoc.getY())
+                : null;
+        ABikeState state = ABikeState.valueOf(update.getState());
+        Integer batteryLevel = update.getBatteryLevel();
+        int battery = batteryLevel != null ? batteryLevel : 0;
+        BikeType type = BikeType.AUTONOMOUS;
+        return new ABike(id, location, state, battery, type);
+    }
 }

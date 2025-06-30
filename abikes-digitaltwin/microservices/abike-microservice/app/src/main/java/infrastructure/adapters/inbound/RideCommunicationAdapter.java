@@ -4,6 +4,7 @@ import application.ports.ABikeServiceAPI;
 import application.ports.StationServiceAPI;
 import domain.model.ABike;
 import domain.model.ABikeMapper;
+import domain.events.BikeRideUpdate;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonObject;
@@ -22,92 +23,89 @@ public class RideCommunicationAdapter {
   private static final Logger logger = LoggerFactory.getLogger(RideCommunicationAdapter.class);
   private final ABikeServiceAPI aBikeService;
   private final StationServiceAPI stationService;
+  private final KafkaProperties kafkaProperties;
   private ExecutorService consumerExecutor;
   private final AtomicBoolean running = new AtomicBoolean(false);
-  private final KafkaProperties kafkaProperties;
 
   public RideCommunicationAdapter(
-      ABikeServiceAPI aBikeService,
-      StationServiceAPI stationService,
-      KafkaProperties kafkaProperties) {
+          ABikeServiceAPI aBikeService,
+          StationServiceAPI stationService,
+          KafkaProperties kafkaProperties) {
     this.aBikeService = aBikeService;
     this.stationService = stationService;
     this.kafkaProperties = kafkaProperties;
   }
 
   public void init() {
-    initKafkaConsumer();
-  }
-
-  private void initKafkaConsumer() {
-    logger.info("Initializing Kafka consumer for Ride updates");
+    logger.info("Initializing Kafka consumers for ride updates");
     consumerExecutor = Executors.newSingleThreadExecutor();
     running.set(true);
-    consumerExecutor.submit(this::runKafkaConsumer);
+    consumerExecutor.submit(this::runKafkaConsumers);
   }
 
-  private void runKafkaConsumer() {
-    KafkaConsumer<String, String> consumer =
-        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
-    try (consumer) {
-      consumer.subscribe(
-          List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName(), Topics.RIDE_UPDATE.getTopicName()));
-      logger.info("Subscribed to Kafka topics for ride updates");
+  private void runKafkaConsumers() {
+    try (
+            KafkaConsumer<String, BikeRideUpdate> avroConsumer =
+                    new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
+            KafkaConsumer<String, String> stringConsumer =
+                    new KafkaConsumer<>(kafkaProperties.getConsumerProperties())
+    ) {
+      avroConsumer.subscribe(List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName()));
+      stringConsumer.subscribe(List.of(Topics.RIDE_UPDATE.getTopicName()));
 
       while (running.get()) {
-        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-        for (ConsumerRecord<String, String> record : records) {
-          if (record.topic().equals(Topics.RIDE_UPDATE.getTopicName())) {
-            logger.info("Received ride update from Kafka: {}", record.value());
+        // Handle Avro updates
+        ConsumerRecords<String, BikeRideUpdate> avroRecords =
+                avroConsumer.poll(Duration.ofMillis(100));
+        for (ConsumerRecord<String, BikeRideUpdate> record : avroRecords) {
+          processABikeRideUpdate(record.value());
+        }
+        avroConsumer.commitAsync();
+
+        // Handle String (JSON) updates
+        ConsumerRecords<String, String> stringRecords =
+                stringConsumer.poll(Duration.ofMillis(100));
+        for (ConsumerRecord<String, String> record : stringRecords) {
+          try {
             processRideUpdate(new JsonObject(record.value()));
-          } else if (record.topic().equals(Topics.ABIKE_RIDE_UPDATE.getTopicName())) {
-            processABikeRideUpdate(new JsonObject(record.value()));
+          } catch (Exception e) {
+            logger.error("Failed to parse RIDE_UPDATE message: {}", e.getMessage());
           }
         }
-        consumer.commitAsync(
-            (offsets, exception) -> {
-              if (exception != null) {
-                logger.error("Failed to commit offsets: {}", exception.getMessage());
-              }
-            });
+        stringConsumer.commitAsync();
       }
     } catch (Exception e) {
       logger.error("Error in Kafka consumer loop: {}", e.getMessage(), e);
     }
   }
 
-  private void processABikeRideUpdate(JsonObject updateJson) {
+  private void processABikeRideUpdate(BikeRideUpdate update) {
     try {
-      ABike aBike = ABikeMapper.fromJson(updateJson);
+      ABike aBike = ABikeMapper.fromAvro(update);
       aBikeService
-          .updateABike(aBike)
-          .thenAccept(v -> logger.info("ABike {} updated successfully via Kafka consumer", aBike.getId()))
-          .exceptionally(
-              e -> {
+              .updateABike(aBike)
+              .thenAccept(v -> logger.info("ABike {} updated successfully via Avro Kafka consumer", aBike.getId()))
+              .exceptionally(e -> {
                 logger.error("Failed to update ABike {}: {}", aBike.getId(), e.getMessage());
                 return null;
               });
     } catch (Exception e) {
-      logger.error("Invalid ABike data from Kafka: {}", e.getMessage());
+      logger.error("Invalid ABike Avro data from Kafka: {}", e.getMessage());
     }
   }
 
-  // Ride updates regarding the assignment of bikes to stations
   private void processRideUpdate(JsonObject rideUpdate) {
     String bikeId = rideUpdate.getString("bikeName");
-
     if (bikeId == null) {
       logger.error("Incomplete ride update data: {}", rideUpdate);
       return;
     }
-
     if (rideUpdate.containsKey("action")) {
       String action = rideUpdate.getString("action");
-      if (action.equals("start")) {
+      if ("start".equals(action)) {
         stationService.deassignBikeFromStation(bikeId);
       }
     }
-
     if (rideUpdate.containsKey("stationId")) {
       String stationId = rideUpdate.getString("stationId");
       stationService.assignBikeToStation(stationId, bikeId);
@@ -119,6 +117,6 @@ public class RideCommunicationAdapter {
     if (consumerExecutor != null) {
       consumerExecutor.shutdownNow();
     }
-    logger.info("BikeConsumerAdapter Kafka consumer executor shut down");
+    logger.info("RideCommunicationAdapter Kafka consumer executor shut down");
   }
 }

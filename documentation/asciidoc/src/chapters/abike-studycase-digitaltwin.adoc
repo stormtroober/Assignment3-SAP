@@ -129,7 +129,7 @@ The hexagonal architecture organizes the codebase into three main layers:
 
 ===== Domain Layer
 
-[plantuml, {diagramsdir}/abike-domain-uml, svg, title="Domain Layer UML of ABike Microservice", width=75%]
+[plantuml, {diagramsdir}/abike-domain-uml, svg, title="Domain Layer UML of ABike Microservice", width=90%]
 ----
 !include resources/puml/abike-domain-uml.puml
 ----
@@ -158,7 +158,7 @@ The domain models are **immutable** and contain only business logic. They don't 
 
 ===== Application Layer
 
-[plantuml, {diagramsdir}/abike-application-uml, svg, title="Application Layer UML of ABike Microservice", width=95%]
+[plantuml, {diagramsdir}/abike-application-uml, svg, title="Application Layer UML of ABike Microservice", width=120%]
 ----
 !include resources/puml/abike-application-uml.puml
 ----

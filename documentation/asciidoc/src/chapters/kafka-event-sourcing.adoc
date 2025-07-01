@@ -83,7 +83,7 @@ When a user starts a ride through the system, a complex sequence of events propa
 
 === Event Sourcing Implementation
 
-The User Microservice has been choosen for event sourcing because it handles critical user data, such as credit and ride history, which must be accurately tracked and auditable. By storing events in a MongoDB collection, the system can maintain a complete history of user interactions, enabling features like user activity tracking and credit management.
+The User Microservice has been choosen for event sourcing because it handles critical user data, such as credit and ride history, which must be accurately tracked and auditable. By storing events in a MongoDB collection, the system can maintain a complete history of user interactions, allowing features like user activity tracking and credit management.
 
 ==== Event Types and Structure
 

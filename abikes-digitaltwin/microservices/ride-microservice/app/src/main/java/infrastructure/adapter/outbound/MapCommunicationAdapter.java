@@ -26,9 +26,9 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
   }
 
   private void sendNotification(
-          String bikeId, BikeType type, String userId, String action, String logMessagePrefix) {
-    // Build BikeActionUpdate.avsc Avro object
-    BikeActionUpdate bikeActionUpdate = BikeActionUpdate.newBuilder()
+      String bikeId, BikeType type, String userId, String action, String logMessagePrefix) {
+    BikeActionUpdate bikeActionUpdate =
+        BikeActionUpdate.newBuilder()
             .setUsername(userId)
             .setBikeName(bikeId)
             .setBikeType(type.toString())
@@ -36,34 +36,32 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
             .build();
 
     // Wrap in RideUpdate Avro object
-    RideUpdate rideUpdate = RideUpdate.newBuilder()
-            .setPayload(bikeActionUpdate)
-            .build();
+    RideUpdate rideUpdate = RideUpdate.newBuilder().setPayload(bikeActionUpdate).build();
 
     String topicName = Topics.RIDE_UPDATE.getTopicName();
     logger.info(
-            "Sending {} notification to Kafka topic: {} for user: {} and bike: {}, type: {}",
-            logMessagePrefix,
-            topicName,
-            userId,
-            bikeId,
-            type);
+        "Sending {} notification to Kafka topic: {} for user: {} and bike: {}, type: {}",
+        logMessagePrefix,
+        topicName,
+        userId,
+        bikeId,
+        type);
 
     producer.send(
-            new ProducerRecord<>(topicName, bikeId, rideUpdate),
-            (metadata, exception) -> {
-              if (exception == null) {
-                logger.info(
-                        "{} notification sent successfully to topic: {}, partition: {}, offset: {}",
-                        logMessagePrefix,
-                        metadata.topic(),
-                        metadata.partition(),
-                        metadata.offset());
-              } else {
-                logger.error(
-                        "Failed to send {} notification: {}", logMessagePrefix, exception.getMessage());
-              }
-            });
+        new ProducerRecord<>(topicName, bikeId, rideUpdate),
+        (metadata, exception) -> {
+          if (exception == null) {
+            logger.info(
+                "{} notification sent successfully to topic: {}, partition: {}, offset: {}",
+                logMessagePrefix,
+                metadata.topic(),
+                metadata.partition(),
+                metadata.offset());
+          } else {
+            logger.error(
+                "Failed to send {} notification: {}", logMessagePrefix, exception.getMessage());
+          }
+        });
   }
 
   @Override
@@ -87,29 +85,27 @@ public class MapCommunicationAdapter implements MapCommunicationPort {
   }
 
   private void sendPublicRideNotification(String bikeId, BikeType type, String action) {
-    // Build BikeActionUpdate.avsc Avro object (no username for public rides)
-    BikeActionUpdate bikeActionUpdate = BikeActionUpdate.newBuilder()
+    BikeActionUpdate bikeActionUpdate =
+        BikeActionUpdate.newBuilder()
             .setUsername(null)
             .setBikeName(bikeId)
             .setBikeType(type.toString())
             .setAction(action)
             .build();
 
-    RideUpdate rideUpdate = RideUpdate.newBuilder()
-            .setPayload(bikeActionUpdate)
-            .build();
+    RideUpdate rideUpdate = RideUpdate.newBuilder().setPayload(bikeActionUpdate).build();
 
     String topicName = Topics.RIDE_UPDATE.getTopicName();
 
     producer.send(
-            new ProducerRecord<>(topicName, bikeId, rideUpdate),
-            (metadata, exception) -> {
-              if (exception == null) {
-                logger.info("Notification for {} public ride sent successfully.", action);
-              } else {
-                logger.error("Failed to send notification for {} public ride", action);
-              }
-            });
+        new ProducerRecord<>(topicName, bikeId, rideUpdate),
+        (metadata, exception) -> {
+          if (exception == null) {
+            logger.info("Notification for {} public ride sent successfully.", action);
+          } else {
+            logger.error("Failed to send notification for {} public ride", action);
+          }
+        });
   }
 
   public void close() {

@@ -6,7 +6,6 @@ import domain.model.bike.*;
 import domain.model.repository.*;
 import domain.model.simulation.*;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
@@ -173,7 +172,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
                           .thenAccept(
                               abikeJsonOpt -> {
                                 if (abikeJsonOpt.isPresent()) {
-//                                  JsonObject abikeJson = abikeJsonOpt.get();
+                                  //                                  JsonObject abikeJson =
+                                  // abikeJsonOpt.get();
                                   var aBike = abikeJsonOpt.get();
                                   ABikeState state = (ABikeState) aBike.getState();
                                   if (state == ABikeState.AVAILABLE) {
@@ -294,9 +294,8 @@ public class RestAutonomousRideServiceImpl implements RestAutonomousRideService 
               if (abikeOptional.isEmpty()) {
                 System.err.println("ABike not found");
                 return null;
-              }
-              else{
-                  return abikeOptional.get();
+              } else {
+                return abikeOptional.get();
               }
             });
   }

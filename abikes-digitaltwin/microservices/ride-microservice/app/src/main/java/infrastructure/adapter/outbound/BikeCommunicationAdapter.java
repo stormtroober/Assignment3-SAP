@@ -13,117 +13,120 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 public class BikeCommunicationAdapter implements BikeCommunicationPort {
-    private final Vertx vertx;
-    private Producer<String, Object> producer; // Avro producer
-    private Producer<String, String> stringProducer; // String producer
-    private final KafkaProperties kafkaProperties;
+  private final Vertx vertx;
+  private Producer<String, Object> producer; // Avro producer
+  private final KafkaProperties kafkaProperties;
 
-    public BikeCommunicationAdapter(Vertx vertx, KafkaProperties kafkaProperties) {
-        this.vertx = vertx;
-        this.kafkaProperties = kafkaProperties;
-    }
+  public BikeCommunicationAdapter(Vertx vertx, KafkaProperties kafkaProperties) {
+    this.vertx = vertx;
+    this.kafkaProperties = kafkaProperties;
+  }
 
-    public void init() {
-        producer = new KafkaProducer<>(kafkaProperties.getAvroProducerProperties());
-        stringProducer = new KafkaProducer<>(kafkaProperties.getProducerProperties());
+  public void init() {
+    producer = new KafkaProducer<>(kafkaProperties.getAvroProducerProperties());
 
-        vertx.eventBus().consumer(
-                EventPublisher.RIDE_UPDATE_ADDRESS_ABIKE,
-                message -> {
-                    if (message.body() instanceof JsonObject update) {
-                        if (update.containsKey("id")) {
-                            sendUpdateABike(update);
+    vertx
+        .eventBus()
+        .consumer(
+            EventPublisher.RIDE_UPDATE_ADDRESS_ABIKE,
+            message -> {
+              if (message.body() instanceof JsonObject update) {
+                if (update.containsKey("id")) {
+                  sendUpdateABike(update);
+                }
+              }
+            });
+
+    vertx
+        .eventBus()
+        .consumer(
+            EventPublisher.RIDE_UPDATE_ADDRESS_ABIKE_STATION,
+            message -> {
+              if (message.body() instanceof JsonObject update) {
+                System.out.println("Received ABike station update: " + update.encode());
+                if (update.containsKey("bikeName") && update.containsKey("stationId")) {
+                  // Build BikeStationUpdate Avro object
+                  domain.events.BikeStationUpdate stationUpdate =
+                      domain.events.BikeStationUpdate.newBuilder()
+                          .setBikeName(update.getString("bikeName"))
+                          .setStationId(update.getString("stationId"))
+                          .build();
+
+                  // Wrap in RideUpdate Avro object
+                  domain.events.RideUpdate rideUpdate =
+                      domain.events.RideUpdate.newBuilder().setPayload(stationUpdate).build();
+
+                  producer.send(
+                      new ProducerRecord<>(
+                          Topics.RIDE_UPDATE.getTopicName(),
+                          update.getString("bikeName"),
+                          rideUpdate),
+                      (metadata, exception) -> {
+                        if (exception == null) {
+                          System.out.println("ABike station update sent successfully (Avro)");
+                        } else {
+                          System.err.println(
+                              "Failed to send ABike station update (Avro): "
+                                  + exception.getMessage());
                         }
-                    }
-                });
+                      });
+                }
+              }
+            });
 
-        vertx.eventBus().consumer(
-                EventPublisher.RIDE_UPDATE_ADDRESS_ABIKE_STATION,
-                message -> {
-                    if (message.body() instanceof JsonObject update) {
-                        System.out.println("Received ABike station update: " + update.encode());
-                        if (update.containsKey("bikeName") && update.containsKey("stationId")) {
-                            // Build BikeStationUpdate Avro object
-                            domain.events.BikeStationUpdate stationUpdate = domain.events.BikeStationUpdate.newBuilder()
-                                    .setBikeName(update.getString("bikeName"))
-                                    .setStationId(update.getString("stationId"))
-                                    .build();
+    vertx
+        .eventBus()
+        .consumer(
+            EventPublisher.RIDE_UPDATE_ADDRESS_EBIKE,
+            message -> {
+              if (message.body() instanceof JsonObject update) {
+                if (update.containsKey("id")) {
+                  sendUpdateEBike(update);
+                }
+              }
+            });
+  }
 
-                            // Wrap in RideUpdate Avro object
-                            domain.events.RideUpdate rideUpdate = domain.events.RideUpdate.newBuilder()
-                                    .setPayload(stationUpdate)
-                                    .build();
+  @Override
+  public void sendUpdateEBike(JsonObject ebike) {
+    sendBikeRideUpdate(ebike, Topics.EBIKE_RIDE_UPDATE.getTopicName());
+  }
 
-                            producer.send(
-                                    new ProducerRecord<>(
-                                            Topics.RIDE_UPDATE.getTopicName(),
-                                            update.getString("bikeName"),
-                                            rideUpdate),
-                                    (metadata, exception) -> {
-                                        if (exception == null) {
-                                            System.out.println("ABike station update sent successfully (Avro)");
-                                        } else {
-                                            System.err.println(
-                                                    "Failed to send ABike station update (Avro): " + exception.getMessage());
-                                        }
-                                    });
-                        }
-                    }
-                });
+  @Override
+  public void sendUpdateABike(JsonObject aBike) {
+    sendBikeRideUpdate(aBike, Topics.ABIKE_RIDE_UPDATE.getTopicName());
+  }
 
-        vertx.eventBus().consumer(
-                EventPublisher.RIDE_UPDATE_ADDRESS_EBIKE,
-                message -> {
-                    if (message.body() instanceof JsonObject update) {
-                        if (update.containsKey("id")) {
-                            sendUpdateEBike(update);
-                        }
-                    }
-                });
+  private void sendBikeRideUpdate(JsonObject bike, String topicName) {
+    BikeRideUpdate.Builder builder =
+        BikeRideUpdate.newBuilder().setId(bike.getString("id")).setState(bike.getString("state"));
+
+    if (bike.containsKey("location") && bike.getValue("location") != null) {
+      JsonObject loc = bike.getJsonObject("location");
+      Location location =
+          Location.newBuilder().setX(loc.getDouble("x")).setY(loc.getDouble("y")).build();
+      builder.setLocation(location);
+    } else {
+      builder.setLocation(null);
     }
 
-    @Override
-    public void sendUpdateEBike(JsonObject ebike) {
-        sendBikeRideUpdate(ebike, Topics.EBIKE_RIDE_UPDATE.getTopicName());
+    if (bike.containsKey("batteryLevel")) {
+      builder.setBatteryLevel(bike.getInteger("batteryLevel"));
+    } else {
+      builder.setBatteryLevel(null);
     }
 
-    @Override
-    public void sendUpdateABike(JsonObject aBike) {
-        sendBikeRideUpdate(aBike, Topics.ABIKE_RIDE_UPDATE.getTopicName());
-    }
+    BikeRideUpdate avroUpdate = builder.build();
 
-    private void sendBikeRideUpdate(JsonObject bike, String topicName) {
-        BikeRideUpdate.Builder builder = BikeRideUpdate.newBuilder()
-                .setId(bike.getString("id"))
-                .setState(bike.getString("state"));
-
-        if (bike.containsKey("location") && bike.getValue("location") != null) {
-            JsonObject loc = bike.getJsonObject("location");
-            Location location = Location.newBuilder()
-                    .setX(loc.getDouble("x"))
-                    .setY(loc.getDouble("y"))
-                    .build();
-            builder.setLocation(location);
-        } else {
-            builder.setLocation(null);
-        }
-
-        if (bike.containsKey("batteryLevel")) {
-            builder.setBatteryLevel(bike.getInteger("batteryLevel"));
-        } else {
-            builder.setBatteryLevel(null);
-        }
-
-        BikeRideUpdate avroUpdate = builder.build();
-
-        producer.send(
-                new ProducerRecord<>(topicName, bike.getString("id"), avroUpdate),
-                (metadata, exception) -> {
-                    if (exception == null) {
-                        System.out.println(topicName + " Avro update sent successfully");
-                    } else {
-                        System.err.println("Failed to send " + topicName + " Avro update: " + exception.getMessage());
-                    }
-                });
-    }
+    producer.send(
+        new ProducerRecord<>(topicName, bike.getString("id"), avroUpdate),
+        (metadata, exception) -> {
+          if (exception == null) {
+            System.out.println(topicName + " Avro update sent successfully");
+          } else {
+            System.err.println(
+                "Failed to send " + topicName + " Avro update: " + exception.getMessage());
+          }
+        });
+  }
 }

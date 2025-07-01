@@ -6,7 +6,6 @@ import domain.events.UserUpdate;
 import domain.model.User;
 import domain.model.repository.UserRepository;
 import infrastructure.utils.KafkaProperties;
-import io.vertx.core.json.JsonObject;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +42,7 @@ public class UserConsumerAdapter {
 
   private void runKafkaConsumer() {
     try (KafkaConsumer<String, UserUpdate> consumer =
-                 new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties())) {
+        new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties())) {
 
       consumer.subscribe(List.of(USER_UPDATE.getTopicName()));
       logger.info("Subscribed to Kafka topic: {}", USER_UPDATE.getTopicName());
@@ -60,11 +59,12 @@ public class UserConsumerAdapter {
             }
           }
 
-          consumer.commitAsync((offsets, exception) -> {
-            if (exception != null) {
-              logger.error("Failed to commit offsets: {}", exception.getMessage());
-            }
-          });
+          consumer.commitAsync(
+              (offsets, exception) -> {
+                if (exception != null) {
+                  logger.error("Failed to commit offsets: {}", exception.getMessage());
+                }
+              });
         } catch (Exception e) {
           logger.error("Error during Kafka polling: {}", e.getMessage(), e);
         }

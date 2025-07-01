@@ -41,11 +41,13 @@ public class KafkaProperties {
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
     props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000");
 
-    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-            "org.apache.kafka.common.serialization.StringDeserializer");
+    props.put(
+        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+        "org.apache.kafka.common.serialization.StringDeserializer");
 
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-            "io.confluent.kafka.serializers.KafkaAvroDeserializer");
+    props.put(
+        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+        "io.confluent.kafka.serializers.KafkaAvroDeserializer");
 
     // Avro-specific config
     props.put("schema.registry.url", "http://schema-registry:8081");

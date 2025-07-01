@@ -33,12 +33,12 @@ public class MongoStationRepository implements StationRepository {
     document.remove("id"); // Mongo uses _id
 
     mongoClient
-            .insert(COLLECTION, document)
-            .onSuccess(result -> future.complete(null))
-            .onFailure(
-                    error ->
-                            future.completeExceptionally(
-                                    new RuntimeException("Failed to save station: " + error.getMessage())));
+        .insert(COLLECTION, document)
+        .onSuccess(result -> future.complete(null))
+        .onFailure(
+            error ->
+                future.completeExceptionally(
+                    new RuntimeException("Failed to save station: " + error.getMessage())));
 
     return future;
   }
@@ -60,17 +60,19 @@ public class MongoStationRepository implements StationRepository {
     JsonObject update = new JsonObject().put("$set", updateDoc);
 
     mongoClient
-            .findOneAndUpdate(COLLECTION, query, update)
-            .onSuccess(result -> {
+        .findOneAndUpdate(COLLECTION, query, update)
+        .onSuccess(
+            result -> {
               if (result != null) {
                 future.complete(null);
               } else {
                 future.completeExceptionally(new RuntimeException("Station not found"));
               }
             })
-            .onFailure(error ->
-                    future.completeExceptionally(
-                            new RuntimeException("Failed to update station: " + error.getMessage())));
+        .onFailure(
+            error ->
+                future.completeExceptionally(
+                    new RuntimeException("Failed to update station: " + error.getMessage())));
 
     return future;
   }
@@ -119,20 +121,24 @@ public class MongoStationRepository implements StationRepository {
     JsonObject query = new JsonObject();
 
     mongoClient
-            .find(COLLECTION, query)
-            .onSuccess(results -> {
+        .find(COLLECTION, query)
+        .onSuccess(
+            results -> {
               java.util.List<Station> stations = new java.util.ArrayList<>();
               for (JsonObject result : results) {
-                JsonObject stationJson = new JsonObject()
+                JsonObject stationJson =
+                    new JsonObject()
                         .put("id", result.getString("_id"))
                         .put("location", result.getJsonObject("location"))
-                        .put("slots", convertSlotsToJsonArray(result.getJsonArray("slots", new JsonArray())))
+                        .put(
+                            "slots",
+                            convertSlotsToJsonArray(result.getJsonArray("slots", new JsonArray())))
                         .put("maxSlots", result.getInteger("maxSlots", MAX_SLOTS));
                 stations.add(StationMapper.fromJson(stationJson));
               }
               future.complete(stations);
             })
-            .onFailure(future::completeExceptionally);
+        .onFailure(future::completeExceptionally);
 
     return future;
   }

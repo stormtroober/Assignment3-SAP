@@ -4,7 +4,6 @@ import static domain.model.StationFactory.MAX_SLOTS;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,5 +49,4 @@ public class StationMapper {
 
     return new Station(id, position, slots);
   }
-
 }

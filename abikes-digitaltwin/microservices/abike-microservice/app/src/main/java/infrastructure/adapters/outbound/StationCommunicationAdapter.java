@@ -5,12 +5,10 @@ import domain.model.Station;
 import domain.model.StationMapper;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
-import io.vertx.core.json.JsonObject;
+import java.util.List;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-
-import java.util.List;
 
 public class StationCommunicationAdapter implements StationCommunicationPort {
   private final Producer<String, String> producer;
@@ -24,14 +22,16 @@ public class StationCommunicationAdapter implements StationCommunicationPort {
   public void sendUpdate(Station station) {
     System.out.println("Sending Station update to Kafka topic: " + topicName);
     producer.send(
-        new ProducerRecord<>(topicName, "station:" + station.getId(), StationMapper.toJson(station).encode()));
+        new ProducerRecord<>(
+            topicName, "station:" + station.getId(), StationMapper.toJson(station).encode()));
   }
 
   public void sendAllUpdates(List<Station> stations) {
     System.out.println("Sending all Station updates to Kafka topic: " + topicName);
-    for(Station station : stations) {
+    for (Station station : stations) {
       producer.send(
-          new ProducerRecord<>(topicName, "station:" + station.getId(), StationMapper.toJson(station).encode()));
+          new ProducerRecord<>(
+              topicName, "station:" + station.getId(), StationMapper.toJson(station).encode()));
     }
   }
 }

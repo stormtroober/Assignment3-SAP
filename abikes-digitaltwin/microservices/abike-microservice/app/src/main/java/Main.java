@@ -41,9 +41,7 @@ public class Main {
 
               stationService
                   .createStation("station1")
-                  .thenAccept(
-                      station ->
-                          System.out.println("Station1 created: " + station))
+                  .thenAccept(station -> System.out.println("Station1 created: " + station))
                   .exceptionally(
                       ex -> {
                         System.err.println("Failed to create station1: " + ex.getMessage());
@@ -52,9 +50,7 @@ public class Main {
 
               stationService
                   .createStation("station2")
-                  .thenAccept(
-                      station ->
-                          System.out.println("Station1 created: " + station))
+                  .thenAccept(station -> System.out.println("Station1 created: " + station))
                   .exceptionally(
                       ex -> {
                         System.err.println("Failed to create station1: " + ex.getMessage());

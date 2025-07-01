@@ -6,11 +6,10 @@ import domain.model.ABikeMapper;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.json.JsonObject;
+import java.util.List;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-
-import java.util.List;
 
 public class BikeCommunicationAdapter implements BikeCommunicationPort {
   private final Producer<String, String> producer;
@@ -24,7 +23,8 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
   public void sendUpdate(ABike abike) {
     System.out.println("Sending ABike update to Kafka topic: " + topicName);
     producer.send(
-        new ProducerRecord<>(topicName, "abike:" + abike.getId(), ABikeMapper.toJson(abike).encode()));
+        new ProducerRecord<>(
+            topicName, "abike:" + abike.getId(), ABikeMapper.toJson(abike).encode()));
   }
 
   public void sendAllUpdates(List<ABike> abikes) {
@@ -32,7 +32,8 @@ public class BikeCommunicationAdapter implements BikeCommunicationPort {
     for (ABike abike : abikes) {
       JsonObject abikeJson = ABikeMapper.toJson(abike);
       producer.send(
-              new ProducerRecord<>(topicName, "abike:" + abikeJson.getString("id"), abikeJson.encode()));
+          new ProducerRecord<>(
+              topicName, "abike:" + abikeJson.getString("id"), abikeJson.encode()));
     }
   }
 }

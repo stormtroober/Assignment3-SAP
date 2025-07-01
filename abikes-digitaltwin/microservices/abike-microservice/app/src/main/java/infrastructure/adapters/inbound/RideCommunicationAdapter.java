@@ -2,12 +2,12 @@ package infrastructure.adapters.inbound;
 
 import application.ports.ABikeServiceAPI;
 import application.ports.StationServiceAPI;
+import domain.events.BikeActionUpdate;
+import domain.events.BikeRideUpdate;
+import domain.events.BikeStationUpdate;
+import domain.events.RideUpdate;
 import domain.model.ABike;
 import domain.model.ABikeMapper;
-import domain.events.BikeRideUpdate;
-import domain.events.RideUpdate;
-import domain.events.BikeActionUpdate;
-import domain.events.BikeStationUpdate;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import java.time.Duration;
@@ -30,9 +30,9 @@ public class RideCommunicationAdapter {
   private final AtomicBoolean running = new AtomicBoolean(false);
 
   public RideCommunicationAdapter(
-          ABikeServiceAPI aBikeService,
-          StationServiceAPI stationService,
-          KafkaProperties kafkaProperties) {
+      ABikeServiceAPI aBikeService,
+      StationServiceAPI stationService,
+      KafkaProperties kafkaProperties) {
     this.aBikeService = aBikeService;
     this.stationService = stationService;
     this.kafkaProperties = kafkaProperties;
@@ -46,19 +46,17 @@ public class RideCommunicationAdapter {
   }
 
   private void runKafkaConsumers() {
-    try (
-            KafkaConsumer<String, BikeRideUpdate> avroConsumer =
-                    new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
-            KafkaConsumer<String, RideUpdate> rideUpdateAvroConsumer =
-                    new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties())
-    ) {
+    try (KafkaConsumer<String, BikeRideUpdate> avroConsumer =
+            new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
+        KafkaConsumer<String, RideUpdate> rideUpdateAvroConsumer =
+            new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties())) {
       avroConsumer.subscribe(List.of(Topics.ABIKE_RIDE_UPDATE.getTopicName()));
       rideUpdateAvroConsumer.subscribe(List.of(Topics.RIDE_UPDATE.getTopicName()));
 
       while (running.get()) {
         // Handle ABike Avro updates
         ConsumerRecords<String, BikeRideUpdate> avroRecords =
-                avroConsumer.poll(Duration.ofMillis(100));
+            avroConsumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, BikeRideUpdate> record : avroRecords) {
           processABikeRideUpdate(record.value());
         }
@@ -66,7 +64,7 @@ public class RideCommunicationAdapter {
 
         // Handle RideUpdate Avro messages
         ConsumerRecords<String, RideUpdate> rideUpdateRecords =
-                rideUpdateAvroConsumer.poll(Duration.ofMillis(100));
+            rideUpdateAvroConsumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, RideUpdate> record : rideUpdateRecords) {
           processRideUpdate(record.value());
         }
@@ -81,9 +79,13 @@ public class RideCommunicationAdapter {
     try {
       ABike aBike = ABikeMapper.fromAvro(update);
       aBikeService
-              .updateABike(aBike)
-              .thenAccept(v -> logger.info("ABike {} updated successfully via Avro Kafka consumer", aBike.getId()))
-              .exceptionally(e -> {
+          .updateABike(aBike)
+          .thenAccept(
+              v ->
+                  logger.info(
+                      "ABike {} updated successfully via Avro Kafka consumer", aBike.getId()))
+          .exceptionally(
+              e -> {
                 logger.error("Failed to update ABike {}: {}", aBike.getId(), e.getMessage());
                 return null;
               });
@@ -114,7 +116,8 @@ public class RideCommunicationAdapter {
       }
       stationService.assignBikeToStation(stationId, bikeId);
     } else {
-      logger.error("Unknown payload type in RideUpdate: {}", payload != null ? payload.getClass() : "null");
+      logger.error(
+          "Unknown payload type in RideUpdate: {}", payload != null ? payload.getClass() : "null");
     }
   }
 

@@ -1,20 +1,16 @@
 package infrastructure.adapters.outbound;
 
+import static domain.model.EBikeMapper.toAvro;
+
 import application.ports.BikeCommunicationPort;
 import domain.events.EBikeUpdate;
 import domain.model.EBike;
-import domain.model.EBikeMapper;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import java.util.List;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-
-import java.util.List;
-
-import static domain.model.EBikeMapper.toAvro;
 
 public class BikeUpdateAdapter implements BikeCommunicationPort {
   private final Producer<String, EBikeUpdate> producer;

@@ -21,7 +21,6 @@ public class P2d implements ValueObject, Serializable {
     return y;
   }
 
-
   public String toString() {
     return "P2d(" + x + "," + y + ")";
   }

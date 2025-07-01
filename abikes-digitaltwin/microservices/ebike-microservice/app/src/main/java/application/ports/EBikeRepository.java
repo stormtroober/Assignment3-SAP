@@ -28,8 +28,8 @@ public interface EBikeRepository {
    * Finds an eBike by its id.
    *
    * @param id the unique identifier of the eBike
-   * @return a CompletableFuture containing an Optional with the EBike if found, or
-   *     an empty Optional if not found
+   * @return a CompletableFuture containing an Optional with the EBike if found, or an empty
+   *     Optional if not found
    */
   CompletableFuture<Optional<EBike>> findById(String id);
 

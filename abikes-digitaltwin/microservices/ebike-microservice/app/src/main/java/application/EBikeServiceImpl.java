@@ -5,10 +5,7 @@ import application.ports.EBikeRepository;
 import application.ports.EBikeServiceAPI;
 import domain.model.*;
 import infrastructure.adapters.outbound.BikeUpdateAdapter;
-import io.vertx.core.json.JsonObject;
-
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class EBikeServiceImpl implements EBikeServiceAPI {
@@ -33,11 +30,6 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
   }
 
   @Override
-  public CompletableFuture<Optional<EBike>> getEBike(String id) {
-    return repository.findById(id);
-  }
-
-  @Override
   public CompletableFuture<EBike> rechargeEBike(String id) {
     return repository
         .findById(id)
@@ -45,12 +37,13 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
             optionalEbike -> {
               if (optionalEbike.isPresent()) {
                 EBike ebike = optionalEbike.get();
-                EBike newEBike = new EBike(
-                    ebike.getId(),
-                    ebike.getLocation(),
-                    EBikeState.AVAILABLE,
-                    EBike.MAX_BATTERY_LEVEL,
-                    ebike.getType());
+                EBike newEBike =
+                    new EBike(
+                        ebike.getId(),
+                        ebike.getLocation(),
+                        EBikeState.AVAILABLE,
+                        EBike.MAX_BATTERY_LEVEL,
+                        ebike.getType());
                 mapCommunicationAdapter.sendUpdate(newEBike);
                 return repository.update(newEBike).thenApply(v -> newEBike);
               }
@@ -64,12 +57,13 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
     int newBattery = ebike.getBatteryLevel();
     EBikeState newState = ebike.getState();
 
-    if(newBattery < EBike.MAX_BATTERY_LEVEL) {
+    if (newBattery < EBike.MAX_BATTERY_LEVEL) {
       if (newBattery == 0) {
         newState = EBikeState.MAINTENANCE;
       }
     }
-    var updatedEBike = new EBike(ebike.getId(), ebike.getLocation(), newState, newBattery, ebike.getType());
+    var updatedEBike =
+        new EBike(ebike.getId(), ebike.getLocation(), newState, newBattery, ebike.getType());
 
     return repository
         .update(updatedEBike)
@@ -79,10 +73,9 @@ public class EBikeServiceImpl implements EBikeServiceAPI {
                     .findById(updatedEBike.getId())
                     .thenApply(
                         foundUpdatedEbike -> {
-                          if(foundUpdatedEbike.isEmpty()) {
+                          if (foundUpdatedEbike.isEmpty()) {
                             throw new RuntimeException("EBike not found after update");
-                          }
-                          else {
+                          } else {
                             var finalEBike = foundUpdatedEbike.get();
                             mapCommunicationAdapter.sendUpdate(finalEBike);
                             return finalEBike;

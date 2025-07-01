@@ -36,9 +36,9 @@ public class EBike implements Aggregate<String>, Serializable {
     return type;
   }
 
-    public P2d getLocation() {
-        return location;
-    }
+  public P2d getLocation() {
+    return location;
+  }
 
   @Override
   public String toString() {

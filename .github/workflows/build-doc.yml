@@ -5,7 +5,7 @@ on:
       branches:
         - main
       paths:
-        - 'asciidoc/**'
+        - 'documentation/asciidoc/**'
     workflow_dispatch:
 
 jobs:

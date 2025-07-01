@@ -54,8 +54,8 @@ jobs:
         with:
           name: documentation-report
           path: |
-            asciidoc/output/index.html
-            asciidoc/output/resources/
+            documentation/asciidoc/output/index.html
+            documentation/asciidoc/output/resources/
 
   deploy:
     needs: build

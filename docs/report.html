@@ -1,0 +1,2382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.23">
+<title>Software Architecture and Platforms Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+<style>
+/*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
+/* Uncomment the following line when using as a custom stylesheet */
+/* @import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700"; */
+html{font-family:sans-serif;-webkit-text-size-adjust:100%}
+a{background:none}
+a:focus{outline:thin dotted}
+a:active,a:hover{outline:0}
+h1{font-size:2em;margin:.67em 0}
+b,strong{font-weight:bold}
+abbr{font-size:.9em}
+abbr[title]{cursor:help;border-bottom:1px dotted #dddddf;text-decoration:none}
+dfn{font-style:italic}
+hr{height:0}
+mark{background:#ff0;color:#000}
+code,kbd,pre,samp{font-family:monospace;font-size:1em}
+pre{white-space:pre-wrap}
+q{quotes:"\201C" "\201D" "\2018" "\2019"}
+small{font-size:80%}
+sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}
+sup{top:-.5em}
+sub{bottom:-.25em}
+img{border:0}
+svg:not(:root){overflow:hidden}
+figure{margin:0}
+audio,video{display:inline-block}
+audio:not([controls]){display:none;height:0}
+fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}
+legend{border:0;padding:0}
+button,input,select,textarea{font-family:inherit;font-size:100%;margin:0}
+button,input{line-height:normal}
+button,select{text-transform:none}
+button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}
+button[disabled],html input[disabled]{cursor:default}
+input[type=checkbox],input[type=radio]{padding:0}
+button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}
+textarea{overflow:auto;vertical-align:top}
+table{border-collapse:collapse;border-spacing:0}
+*,::before,::after{box-sizing:border-box}
+html,body{font-size:100%}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;line-height:1;position:relative;cursor:auto;-moz-tab-size:4;-o-tab-size:4;tab-size:4;word-wrap:anywhere;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
+a:hover{cursor:pointer}
+img,object,embed{max-width:100%;height:auto}
+object,embed{height:100%}
+img{-ms-interpolation-mode:bicubic}
+.left{float:left!important}
+.right{float:right!important}
+.text-left{text-align:left!important}
+.text-right{text-align:right!important}
+.text-center{text-align:center!important}
+.text-justify{text-align:justify!important}
+.hide{display:none}
+img,object,svg{display:inline-block;vertical-align:middle}
+textarea{height:auto;min-height:50px}
+select{width:100%}
+.subheader,.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{line-height:1.45;color:#7a2518;font-weight:400;margin-top:0;margin-bottom:.25em}
+div,dl,dt,dd,ul,ol,li,h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6,pre,form,p,blockquote,th,td{margin:0;padding:0}
+a{color:#2156a5;text-decoration:underline;line-height:inherit}
+a:hover,a:focus{color:#1d4b8f}
+a img{border:0}
+p{line-height:1.6;margin-bottom:1.25em;text-rendering:optimizeLegibility}
+p aside{font-size:.875em;line-height:1.35;font-style:italic}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{font-family:"Open Sans","DejaVu Sans",sans-serif;font-weight:300;font-style:normal;color:#ba3925;text-rendering:optimizeLegibility;margin-top:1em;margin-bottom:.5em;line-height:1.0125em}
+h1 small,h2 small,h3 small,#toctitle small,.sidebarblock>.content>.title small,h4 small,h5 small,h6 small{font-size:60%;color:#e99b8f;line-height:0}
+h1{font-size:2.125em}
+h2{font-size:1.6875em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.375em}
+h4,h5{font-size:1.125em}
+h6{font-size:1em}
+hr{border:solid #dddddf;border-width:1px 0 0;clear:both;margin:1.25em 0 1.1875em}
+em,i{font-style:italic;line-height:inherit}
+strong,b{font-weight:bold;line-height:inherit}
+small{font-size:60%;line-height:inherit}
+code{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;color:rgba(0,0,0,.9)}
+ul,ol,dl{line-height:1.6;margin-bottom:1.25em;list-style-position:outside;font-family:inherit}
+ul,ol{margin-left:1.5em}
+ul li ul,ul li ol{margin-left:1.25em;margin-bottom:0}
+ul.circle{list-style-type:circle}
+ul.disc{list-style-type:disc}
+ul.square{list-style-type:square}
+ul.circle ul:not([class]),ul.disc ul:not([class]),ul.square ul:not([class]){list-style:inherit}
+ol li ul,ol li ol{margin-left:1.25em;margin-bottom:0}
+dl dt{margin-bottom:.3125em;font-weight:bold}
+dl dd{margin-bottom:1.25em}
+blockquote{margin:0 0 1.25em;padding:.5625em 1.25em 0 1.1875em;border-left:1px solid #ddd}
+blockquote,blockquote p{line-height:1.6;color:rgba(0,0,0,.85)}
+@media screen and (min-width:768px){h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2}
+h1{font-size:2.75em}
+h2{font-size:2.3125em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.6875em}
+h4{font-size:1.4375em}}
+table{background:#fff;margin-bottom:1.25em;border:1px solid #dedede;word-wrap:normal}
+table thead,table tfoot{background:#f7f8f7}
+table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:.5em .625em .625em;font-size:inherit;color:rgba(0,0,0,.8);text-align:left}
+table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
+table tr.even,table tr.alt{background:#f8f8f7}
+table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{line-height:1.6}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
+h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
+.center{margin-left:auto;margin-right:auto}
+.stretch{width:100%}
+.clearfix::before,.clearfix::after,.float-group::before,.float-group::after{content:" ";display:table}
+.clearfix::after,.float-group::after{clear:both}
+:not(pre).nobreak{word-wrap:normal}
+:not(pre).nowrap{white-space:nowrap}
+:not(pre).pre-wrap{white-space:pre-wrap}
+:not(pre):not([class^=L])>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background:#f7f7f8;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
+pre{color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;line-height:1.45;text-rendering:optimizeSpeed}
+pre code,pre pre{color:inherit;font-size:inherit;line-height:inherit}
+pre>code{display:block}
+pre.nowrap,pre.nowrap pre{white-space:pre;word-wrap:normal}
+em em{font-style:normal}
+strong strong{font-weight:400}
+.keyseq{color:rgba(51,51,51,.8)}
+kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background:#f7f7f7;border:1px solid #ccc;border-radius:3px;box-shadow:0 1px 0 rgba(0,0,0,.2),inset 0 0 0 .1em #fff;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
+.keyseq kbd:first-child{margin-left:0}
+.keyseq kbd:last-child{margin-right:0}
+.menuseq,.menuref{color:#000}
+.menuseq b:not(.caret),.menuref{font-weight:inherit}
+.menuseq{word-spacing:-.02em}
+.menuseq b.caret{font-size:1.25em;line-height:.8}
+.menuseq i.caret{font-weight:bold;text-align:center;width:.45em}
+b.button::before,b.button::after{position:relative;top:-1px;font-weight:400}
+b.button::before{content:"[";padding:0 3px 0 2px}
+b.button::after{content:"]";padding:0 2px 0 3px}
+p a>code:hover{color:rgba(0,0,0,.9)}
+#header,#content,#footnotes,#footer{width:100%;margin:0 auto;max-width:62.5em;*zoom:1;position:relative;padding-left:.9375em;padding-right:.9375em}
+#header::before,#header::after,#content::before,#content::after,#footnotes::before,#footnotes::after,#footer::before,#footer::after{content:" ";display:table}
+#header::after,#content::after,#footnotes::after,#footer::after{clear:both}
+#content{margin-top:1.25em}
+#content::before{content:none}
+#header>h1:first-child{color:rgba(0,0,0,.85);margin-top:2.25rem;margin-bottom:0}
+#header>h1:first-child+#toc{margin-top:8px;border-top:1px solid #dddddf}
+#header>h1:only-child{border-bottom:1px solid #dddddf;padding-bottom:8px}
+#header .details{border-bottom:1px solid #dddddf;line-height:1.45;padding-top:.25em;padding-bottom:.25em;padding-left:.25em;color:rgba(0,0,0,.6);display:flex;flex-flow:row wrap}
+#header .details span:first-child{margin-left:-.125em}
+#header .details span.email a{color:rgba(0,0,0,.85)}
+#header .details br{display:none}
+#header .details br+span::before{content:"\00a0\2013\00a0"}
+#header .details br+span.author::before{content:"\00a0\22c5\00a0";color:rgba(0,0,0,.85)}
+#header .details br+span#revremark::before{content:"\00a0|\00a0"}
+#header #revnumber{text-transform:capitalize}
+#header #revnumber::after{content:"\00a0"}
+#content>h1:first-child:not([class]){color:rgba(0,0,0,.85);border-bottom:1px solid #dddddf;padding-bottom:8px;margin-top:0;padding-top:1rem;margin-bottom:1.25rem}
+#toc{border-bottom:1px solid #e7e7e9;padding-bottom:.5em}
+#toc>ul{margin-left:.125em}
+#toc ul.sectlevel0>li>a{font-style:italic}
+#toc ul.sectlevel0 ul.sectlevel1{margin:.5em 0}
+#toc ul{font-family:"Open Sans","DejaVu Sans",sans-serif;list-style-type:none}
+#toc li{line-height:1.3334;margin-top:.3334em}
+#toc a{text-decoration:none}
+#toc a:active{text-decoration:underline}
+#toctitle{color:#7a2518;font-size:1.2em}
+@media screen and (min-width:768px){#toctitle{font-size:1.375em}
+body.toc2{padding-left:15em;padding-right:0}
+body.toc2 #header>h1:nth-last-child(2){border-bottom:1px solid #dddddf;padding-bottom:8px}
+#toc.toc2{margin-top:0!important;background:#f8f8f7;position:fixed;width:15em;left:0;top:0;border-right:1px solid #e7e7e9;border-top-width:0!important;border-bottom-width:0!important;z-index:1000;padding:1.25em 1em;height:100%;overflow:auto}
+#toc.toc2 #toctitle{margin-top:0;margin-bottom:.8rem;font-size:1.2em}
+#toc.toc2>ul{font-size:.9em;margin-bottom:0}
+#toc.toc2 ul ul{margin-left:0;padding-left:1em}
+#toc.toc2 ul.sectlevel0 ul.sectlevel1{padding-left:0;margin-top:.5em;margin-bottom:.5em}
+body.toc2.toc-right{padding-left:0;padding-right:15em}
+body.toc2.toc-right #toc.toc2{border-right-width:0;border-left:1px solid #e7e7e9;left:auto;right:0}}
+@media screen and (min-width:1280px){body.toc2{padding-left:20em;padding-right:0}
+#toc.toc2{width:20em}
+#toc.toc2 #toctitle{font-size:1.375em}
+#toc.toc2>ul{font-size:.95em}
+#toc.toc2 ul ul{padding-left:1.25em}
+body.toc2.toc-right{padding-left:0;padding-right:20em}}
+#content #toc{border:1px solid #e0e0dc;margin-bottom:1.25em;padding:1.25em;background:#f8f8f7;border-radius:4px}
+#content #toc>:first-child{margin-top:0}
+#content #toc>:last-child{margin-bottom:0}
+#footer{max-width:none;background:rgba(0,0,0,.8);padding:1.25em}
+#footer-text{color:hsla(0,0%,100%,.8);line-height:1.44}
+#content{margin-bottom:.625em}
+.sect1{padding-bottom:.625em}
+@media screen and (min-width:768px){#content{margin-bottom:1.25em}
+.sect1{padding-bottom:1.25em}}
+.sect1:last-child{padding-bottom:0}
+.sect1+.sect1{border-top:1px solid #e7e7e9}
+#content h1>a.anchor,h2>a.anchor,h3>a.anchor,#toctitle>a.anchor,.sidebarblock>.content>.title>a.anchor,h4>a.anchor,h5>a.anchor,h6>a.anchor{position:absolute;z-index:1001;width:1.5ex;margin-left:-1.5ex;display:block;text-decoration:none!important;visibility:hidden;text-align:center;font-weight:400}
+#content h1>a.anchor::before,h2>a.anchor::before,h3>a.anchor::before,#toctitle>a.anchor::before,.sidebarblock>.content>.title>a.anchor::before,h4>a.anchor::before,h5>a.anchor::before,h6>a.anchor::before{content:"\00A7";font-size:.85em;display:block;padding-top:.1em}
+#content h1:hover>a.anchor,#content h1>a.anchor:hover,h2:hover>a.anchor,h2>a.anchor:hover,h3:hover>a.anchor,#toctitle:hover>a.anchor,.sidebarblock>.content>.title:hover>a.anchor,h3>a.anchor:hover,#toctitle>a.anchor:hover,.sidebarblock>.content>.title>a.anchor:hover,h4:hover>a.anchor,h4>a.anchor:hover,h5:hover>a.anchor,h5>a.anchor:hover,h6:hover>a.anchor,h6>a.anchor:hover{visibility:visible}
+#content h1>a.link,h2>a.link,h3>a.link,#toctitle>a.link,.sidebarblock>.content>.title>a.link,h4>a.link,h5>a.link,h6>a.link{color:#ba3925;text-decoration:none}
+#content h1>a.link:hover,h2>a.link:hover,h3>a.link:hover,#toctitle>a.link:hover,.sidebarblock>.content>.title>a.link:hover,h4>a.link:hover,h5>a.link:hover,h6>a.link:hover{color:#a53221}
+details,.audioblock,.imageblock,.literalblock,.listingblock,.stemblock,.videoblock{margin-bottom:1.25em}
+details{margin-left:1.25rem}
+details>summary{cursor:pointer;display:block;position:relative;line-height:1.6;margin-bottom:.625rem;outline:none;-webkit-tap-highlight-color:transparent}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"";border:solid transparent;border-left:solid;border-width:.3em 0 .3em .5em;position:absolute;top:.5em;left:-1.25rem;transform:translateX(15%)}
+details[open]>summary::before{border:solid transparent;border-top:solid;border-width:.5em .3em 0;transform:translateY(15%)}
+details>summary::after{content:"";width:1.25rem;height:1em;position:absolute;top:.3em;left:-1.25rem}
+.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{text-rendering:optimizeLegibility;text-align:left;font-family:"Noto Serif","DejaVu Serif",serif;font-size:1rem;font-style:italic}
+table.tableblock.fit-content>caption.title{white-space:nowrap;width:0}
+.paragraph.lead>p,#preamble>.sectionbody>[class=paragraph]:first-of-type p{font-size:1.21875em;line-height:1.6;color:rgba(0,0,0,.85)}
+.admonitionblock>table{border-collapse:separate;border:0;background:none;width:100%}
+.admonitionblock>table td.icon{text-align:center;width:80px}
+.admonitionblock>table td.icon img{max-width:none}
+.admonitionblock>table td.icon .title{font-weight:bold;font-family:"Open Sans","DejaVu Sans",sans-serif;text-transform:uppercase}
+.admonitionblock>table td.content{padding-left:1.125em;padding-right:1.25em;border-left:1px solid #dddddf;color:rgba(0,0,0,.6);word-wrap:anywhere}
+.admonitionblock>table td.content>:last-child>:last-child{margin-bottom:0}
+.exampleblock>.content{border:1px solid #e6e6e6;margin-bottom:1.25em;padding:1.25em;background:#fff;border-radius:4px}
+.sidebarblock{border:1px solid #dbdbd6;margin-bottom:1.25em;padding:1.25em;background:#f3f3f2;border-radius:4px}
+.sidebarblock>.content>.title{color:#7a2518;margin-top:0;text-align:center}
+.exampleblock>.content>:first-child,.sidebarblock>.content>:first-child{margin-top:0}
+.exampleblock>.content>:last-child,.exampleblock>.content>:last-child>:last-child,.exampleblock>.content .olist>ol>li:last-child>:last-child,.exampleblock>.content .ulist>ul>li:last-child>:last-child,.exampleblock>.content .qlist>ol>li:last-child>:last-child,.sidebarblock>.content>:last-child,.sidebarblock>.content>:last-child>:last-child,.sidebarblock>.content .olist>ol>li:last-child>:last-child,.sidebarblock>.content .ulist>ul>li:last-child>:last-child,.sidebarblock>.content .qlist>ol>li:last-child>:last-child{margin-bottom:0}
+.literalblock pre,.listingblock>.content>pre{border-radius:4px;overflow-x:auto;padding:1em;font-size:.8125em}
+@media screen and (min-width:768px){.literalblock pre,.listingblock>.content>pre{font-size:.90625em}}
+@media screen and (min-width:1280px){.literalblock pre,.listingblock>.content>pre{font-size:1em}}
+.literalblock pre,.listingblock>.content>pre:not(.highlight),.listingblock>.content>pre[class=highlight],.listingblock>.content>pre[class^="highlight "]{background:#f7f7f8}
+.literalblock.output pre{color:#f7f7f8;background:rgba(0,0,0,.9)}
+.listingblock>.content{position:relative}
+.listingblock code[data-lang]::before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:inherit;opacity:.5}
+.listingblock:hover code[data-lang]::before{display:block}
+.listingblock.terminal pre .command::before{content:attr(data-prompt);padding-right:.5em;color:inherit;opacity:.5}
+.listingblock.terminal pre .command:not([data-prompt])::before{content:"$"}
+.listingblock pre.highlightjs{padding:0}
+.listingblock pre.highlightjs>code{padding:1em;border-radius:4px}
+.listingblock pre.prettyprint{border-width:0}
+.prettyprint{background:#f7f7f8}
+pre.prettyprint .linenums{line-height:1.45;margin-left:2em}
+pre.prettyprint li{background:none;list-style-type:inherit;padding-left:0}
+pre.prettyprint li code[data-lang]::before{opacity:1}
+pre.prettyprint li:not(:first-child) code[data-lang]::before{display:none}
+table.linenotable{border-collapse:separate;border:0;margin-bottom:0;background:none}
+table.linenotable td[class]{color:inherit;vertical-align:top;padding:0;line-height:inherit;white-space:normal}
+table.linenotable td.code{padding-left:.75em}
+table.linenotable td.linenos,pre.pygments .linenos{border-right:1px solid;opacity:.35;padding-right:.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+pre.pygments span.linenos{display:inline-block;margin-right:.75em}
+.quoteblock{margin:0 1em 1.25em 1.5em;display:table}
+.quoteblock:not(.excerpt)>.title{margin-left:-1.5em;margin-bottom:.75em}
+.quoteblock blockquote,.quoteblock p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;word-spacing:.1em;letter-spacing:0;font-style:italic;text-align:justify}
+.quoteblock blockquote{margin:0;padding:0;border:0}
+.quoteblock blockquote::before{content:"\201c";float:left;font-size:2.75em;font-weight:bold;line-height:.6em;margin-left:-.6em;color:#7a2518;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.quoteblock blockquote>.paragraph:last-child p{margin-bottom:0}
+.quoteblock .attribution{margin-top:.75em;margin-right:.5ex;text-align:right}
+.verseblock{margin:0 1em 1.25em}
+.verseblock pre{font-family:"Open Sans","DejaVu Sans",sans-serif;font-size:1.15rem;color:rgba(0,0,0,.85);font-weight:300;text-rendering:optimizeLegibility}
+.verseblock pre strong{font-weight:400}
+.verseblock .attribution{margin-top:1.25rem;margin-left:.5ex}
+.quoteblock .attribution,.verseblock .attribution{font-size:.9375em;line-height:1.45;font-style:italic}
+.quoteblock .attribution br,.verseblock .attribution br{display:none}
+.quoteblock .attribution cite,.verseblock .attribution cite{display:block;letter-spacing:-.025em;color:rgba(0,0,0,.6)}
+.quoteblock.abstract blockquote::before,.quoteblock.excerpt blockquote::before,.quoteblock .quoteblock blockquote::before{display:none}
+.quoteblock.abstract blockquote,.quoteblock.abstract p,.quoteblock.excerpt blockquote,.quoteblock.excerpt p,.quoteblock .quoteblock blockquote,.quoteblock .quoteblock p{line-height:1.6;word-spacing:0}
+.quoteblock.abstract{margin:0 1em 1.25em;display:block}
+.quoteblock.abstract>.title{margin:0 0 .375em;font-size:1.15em;text-align:center}
+.quoteblock.excerpt>blockquote,.quoteblock .quoteblock{padding:0 0 .25em 1em;border-left:.25em solid #dddddf}
+.quoteblock.excerpt,.quoteblock .quoteblock{margin-left:0}
+.quoteblock.excerpt blockquote,.quoteblock.excerpt p,.quoteblock .quoteblock blockquote,.quoteblock .quoteblock p{color:inherit;font-size:1.0625rem}
+.quoteblock.excerpt .attribution,.quoteblock .quoteblock .attribution{color:inherit;font-size:.85rem;text-align:left;margin-right:0}
+p.tableblock:last-child{margin-bottom:0}
+td.tableblock>.content{margin-bottom:1.25em;word-wrap:anywhere}
+td.tableblock>.content>:last-child{margin-bottom:-1.25em}
+table.tableblock,th.tableblock,td.tableblock{border:0 solid #dedede}
+table.grid-all>*>tr>*{border-width:1px}
+table.grid-cols>*>tr>*{border-width:0 1px}
+table.grid-rows>*>tr>*{border-width:1px 0}
+table.frame-all{border-width:1px}
+table.frame-ends{border-width:1px 0}
+table.frame-sides{border-width:0 1px}
+table.frame-none>colgroup+*>:first-child>*,table.frame-sides>colgroup+*>:first-child>*{border-top-width:0}
+table.frame-none>:last-child>:last-child>*,table.frame-sides>:last-child>:last-child>*{border-bottom-width:0}
+table.frame-none>*>tr>:first-child,table.frame-ends>*>tr>:first-child{border-left-width:0}
+table.frame-none>*>tr>:last-child,table.frame-ends>*>tr>:last-child{border-right-width:0}
+table.stripes-all>*>tr,table.stripes-odd>*>tr:nth-of-type(odd),table.stripes-even>*>tr:nth-of-type(even),table.stripes-hover>*>tr:hover{background:#f8f8f7}
+th.halign-left,td.halign-left{text-align:left}
+th.halign-right,td.halign-right{text-align:right}
+th.halign-center,td.halign-center{text-align:center}
+th.valign-top,td.valign-top{vertical-align:top}
+th.valign-bottom,td.valign-bottom{vertical-align:bottom}
+th.valign-middle,td.valign-middle{vertical-align:middle}
+table thead th,table tfoot th{font-weight:bold}
+tbody tr th{background:#f7f8f7}
+tbody tr th,tbody tr th p,tfoot tr th,tfoot tr th p{color:rgba(0,0,0,.8);font-weight:bold}
+p.tableblock>code:only-child{background:none;padding:0}
+p.tableblock{font-size:1em}
+ol{margin-left:1.75em}
+ul li ol{margin-left:1.5em}
+dl dd{margin-left:1.125em}
+dl dd:last-child,dl dd:last-child>:last-child{margin-bottom:0}
+li p,ul dd,ol dd,.olist .olist,.ulist .ulist,.ulist .olist,.olist .ulist{margin-bottom:.625em}
+ul.checklist,ul.none,ol.none,ul.no-bullet,ol.no-bullet,ol.unnumbered,ul.unstyled,ol.unstyled{list-style-type:none}
+ul.no-bullet,ol.no-bullet,ol.unnumbered{margin-left:.625em}
+ul.unstyled,ol.unstyled{margin-left:0}
+li>p:empty:only-child::before{content:"";display:inline-block}
+ul.checklist>li>p:first-child{margin-left:-1em}
+ul.checklist>li>p:first-child>.fa-square-o:first-child,ul.checklist>li>p:first-child>.fa-check-square-o:first-child{width:1.25em;font-size:.8em;position:relative;bottom:.125em}
+ul.checklist>li>p:first-child>input[type=checkbox]:first-child{margin-right:.25em}
+ul.inline{display:flex;flex-flow:row wrap;list-style:none;margin:0 0 .625em -1.25em}
+ul.inline>li{margin-left:1.25em}
+.unstyled dl dt{font-weight:400;font-style:normal}
+ol.arabic{list-style-type:decimal}
+ol.decimal{list-style-type:decimal-leading-zero}
+ol.loweralpha{list-style-type:lower-alpha}
+ol.upperalpha{list-style-type:upper-alpha}
+ol.lowerroman{list-style-type:lower-roman}
+ol.upperroman{list-style-type:upper-roman}
+ol.lowergreek{list-style-type:lower-greek}
+.hdlist>table,.colist>table{border:0;background:none}
+.hdlist>table>tbody>tr,.colist>table>tbody>tr{background:none}
+td.hdlist1,td.hdlist2{vertical-align:top;padding:0 .625em}
+td.hdlist1{font-weight:bold;padding-bottom:1.25em}
+td.hdlist2{word-wrap:anywhere}
+.literalblock+.colist,.listingblock+.colist{margin-top:-.5em}
+.colist td:not([class]):first-child{padding:.4em .75em 0;line-height:1;vertical-align:top}
+.colist td:not([class]):first-child img{max-width:none}
+.colist td:not([class]):last-child{padding:.25em 0}
+.thumb,.th{line-height:0;display:inline-block;border:4px solid #fff;box-shadow:0 0 0 1px #ddd}
+.imageblock.left{margin:.25em .625em 1.25em 0}
+.imageblock.right{margin:.25em 0 1.25em .625em}
+.imageblock>.title{margin-bottom:0}
+.imageblock.thumb,.imageblock.th{border-width:6px}
+.imageblock.thumb>.title,.imageblock.th>.title{padding:0 .125em}
+.image.left,.image.right{margin-top:.25em;margin-bottom:.25em;display:inline-block;line-height:0}
+.image.left{margin-right:.625em}
+.image.right{margin-left:.625em}
+a.image{text-decoration:none;display:inline-block}
+a.image object{pointer-events:none}
+sup.footnote,sup.footnoteref{font-size:.875em;position:static;vertical-align:super}
+sup.footnote a,sup.footnoteref a{text-decoration:none}
+sup.footnote a:active,sup.footnoteref a:active,#footnotes .footnote a:first-of-type:active{text-decoration:underline}
+#footnotes{padding-top:.75em;padding-bottom:.75em;margin-bottom:.625em}
+#footnotes hr{width:20%;min-width:6.25em;margin:-.25em 0 .75em;border-width:1px 0 0}
+#footnotes .footnote{padding:0 .375em 0 .225em;line-height:1.3334;font-size:.875em;margin-left:1.2em;margin-bottom:.2em}
+#footnotes .footnote a:first-of-type{font-weight:bold;text-decoration:none;margin-left:-1.05em}
+#footnotes .footnote:last-of-type{margin-bottom:0}
+#content #footnotes{margin-top:-.625em;margin-bottom:0;padding:.75em 0}
+div.unbreakable{page-break-inside:avoid}
+.big{font-size:larger}
+.small{font-size:smaller}
+.underline{text-decoration:underline}
+.overline{text-decoration:overline}
+.line-through{text-decoration:line-through}
+.aqua{color:#00bfbf}
+.aqua-background{background:#00fafa}
+.black{color:#000}
+.black-background{background:#000}
+.blue{color:#0000bf}
+.blue-background{background:#0000fa}
+.fuchsia{color:#bf00bf}
+.fuchsia-background{background:#fa00fa}
+.gray{color:#606060}
+.gray-background{background:#7d7d7d}
+.green{color:#006000}
+.green-background{background:#007d00}
+.lime{color:#00bf00}
+.lime-background{background:#00fa00}
+.maroon{color:#600000}
+.maroon-background{background:#7d0000}
+.navy{color:#000060}
+.navy-background{background:#00007d}
+.olive{color:#606000}
+.olive-background{background:#7d7d00}
+.purple{color:#600060}
+.purple-background{background:#7d007d}
+.red{color:#bf0000}
+.red-background{background:#fa0000}
+.silver{color:#909090}
+.silver-background{background:#bcbcbc}
+.teal{color:#006060}
+.teal-background{background:#007d7d}
+.white{color:#bfbfbf}
+.white-background{background:#fafafa}
+.yellow{color:#bfbf00}
+.yellow-background{background:#fafa00}
+span.icon>.fa{cursor:default}
+a span.icon>.fa{cursor:inherit}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note::before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip::before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning::before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution::before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important::before{content:"\f06a";color:#bf0000}
+.conum[data-value]{display:inline-block;color:#fff!important;background:rgba(0,0,0,.8);border-radius:50%;text-align:center;font-size:.75em;width:1.67em;height:1.67em;line-height:1.67em;font-family:"Open Sans","DejaVu Sans",sans-serif;font-style:normal;font-weight:bold}
+.conum[data-value] *{color:#fff!important}
+.conum[data-value]+b{display:none}
+.conum[data-value]::after{content:attr(data-value)}
+pre .conum[data-value]{position:relative;top:-.125em}
+b.conum *{color:inherit!important}
+.conum:not([data-value]):empty{display:none}
+dt,th.tableblock,td.content,div.footnote{text-rendering:optimizeLegibility}
+h1,h2,p,td.content,span.alt,summary{letter-spacing:-.01em}
+p strong,td.content strong,div.footnote strong{letter-spacing:-.005em}
+p,blockquote,dt,td.content,td.hdlist1,span.alt,summary{font-size:1.0625rem}
+p{margin-bottom:1.25rem}
+.sidebarblock p,.sidebarblock dt,.sidebarblock td.content,p.tableblock{font-size:1em}
+.exampleblock>.content{background:#fffef7;border-color:#e0e0dc;box-shadow:0 1px 4px #e0e0dc}
+.print-only{display:none!important}
+@page{margin:1.25cm .75cm}
+@media print{*{box-shadow:none!important;text-shadow:none!important}
+html{font-size:80%}
+a{color:inherit!important;text-decoration:underline!important}
+a.bare,a[href^="#"],a[href^="mailto:"]{text-decoration:none!important}
+a[href^="http:"]:not(.bare)::after,a[href^="https:"]:not(.bare)::after{content:"(" attr(href) ")";display:inline-block;font-size:.875em;padding-left:.25em}
+abbr[title]{border-bottom:1px dotted}
+abbr[title]::after{content:" (" attr(title) ")"}
+pre,blockquote,tr,img,object,svg{page-break-inside:avoid}
+thead{display:table-header-group}
+svg{max-width:100%}
+p,blockquote,dt,td.content{font-size:1em;orphans:3;widows:3}
+h2,h3,#toctitle,.sidebarblock>.content>.title{page-break-after:avoid}
+#header,#content,#footnotes,#footer{max-width:none}
+#toc,.sidebarblock,.exampleblock>.content{background:none!important}
+#toc{border-bottom:1px solid #dddddf!important;padding-bottom:0!important}
+body.book #header{text-align:center}
+body.book #header>h1:first-child{border:0!important;margin:2.5em 0 1em}
+body.book #header .details{border:0!important;display:block;padding:0!important}
+body.book #header .details span:first-child{margin-left:0!important}
+body.book #header .details br{display:block}
+body.book #header .details br+span::before{content:none!important}
+body.book #toc{border:0!important;text-align:left!important;padding:0!important;margin:0!important}
+body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-break-before:always}
+.listingblock code[data-lang]::before{display:block}
+#footer{padding:0 .9375em}
+.hide-on-print{display:none!important}
+.print-only{display:block!important}
+.hide-for-print{display:none!important}
+.show-for-print{display:inherit!important}}
+@media amzn-kf8,print{#header>h1:first-child{margin-top:1.25rem}
+.sect1{padding:0!important}
+.sect1+.sect1{border:0}
+#footer{background:none}
+#footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
+@media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
+</style>
+<style>
+pre.rouge table td { padding: 5px; }
+pre.rouge table pre { margin: 0; }
+pre.rouge, pre.rouge .w {
+  color: #24292f;
+  background-color: #f6f8fa;
+}
+pre.rouge .k, pre.rouge .kd, pre.rouge .kn, pre.rouge .kp, pre.rouge .kr, pre.rouge .kt, pre.rouge .kv {
+  color: #cf222e;
+}
+pre.rouge .gr {
+  color: #f6f8fa;
+}
+pre.rouge .gd {
+  color: #82071e;
+  background-color: #ffebe9;
+}
+pre.rouge .nb {
+  color: #953800;
+}
+pre.rouge .nc {
+  color: #953800;
+}
+pre.rouge .no {
+  color: #953800;
+}
+pre.rouge .nn {
+  color: #953800;
+}
+pre.rouge .sr {
+  color: #116329;
+}
+pre.rouge .na {
+  color: #116329;
+}
+pre.rouge .nt {
+  color: #116329;
+}
+pre.rouge .gi {
+  color: #116329;
+  background-color: #dafbe1;
+}
+pre.rouge .ges {
+  font-weight: bold;
+  font-style: italic;
+}
+pre.rouge .kc {
+  color: #0550ae;
+}
+pre.rouge .l, pre.rouge .ld, pre.rouge .m, pre.rouge .mb, pre.rouge .mf, pre.rouge .mh, pre.rouge .mi, pre.rouge .il, pre.rouge .mo, pre.rouge .mx {
+  color: #0550ae;
+}
+pre.rouge .sb {
+  color: #0550ae;
+}
+pre.rouge .bp {
+  color: #0550ae;
+}
+pre.rouge .ne {
+  color: #0550ae;
+}
+pre.rouge .nl {
+  color: #0550ae;
+}
+pre.rouge .py {
+  color: #0550ae;
+}
+pre.rouge .nv, pre.rouge .vc, pre.rouge .vg, pre.rouge .vi, pre.rouge .vm {
+  color: #0550ae;
+}
+pre.rouge .o, pre.rouge .ow {
+  color: #0550ae;
+}
+pre.rouge .gh {
+  color: #0550ae;
+  font-weight: bold;
+}
+pre.rouge .gu {
+  color: #0550ae;
+  font-weight: bold;
+}
+pre.rouge .s, pre.rouge .sa, pre.rouge .sc, pre.rouge .dl, pre.rouge .sd, pre.rouge .s2, pre.rouge .se, pre.rouge .sh, pre.rouge .sx, pre.rouge .s1, pre.rouge .ss {
+  color: #0a3069;
+}
+pre.rouge .nd {
+  color: #8250df;
+}
+pre.rouge .nf, pre.rouge .fm {
+  color: #8250df;
+}
+pre.rouge .err {
+  color: #f6f8fa;
+  background-color: #82071e;
+}
+pre.rouge .c, pre.rouge .ch, pre.rouge .cd, pre.rouge .cm, pre.rouge .cp, pre.rouge .cpf, pre.rouge .c1, pre.rouge .cs {
+  color: #6e7781;
+}
+pre.rouge .gl {
+  color: #6e7781;
+}
+pre.rouge .gt {
+  color: #6e7781;
+}
+pre.rouge .ni {
+  color: #24292f;
+}
+pre.rouge .si {
+  color: #24292f;
+}
+pre.rouge .ge {
+  color: #24292f;
+  font-style: italic;
+}
+pre.rouge .gs {
+  color: #24292f;
+  font-weight: bold;
+}
+</style>
+</head>
+<body class="book">
+<div id="header">
+<h1>Software Architecture and Platforms Report</h1>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Università di Bologna · Campus di Cesena</p>
+</div>
+<div class="paragraph">
+<p>Assignment 3 Report - Master Degree in Computer Science and Engineering</p>
+</div>
+<hr>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><span class="normalize">Alessandro Becci</span></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><span class="normalize">Enrolment n.0001125114</span></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><span class="normalize">alessandro.becci@studio.unibo.it</span></p></td>
+</tr>
+</tbody>
+</table>
+<div id="toc" class="toc">
+<div id="toctitle" class="title">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_ebike_application_in_event_driven_architecture">1. EBike Application in Event Driven Architecture</a>
+<ul class="sectlevel2">
+<li><a href="#_kafka_topics">1.1. Kafka Topics</a></li>
+<li><a href="#_event_flow">1.2. Event Flow</a></li>
+<li><a href="#_event_sourcing_implementation">1.3. Event Sourcing Implementation</a></li>
+<li><a href="#_adapter_configuration">1.4. Adapter Configuration</a></li>
+<li><a href="#_deployment_configuration">1.5. Deployment Configuration</a></li>
+</ul>
+</li>
+<li><a href="#_kubernetes_deployment_transformation">2. Kubernetes Deployment Transformation</a>
+<ul class="sectlevel2">
+<li><a href="#_overview_of_transformation">2.1. Overview of Transformation</a></li>
+<li><a href="#_configuration_management_migration">2.2. Configuration Management Migration</a></li>
+<li><a href="#_service_discovery_and_networking">2.3. Service Discovery and Networking</a></li>
+<li><a href="#_dependency_management">2.4. Dependency Management</a></li>
+<li><a href="#_kafka_infrastructure_transformation">2.5. Kafka Infrastructure Transformation</a></li>
+<li><a href="#_storage_management">2.6. Storage Management</a></li>
+<li><a href="#_load_balancing_and_external_access">2.7. Load Balancing and External Access</a></li>
+<li><a href="#_deployment_orchestration">2.8. Deployment Orchestration</a></li>
+<li><a href="#_key_benefits_of_kubernetes_transformation">2.9. Key Benefits of Kubernetes Transformation</a></li>
+<li><a href="#_event_driven_architecture_preservation">2.10. Event Driven Architecture Preservation</a></li>
+</ul>
+</li>
+<li><a href="#_autonomous_a_bike_case_study">3. Autonomous A-Bike Case Study</a>
+<ul class="sectlevel2">
+<li><a href="#_new_features">3.1. New Features</a></li>
+<li><a href="#_requirements">3.2. Requirements</a></li>
+<li><a href="#_implementation">3.3. Implementation</a></li>
+<li><a href="#_digital_twin">3.4. Digital Twin</a></li>
+</ul>
+</li>
+<li><a href="#_conclusions">4. Conclusions</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ebike_application_in_event_driven_architecture">1. EBike Application in Event Driven Architecture</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Domain-Driven Design (DDD) about already made parts is not repeated here, since it&#8217;s already provided in the report of the second assignment, available at <a href="https://github.com/stormtroober/microservices-ebikes/blob/main/doc/asciidoc/doc/assets/docs/report.pdf">Assignment 2 Report</a>.</p>
+</div>
+<div class="paragraph">
+<p>For transforming the EBike application into an event-driven architecture, Kafka is used as the event broker, enabling asynchronous communication between the microservices. This section describes the Kafka topics used, the event flow between services, and the configuration of adapters that produce and consume events.</p>
+</div>
+<div class="sect2">
+<h3 id="_kafka_topics">1.1. Kafka Topics</h3>
+<div class="paragraph">
+<p>This part describes the Kafka topics used to transform the EBike Application original architecture into an event-driven architecture. The topics are designed to facilitate communication between the ebike, ride, map, and user microservices, ensuring that each service can react to relevant events without direct dependencies on one another.</p>
+</div>
+<div class="paragraph">
+<p><strong>Topics Used</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>ebike-updates</strong>: This topic carries status and position updates from ebikes to the map service (for visualization purposes) and to the ride service (for local state synchronization). When an ebike changes position or updates its status (available, in use, maintenance), these events are published here.</p>
+</li>
+<li>
+<p><strong>ebike-ride-update</strong>: This topic handles ride-related updates that flow from the ride service to the ebike service.</p>
+</li>
+<li>
+<p><strong>ride-map-update</strong>: This topic transmits ride events (start/end of rides) from the ride service to the map service.</p>
+</li>
+<li>
+<p><strong>ride-user-update</strong>: This topic carries updates from the ride service to the user service, including credit charges for completed rides and ride status changes that affect the user experience.</p>
+</li>
+<li>
+<p><strong>user-update</strong>: This topic handles general user data updates (such as profile information) from the user service to the ride service. These events are used to maintain synchronized local state across services when user information changes.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_event_flow">1.2. Event Flow</h3>
+<div class="paragraph">
+<p>At the purpose of explaining the event flow, i&#8217;ll detail how events are produced and consumed across the microservices involved in the EBike system.</p>
+</div>
+<div class="sect3">
+<h4 id="_detailed_communication_patterns">1.2.1. Detailed Communication Patterns</h4>
+<div class="imageblock">
+<div class="content">
+<img src="resources/svg/kafka-comm-ebike.svg" alt="kafka comm ebike" width="60%" height="579">
+</div>
+<div class="title">Figure 1. Microservices communications of EBike system using Kafka</div>
+</div>
+<div class="sect4">
+<h5 id="_1_ebike_state_update">1. EBike State Update</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> ebike-microservice (<em>MapCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> ebike-updates</p>
+</li>
+<li>
+<p><strong>Consumers:</strong> map-microservice (<em>BikeUpdateAdapter</em>), ride-microservice (<em>BikeConsumerAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When an EBike&#8217;s state or position changes, the ebike-microservice publishes this update to the ebike-updates topic. The map service consumes this message to update the bike&#8217;s position on the map, while the ride service updates its local repository of available e-bikes.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_ride_events_affecting_ebike">2. Ride Events Affecting EBike</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> ride-microservice (<em>EBikeCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> ebike-ride-update</p>
+</li>
+<li>
+<p><strong>Consumer:</strong> ebike-microservice (<em>RideCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When the ride service processes a ride event (e.g., start/end ride), it publishes an update to the ebike-ride-update topic. The ebike service consumes this message and updates the EBike&#8217;s state accordingly (e.g., from AVAILABLE to IN_USE).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_3_ride_events_affecting_map">3. Ride Events Affecting Map</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> ride-microservice (<em>MapCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> ride-map-update</p>
+</li>
+<li>
+<p><strong>Consumer:</strong> map-microservice (<em>RideUpdateAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When the ride service processes a ride event, it sends a message to the ride-map-update topic. The map service consumes this message to associate or disassociate the user with the bike on the map.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_4_ride_events_affecting_user">4. Ride Events Affecting User</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> ride-microservice (<em>UserCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> ride-user-update</p>
+</li>
+<li>
+<p><strong>Consumer:</strong> user-microservice (<em>RideConsumerAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When the ride service handles user-related events (e.g., charging for a completed ride), it sends an update to the ride-user-update topic. The user service consumes this message to update user data (e.g., remaining credit).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_5_user_data_update">5. User Data Update</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> user-microservice (<em>RideProducerAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> user-update</p>
+</li>
+<li>
+<p><strong>Consumer:</strong> ride-microservice (<em>UserConsumerAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When user data changes in the user service, it sends an update to the user-update topic. The ride service consumes this message to keep its local user repository synchronized.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_ride_scenario">1.2.2. Ride Scenario</h4>
+<div class="paragraph">
+<p>When a user starts a ride through the system, a complex sequence of events propagates through the microservices:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The ride service receives the API call to start a ride and becomes the initial event producer</p>
+</li>
+<li>
+<p>The ride service publishes events to multiple topics:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>To ebike-ride-update to inform the ebike service to mark the bike as in use</p>
+</li>
+<li>
+<p>To ride-map-update to update the map visualization</p>
+</li>
+<li>
+<p>To ride-user-update to charge the user&#8217;s credit for the ride</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The ebike service responds to these events by:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Consuming the ebike-ride-update message and changing the bike&#8217;s status</p>
+</li>
+<li>
+<p>Publishing its own update to ebike-updates to notify all interested services of the bike&#8217;s new state</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The map service maintains an up-to-date view by:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Consuming ebike-updates to have current bike positions and statuses</p>
+</li>
+<li>
+<p>Consuming ride-map-update to visualize user-bike associations</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The user service consumes ride-user-update messages to manage user credit and ride history</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_event_sourcing_implementation">1.3. Event Sourcing Implementation</h3>
+<div class="paragraph">
+<p>The User Microservice has been choosen for event sourcing because it handles critical user data, such as credit and ride history, which must be accurately tracked and auditable. By storing events in a MongoDB collection, the system can maintain a complete history of user interactions, allowing features like user activity tracking and credit management.</p>
+</div>
+<div class="sect3">
+<h4 id="_event_types_and_structure">1.3.1. Event Types and Structure</h4>
+<div class="paragraph">
+<p>The event sourcing implementation defines three main event types that capture all possible state changes for a user:</p>
+</div>
+<div class="listingblock">
+<div class="title">User Event Types</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">enum</span> <span class="nc">UserEventType</span> <span class="o">{</span>
+  <span class="no">USER_CREATED</span><span class="o">(</span><span class="s">"UserCreated"</span><span class="o">),</span>
+  <span class="no">CREDIT_UPDATED</span><span class="o">(</span><span class="s">"CreditUpdated"</span><span class="o">),</span>
+  <span class="no">CREDIT_RECHARGED</span><span class="o">(</span><span class="s">"CreditRecharged"</span><span class="o">);</span>
+  <span class="c1">// ...existing code...</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each event implements the <code>UserEvent</code> interface, which provides common properties for event identification and ordering:</p>
+</div>
+<div class="listingblock">
+<div class="title">UserEvent Interface</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">UserEvent</span> <span class="o">{</span>
+  <span class="nc">String</span> <span class="nf">getAggregateId</span><span class="o">();</span> <span class="c1">// username</span>
+  <span class="kt">long</span> <span class="nf">getSequence</span><span class="o">();</span>      <span class="c1">// version for ordering</span>
+  <span class="kt">long</span> <span class="nf">getOccurredAt</span><span class="o">();</span>    <span class="c1">// timestamp</span>
+  <span class="nc">UserEventType</span> <span class="nf">getType</span><span class="o">();</span> <span class="c1">// event type identifier</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>UserCreated</code> event captures the initial user registration with their type and starting credit:</p>
+</div>
+<div class="listingblock">
+<div class="title">UserCreated Event Structure</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">UserCreated</span> <span class="kd">implements</span> <span class="nc">UserEvent</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">aggregateId</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">sequence</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="nc">UserEventType</span> <span class="n">type</span> <span class="o">=</span> <span class="nc">UserEventType</span><span class="o">.</span><span class="na">USER_CREATED</span><span class="o">;</span>
+
+  <span class="c1">// Payload fields</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">userType</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">initialCredit</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">UserCreated</span><span class="o">(</span><span class="nc">String</span> <span class="n">aggregateId</span><span class="o">,</span> <span class="kt">long</span> <span class="n">sequence</span><span class="o">,</span> <span class="nc">String</span> <span class="n">userType</span><span class="o">,</span> <span class="kt">int</span> <span class="n">initialCredit</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">aggregateId</span> <span class="o">=</span> <span class="n">aggregateId</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">sequence</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">userType</span> <span class="o">=</span> <span class="n">userType</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">initialCredit</span> <span class="o">=</span> <span class="n">initialCredit</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">occurredAt</span> <span class="o">=</span> <span class="nc">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+  <span class="o">}</span>
+  <span class="c1">// ...existing code...</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_user_aggregate_pattern">1.3.2. User Aggregate Pattern</h4>
+<div class="paragraph">
+<p>The <code>UserAggregate</code> class implements the aggregate pattern, maintaining the current state of a user by applying a sequence of events. This approach ensures that the current state can always be reconstructed from the event history:</p>
+</div>
+<div class="listingblock">
+<div class="title">User Aggregate State Reconstruction</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserAggregate</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="nc">String</span> <span class="n">username</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="nc">String</span> <span class="n">userType</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kt">int</span> <span class="n">credit</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kt">long</span> <span class="n">version</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">UserAggregate</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">UserEvent</span><span class="o">&gt;</span> <span class="n">history</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">version</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="n">history</span><span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="k">this</span><span class="o">::</span><span class="n">applyEvent</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">applyEvent</span><span class="o">(</span><span class="nc">UserEvent</span> <span class="n">evt</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">switch</span> <span class="o">(</span><span class="n">evt</span><span class="o">.</span><span class="na">getType</span><span class="o">())</span> <span class="o">{</span>
+      <span class="k">case</span> <span class="nl">USER_CREATED:</span>
+        <span class="nc">UserCreated</span> <span class="n">uc</span> <span class="o">=</span> <span class="o">(</span><span class="nc">UserCreated</span><span class="o">)</span> <span class="n">evt</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">username</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="na">getAggregateId</span><span class="o">();</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">userType</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="na">getUserType</span><span class="o">();</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">credit</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="na">getInitialCredit</span><span class="o">();</span>
+        <span class="k">break</span><span class="o">;</span>
+      <span class="k">case</span> <span class="nl">CREDIT_RECHARGED:</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">credit</span> <span class="o">+=</span> <span class="o">((</span><span class="nc">CreditRecharged</span><span class="o">)</span> <span class="n">evt</span><span class="o">).</span><span class="na">getAmount</span><span class="o">();</span>
+        <span class="k">break</span><span class="o">;</span>
+      <span class="k">case</span> <span class="nl">CREDIT_UPDATED:</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">credit</span> <span class="o">=</span> <span class="o">((</span><span class="nc">CreditUpdated</span><span class="o">)</span> <span class="n">evt</span><span class="o">).</span><span class="na">getNewCredit</span><span class="o">();</span>
+        <span class="k">break</span><span class="o">;</span>
+      <span class="c1">// ...existing code...</span>
+    <span class="o">}</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">version</span> <span class="o">=</span> <span class="n">evt</span><span class="o">.</span><span class="na">getSequence</span><span class="o">();</span>
+  <span class="o">}</span>
+  <span class="c1">// ...existing code...</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The aggregate also provides command methods that generate new events while enforcing business rules:</p>
+</div>
+<div class="listingblock">
+<div class="title">Command Methods in UserAggregate</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="nc">UserCreated</span> <span class="nf">create</span><span class="o">(</span><span class="nc">String</span> <span class="n">username</span><span class="o">,</span> <span class="nc">String</span> <span class="n">userType</span><span class="o">,</span> <span class="kt">int</span> <span class="n">initialCredit</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">version</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="nc">IllegalStateException</span><span class="o">(</span><span class="s">"Already created"</span><span class="o">);</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nf">UserCreated</span><span class="o">(</span><span class="n">username</span><span class="o">,</span> <span class="n">version</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="n">userType</span><span class="o">,</span> <span class="n">initialCredit</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="nc">CreditUpdated</span> <span class="nf">updateCredit</span><span class="o">(</span><span class="kt">int</span> <span class="n">newCredit</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">version</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="nc">IllegalStateException</span><span class="o">(</span><span class="s">"Not created"</span><span class="o">);</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nf">CreditUpdated</span><span class="o">(</span><span class="n">username</span><span class="o">,</span> <span class="n">version</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="n">newCredit</span><span class="o">);</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mongodb_event_store">1.3.3. MongoDB Event Store</h4>
+<div class="paragraph">
+<p>The <code>MongoEventStore</code> provides persistent storage for events with proper serialization and deserialization. Events are stored as JSON documents with a structured format that includes metadata and payload:</p>
+</div>
+<div class="listingblock">
+<div class="title">Event Storage Structure</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nc">JsonObject</span> <span class="n">doc</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">JsonObject</span><span class="o">()</span>
+    <span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"aggregateId"</span><span class="o">,</span> <span class="n">aggregateId</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"sequence"</span><span class="o">,</span> <span class="n">event</span><span class="o">.</span><span class="na">getSequence</span><span class="o">())</span>
+    <span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"type"</span><span class="o">,</span> <span class="n">event</span><span class="o">.</span><span class="na">getType</span><span class="o">().</span><span class="na">getValue</span><span class="o">())</span>
+    <span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"occurredAt"</span><span class="o">,</span> <span class="n">event</span><span class="o">.</span><span class="na">getOccurredAt</span><span class="o">())</span>
+    <span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"payload"</span><span class="o">,</span> <span class="n">payload</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The event store supports loading events by aggregate ID and sequence number, enabling efficient state reconstruction:</p>
+</div>
+<div class="listingblock">
+<div class="title">Event Loading with Ordering</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nc">JsonObject</span> <span class="n">query</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">JsonObject</span><span class="o">()</span>
+    <span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"aggregateId"</span><span class="o">,</span> <span class="n">aggregateId</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"sequence"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">JsonObject</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">"$gte"</span><span class="o">,</span> <span class="n">fromSequence</span><span class="o">));</span>
+
+<span class="c1">// Sort by sequence ascending for proper event ordering</span>
+<span class="n">results</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="nc">Comparator</span><span class="o">.</span><span class="na">comparingInt</span><span class="o">(</span><span class="n">d</span> <span class="o">-&gt;</span> <span class="n">d</span><span class="o">.</span><span class="na">getInteger</span><span class="o">(</span><span class="s">"sequence"</span><span class="o">)));</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_event_sourced_service_implementation">1.3.4. Event-Sourced Service Implementation</h4>
+<div class="paragraph">
+<p>The <code>UserServiceEventSourcedImpl</code> coordinates between the aggregate, event store, and external publishers. It maintains an in-memory cache of aggregates for performance while ensuring consistency through the event store:</p>
+</div>
+<div class="listingblock">
+<div class="title">Aggregate Caching and Loading</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">private</span> <span class="nc">CompletableFuture</span><span class="o">&lt;</span><span class="nc">UserAggregate</span><span class="o">&gt;</span> <span class="nf">getOrLoad</span><span class="o">(</span><span class="nc">String</span> <span class="n">username</span><span class="o">)</span> <span class="o">{</span>
+  <span class="nc">UserAggregate</span> <span class="n">cached</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">username</span><span class="o">);</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">cached</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nc">CompletableFuture</span><span class="o">.</span><span class="na">completedFuture</span><span class="o">(</span><span class="n">cached</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="k">return</span> <span class="n">eventStore</span><span class="o">.</span><span class="na">loadEvents</span><span class="o">(</span><span class="n">username</span><span class="o">,</span> <span class="mi">0</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">thenApply</span><span class="o">(</span><span class="n">history</span> <span class="o">-&gt;</span> <span class="o">{</span>
+        <span class="nc">UserAggregate</span> <span class="n">agg</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">UserAggregate</span><span class="o">(</span><span class="n">history</span><span class="o">);</span>
+        <span class="n">cache</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">username</span><span class="o">,</span> <span class="n">agg</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">agg</span><span class="o">;</span>
+      <span class="o">});</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The service follows a command-event-publish pattern for all operations:</p>
+</div>
+<div class="listingblock">
+<div class="title">Command Processing Pattern</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="nc">CompletableFuture</span><span class="o">&lt;</span><span class="nc">JsonObject</span><span class="o">&gt;</span> <span class="nf">updateCredit</span><span class="o">(</span><span class="nc">String</span> <span class="n">username</span><span class="o">,</span> <span class="kt">int</span> <span class="n">newCredit</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="nf">getOrLoad</span><span class="o">(</span><span class="n">username</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">thenCompose</span><span class="o">(</span><span class="n">agg</span> <span class="o">-&gt;</span> <span class="o">{</span>
+        <span class="c1">// 1. Generate event from aggregate</span>
+        <span class="nc">CreditUpdated</span> <span class="n">evt</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="na">updateCredit</span><span class="o">(</span><span class="n">newCredit</span><span class="o">);</span>
+
+        <span class="c1">// 2. Persist event to store</span>
+        <span class="k">return</span> <span class="n">eventStore</span><span class="o">.</span><span class="na">appendEvent</span><span class="o">(</span><span class="n">username</span><span class="o">,</span> <span class="n">evt</span><span class="o">,</span> <span class="n">agg</span><span class="o">.</span><span class="na">getVersion</span><span class="o">())</span>
+            <span class="o">.</span><span class="na">thenApply</span><span class="o">(</span><span class="n">v</span> <span class="o">-&gt;</span> <span class="o">{</span>
+              <span class="c1">// 3. Apply event to aggregate</span>
+              <span class="n">agg</span><span class="o">.</span><span class="na">applyEvent</span><span class="o">(</span><span class="n">evt</span><span class="o">);</span>
+              <span class="nc">JsonObject</span> <span class="n">userJson</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="na">toJson</span><span class="o">();</span>
+
+              <span class="c1">// 4. Publish to external systems</span>
+              <span class="n">userEventPublisher</span><span class="o">.</span><span class="na">publishUserUpdate</span><span class="o">(</span><span class="n">username</span><span class="o">,</span> <span class="n">userJson</span><span class="o">);</span>
+              <span class="k">return</span> <span class="n">userJson</span><span class="o">;</span>
+            <span class="o">});</span>
+      <span class="o">});</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This pattern ensures that:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Business logic is enforced through the aggregate</p>
+</li>
+<li>
+<p>All state changes are captured as events</p>
+</li>
+<li>
+<p>External systems are notified of changes</p>
+</li>
+<li>
+<p>The system can recover from any point in time by replaying events</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">User-Events storage in MongoDB</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="json"><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"684e9f94846dfb422934f045"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"aggregateId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ale"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"sequence"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"$numberLong"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UserCreated"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"occurredAt"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"$numberLong"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1749983124244"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"userType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USER"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"initialCredit"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"684e9f99846dfb422934f046"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"aggregateId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tone"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"sequence"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"$numberLong"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UserCreated"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"occurredAt"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"$numberLong"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1749983129463"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"userType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ADMIN"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"initialCredit"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"684e9ff7846dfb422934f047"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"aggregateId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ale"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"sequence"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"$numberLong"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CreditUpdated"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"occurredAt"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"$numberLong"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1749983223195"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"newCredit"</span><span class="p">:</span><span class="w"> </span><span class="mi">99</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_adapter_configuration">1.4. Adapter Configuration</h3>
+<div class="paragraph">
+<p>Every adapter uses a shared Kafka configuration to connect to the Kafka Cluster.</p>
+</div>
+<div class="listingblock">
+<div class="title">Kafka Producer Configuration</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="nc">Properties</span> <span class="nf">getProducerProperties</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">Properties</span> <span class="n">props</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Properties</span><span class="o">();</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">BOOTSTRAP_SERVERS_CONFIG</span><span class="o">,</span> <span class="n">brokerAddress</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">ACKS_CONFIG</span><span class="o">,</span> <span class="s">"all"</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">RETRIES_CONFIG</span><span class="o">,</span> <span class="mi">5</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">RECONNECT_BACKOFF_MS_CONFIG</span><span class="o">,</span> <span class="mi">1000</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">RECONNECT_BACKOFF_MAX_MS_CONFIG</span><span class="o">,</span> <span class="mi">5000</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">RETRY_BACKOFF_MS_CONFIG</span><span class="o">,</span> <span class="mi">500</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">BATCH_SIZE_CONFIG</span><span class="o">,</span> <span class="mi">16384</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">LINGER_MS_CONFIG</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">BUFFER_MEMORY_CONFIG</span><span class="o">,</span> <span class="mi">33554432</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span>
+        <span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">KEY_SERIALIZER_CLASS_CONFIG</span><span class="o">,</span>
+        <span class="s">"org.apache.kafka.common.serialization.StringSerializer"</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span>
+        <span class="nc">ProducerConfig</span><span class="o">.</span><span class="na">VALUE_SERIALIZER_CLASS_CONFIG</span><span class="o">,</span>
+        <span class="s">"org.apache.kafka.common.serialization.StringSerializer"</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">props</span><span class="o">;</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Kafka Consumer Configuration</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="nc">Properties</span> <span class="nf">getConsumerProperties</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">Properties</span> <span class="n">props</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Properties</span><span class="o">();</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ConsumerConfig</span><span class="o">.</span><span class="na">BOOTSTRAP_SERVERS_CONFIG</span><span class="o">,</span> <span class="n">brokerAddress</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ConsumerConfig</span><span class="o">.</span><span class="na">GROUP_ID_CONFIG</span><span class="o">,</span> <span class="s">"ebike-user-group"</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ConsumerConfig</span><span class="o">.</span><span class="na">ENABLE_AUTO_COMMIT_CONFIG</span><span class="o">,</span> <span class="s">"false"</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="nc">ConsumerConfig</span><span class="o">.</span><span class="na">SESSION_TIMEOUT_MS_CONFIG</span><span class="o">,</span> <span class="s">"30000"</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span>
+            <span class="nc">ConsumerConfig</span><span class="o">.</span><span class="na">KEY_DESERIALIZER_CLASS_CONFIG</span><span class="o">,</span>
+            <span class="s">"org.apache.kafka.common.serialization.StringDeserializer"</span><span class="o">);</span>
+    <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span>
+            <span class="nc">ConsumerConfig</span><span class="o">.</span><span class="na">VALUE_DESERIALIZER_CLASS_CONFIG</span><span class="o">,</span>
+            <span class="s">"org.apache.kafka.common.serialization.StringDeserializer"</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">props</span><span class="o">;</span>
+  <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <em>Consumer</em> adapters execute on a separate thread, managed through a single-thread <code>ExecutorService</code>. This approach allows for continuous background polling of Kafka messages without blocking the main thread. The polling cycle processes incoming messages by transforming them into JSON objects and updating the appropriate repository (e.g., user, bike, or ride repository depending on the adapter).</p>
+</div>
+<div class="listingblock">
+<div class="title">Kafka Consumer Execution</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">private</span> <span class="kt">void</span> <span class="nf">startKafkaConsumer</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">consumerExecutor</span> <span class="o">=</span> <span class="nc">Executors</span><span class="o">.</span><span class="na">newSingleThreadExecutor</span><span class="o">();</span>
+    <span class="n">running</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+    <span class="n">consumerExecutor</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="k">this</span><span class="o">::</span><span class="n">runKafkaConsumer</span><span class="o">);</span>
+  <span class="o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deployment_configuration">1.5. Deployment Configuration</h3>
+<div class="paragraph">
+<p>The EBike system uses Docker Compose to orchestrate its services, including the Kafka event streaming platform. The Kafka infrastructure consists of Zookeeper for coordination and a Kafka broker for message handling, both integrated into the application&#8217;s network.</p>
+</div>
+<div class="sect3">
+<h4 id="_kafka_infrastructure_in_docker_compose">1.5.1. Kafka Infrastructure in Docker Compose</h4>
+<div class="paragraph">
+<p>The following services are added to the Docker Compose configuration to support the event sourcing architecture:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Zookeeper</strong>: Manages the Kafka cluster coordination</p>
+</li>
+<li>
+<p><strong>Kafka Broker</strong>: Handles the message queuing and delivery</p>
+</li>
+<li>
+<p><strong>Redpanda Console</strong>: Provides a web UI for monitoring Kafka topics and messages</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">Docker Compose Configuration for Kafka</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">services</span><span class="pi">:</span>
+  <span class="na">zookeeper</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">confluentinc/cp-zookeeper:5.5.0</span>
+    <span class="na">hostname</span><span class="pi">:</span> <span class="s">zookeeper</span>
+    <span class="na">container_name</span><span class="pi">:</span> <span class="s">zookeeper</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">2181:2181"</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="na">ZOOKEEPER_CLIENT_PORT</span><span class="pi">:</span> <span class="m">2181</span>
+      <span class="na">ZOOKEEPER_TICK_TIME</span><span class="pi">:</span> <span class="m">2000</span>
+    <span class="na">networks</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">eureka-network</span>
+
+  <span class="na">kafka-broker</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">confluentinc/cp-kafka:5.5.0</span>
+    <span class="na">hostname</span><span class="pi">:</span> <span class="s">${KAFKA_BROKER_HOSTNAME}</span>
+    <span class="na">depends_on</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">zookeeper</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">${KAFKA_BROKER_EXTERNAL_PORT}:${KAFKA_BROKER_EXTERNAL_PORT}"</span>
+    <span class="na">networks</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">eureka-network</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="na">KAFKA_BROKER_ID</span><span class="pi">:</span> <span class="m">1</span>
+      <span class="na">KAFKA_ZOOKEEPER_CONNECT</span><span class="pi">:</span> <span class="s">zookeeper:2181</span>
+      <span class="na">KAFKA_ADVERTISED_LISTENERS</span><span class="pi">:</span> <span class="s">PLAINTEXT://${KAFKA_BROKER_HOSTNAME}:${KAFKA_BROKER_PORT},PLAINTEXT_HOST://localhost:${KAFKA_BROKER_EXTERNAL_PORT}</span>
+      <span class="na">KAFKA_LISTENER_SECURITY_PROTOCOL_MAP</span><span class="pi">:</span> <span class="s">PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT</span>
+      <span class="na">KAFKA_INTER_BROKER_LISTENER_NAME</span><span class="pi">:</span> <span class="s">PLAINTEXT</span>
+      <span class="na">KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR</span><span class="pi">:</span> <span class="m">1</span>
+    <span class="na">healthcheck</span><span class="pi">:</span>
+      <span class="na">test</span><span class="pi">:</span> <span class="pi">[</span> <span class="s2">"</span><span class="s">CMD-SHELL"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">kafka-topics</span><span class="nv"> </span><span class="s">--bootstrap-server</span><span class="nv"> </span><span class="s">localhost:${KAFKA_BROKER_EXTERNAL_PORT}</span><span class="nv"> </span><span class="s">--list</span><span class="nv"> </span><span class="s">||</span><span class="nv"> </span><span class="s">exit</span><span class="nv"> </span><span class="s">1"</span> <span class="pi">]</span>
+      <span class="na">interval</span><span class="pi">:</span> <span class="s">15s</span>
+      <span class="na">timeout</span><span class="pi">:</span> <span class="s">10s</span>
+      <span class="na">retries</span><span class="pi">:</span> <span class="m">5</span>
+      <span class="na">start_period</span><span class="pi">:</span> <span class="s">45s</span>
+
+  <span class="na">redpanda-console</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">docker.redpanda.com/redpandadata/console:latest</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">8087:8080"</span>
+    <span class="na">networks</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">eureka-network</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="na">KAFKA_BROKERS</span><span class="pi">:</span> <span class="s2">"</span><span class="s">kafka-broker:9092"</span>
+    <span class="na">depends_on</span><span class="pi">:</span>
+      <span class="na">kafka-broker</span><span class="pi">:</span>
+        <span class="na">condition</span><span class="pi">:</span> <span class="s">service_healthy</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_environment_variables">1.5.2. Environment Variables</h4>
+<div class="paragraph">
+<p>The following environment variables are set in the <code>.env</code> file to configure the Kafka broker:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="properties"><span class="c">#kafka configuration
+</span><span class="py">KAFKA_BROKER_HOSTNAME</span><span class="p">=</span><span class="s">kafka-broker</span>
+<span class="py">KAFKA_BROKER_PORT</span><span class="p">=</span><span class="s">9092</span>
+<span class="py">KAFKA_BROKER_EXTERNAL_PORT</span><span class="p">=</span><span class="s">29092</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These variables are referenced in the Docker Compose file and passed to each microservice to ensure consistent Kafka broker configuration across the system. The internal port (9092) is used for service-to-service communication within the Docker network, while the external port (29092) is mapped to the host for access from outside the container environment.</p>
+</div>
+<div class="paragraph">
+<p>Each microservice container receives these Kafka connection parameters through environment variables, which are then used in their respective adapter configurations to establish producer and consumer connections to the Kafka broker.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_kubernetes_deployment_transformation">2. Kubernetes Deployment Transformation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This section describes how the EBike event sourcing application was transformed from a Docker Compose-based deployment to a Kubernetes-native deployment, maintaining the same event-driven architecture while leveraging Kubernetes orchestration capabilities.</p>
+</div>
+<div class="sect2">
+<h3 id="_overview_of_transformation">2.1. Overview of Transformation</h3>
+<div class="paragraph">
+<p>The transformation from Docker Compose to Kubernetes involved several key adaptations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Configuration Management</strong>: Environment variables moved from <code>.env</code> files to Kubernetes ConfigMaps</p>
+</li>
+<li>
+<p><strong>Service Discovery</strong>: Adapted Eureka service registration to work with Kubernetes DNS</p>
+</li>
+<li>
+<p><strong>Networking</strong>: Replaced Docker bridge networks with Kubernetes Services and DNS resolution</p>
+</li>
+<li>
+<p><strong>Dependencies</strong>: Converted Docker Compose <code>depends_on</code> to Kubernetes init containers</p>
+</li>
+<li>
+<p><strong>Storage</strong>: Transformed Docker volumes into Kubernetes PersistentVolumeClaims</p>
+</li>
+<li>
+<p><strong>Orchestration</strong>: Replaced Docker Compose services with Kubernetes Deployments and Services</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_management_migration">2.2. Configuration Management Migration</h3>
+<div class="sect3">
+<h4 id="_from_environment_files_to_configmaps">2.2.1. From Environment Files to ConfigMaps</h4>
+<div class="paragraph">
+<p>The Docker Compose deployment used <code>.env</code> files for configuration management:</p>
+</div>
+<div class="listingblock">
+<div class="title">Docker Compose Environment Configuration</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="properties"><span class="c">#kafka configuration
+</span><span class="py">KAFKA_BROKER_HOSTNAME</span><span class="p">=</span><span class="s">kafka-broker</span>
+<span class="py">KAFKA_BROKER_PORT</span><span class="p">=</span><span class="s">9092</span>
+<span class="py">KAFKA_BROKER_EXTERNAL_PORT</span><span class="p">=</span><span class="s">29092</span>
+
+<span class="c">#mongodb configuration
+</span><span class="py">MONGODB_INSTANCE_HOSTNAME</span><span class="p">=</span><span class="s">mongodb</span>
+<span class="py">MONGODB_INSTANCE_PORT</span><span class="p">=</span><span class="s">27017</span>
+<span class="py">MONGODB_CONNECTION_STRING</span><span class="p">=</span><span class="s">mongodb://mongodb:27017</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This was transformed into a Kubernetes ConfigMap that centralizes all configuration:</p>
+</div>
+<div class="listingblock">
+<div class="title">Kubernetes ConfigMap Configuration</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">ebikes-config</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">ebikes</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">KAFKA_BROKER_HOSTNAME</span><span class="pi">:</span> <span class="s2">"</span><span class="s">kafka-broker"</span>
+  <span class="na">KAFKA_BROKER_PORT</span><span class="pi">:</span> <span class="s2">"</span><span class="s">9092"</span>
+  <span class="na">KAFKA_BROKER_EXTERNAL_PORT</span><span class="pi">:</span> <span class="s2">"</span><span class="s">29092"</span>
+  <span class="na">MONGODB_INSTANCE_HOSTNAME</span><span class="pi">:</span> <span class="s2">"</span><span class="s">mongodb"</span>
+  <span class="na">MONGODB_INSTANCE_PORT</span><span class="pi">:</span> <span class="s2">"</span><span class="s">27017"</span>
+  <span class="na">MONGODB_CONNECTION_STRING</span><span class="pi">:</span> <span class="s2">"</span><span class="s">mongodb://mongodb:27017"</span>
+  <span class="c1"># ...additional configuration...</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Microservices then reference this ConfigMap in their deployment manifests:</p>
+</div>
+<div class="listingblock">
+<div class="title">Microservice ConfigMap Usage</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">containers</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">ride-microservice</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">microservices-ride-microservice:latest</span>
+    <span class="na">envFrom</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">configMapRef</span><span class="pi">:</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">ebikes-config</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_service_discovery_and_networking">2.3. Service Discovery and Networking</h3>
+<div class="sect3">
+<h4 id="_kubernetes_dns_integration">2.3.1. Kubernetes DNS Integration</h4>
+<div class="paragraph">
+<p>In Docker Compose, services communicated using container names within the bridge network:</p>
+</div>
+<div class="listingblock">
+<div class="title">Docker Compose Service Communication</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">services</span><span class="pi">:</span>
+  <span class="na">eureka-server</span><span class="pi">:</span>
+    <span class="c1"># ...</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">EUREKA_INSTANCE_HOSTNAME=eureka-server</span>
+
+  <span class="na">ride-microservice</span><span class="pi">:</span>
+    <span class="c1"># ...</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Kubernetes leverages its built-in DNS service discovery, where services are accessible via their Service names within the namespace:</p>
+</div>
+<div class="listingblock">
+<div class="title">Kubernetes Service Discovery</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">eureka-server</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">ebikes</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">eureka-server</span>
+  <span class="na">ports</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">port</span><span class="pi">:</span> <span class="m">8761</span>
+      <span class="na">targetPort</span><span class="pi">:</span> <span class="s">8761</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Services automatically resolve to <code>eureka-server.ebikes.svc.cluster.local</code>, but within the same namespace, the short name <code>eureka-server</code> works directly.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dependency_management">2.4. Dependency Management</h3>
+<div class="sect3">
+<h4 id="_from_depends_on_to_init_containers">2.4.1. From depends_on to Init Containers</h4>
+<div class="paragraph">
+<p>Docker Compose used <code>depends_on</code> with health checks to manage service startup order:</p>
+</div>
+<div class="listingblock">
+<div class="title">Docker Compose Dependencies</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">ride-microservice</span><span class="pi">:</span>
+  <span class="c1"># ...</span>
+  <span class="na">depends_on</span><span class="pi">:</span>
+    <span class="na">eureka-server</span><span class="pi">:</span>
+      <span class="na">condition</span><span class="pi">:</span> <span class="s">service_healthy</span>
+    <span class="na">ebike-microservice</span><span class="pi">:</span>
+      <span class="na">condition</span><span class="pi">:</span> <span class="s">service_healthy</span>
+    <span class="na">user-microservice</span><span class="pi">:</span>
+      <span class="na">condition</span><span class="pi">:</span> <span class="s">service_healthy</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Kubernetes uses init containers to ensure dependencies are ready before starting the main container:</p>
+</div>
+<div class="listingblock">
+<div class="title">Kubernetes Init Containers</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">spec</span><span class="pi">:</span>
+  <span class="na">initContainers</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">wait-for-eureka</span>
+      <span class="na">image</span><span class="pi">:</span> <span class="s">busybox</span>
+      <span class="na">command</span><span class="pi">:</span> <span class="pi">[</span><span class="s1">'</span><span class="s">sh'</span><span class="pi">,</span> <span class="s1">'</span><span class="s">-c'</span><span class="pi">,</span> <span class="s1">'</span><span class="s">until</span><span class="nv"> </span><span class="s">nc</span><span class="nv"> </span><span class="s">-z</span><span class="nv"> </span><span class="s">eureka-server</span><span class="nv"> </span><span class="s">8761;</span><span class="nv"> </span><span class="s">do</span><span class="nv"> </span><span class="s">echo</span><span class="nv"> </span><span class="s">waiting</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">eureka;</span><span class="nv"> </span><span class="s">sleep</span><span class="nv"> </span><span class="s">2;</span><span class="nv"> </span><span class="s">done;'</span><span class="pi">]</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">wait-for-ebike</span>
+      <span class="na">image</span><span class="pi">:</span> <span class="s">busybox</span>
+      <span class="na">command</span><span class="pi">:</span> <span class="pi">[</span><span class="s1">'</span><span class="s">sh'</span><span class="pi">,</span> <span class="s1">'</span><span class="s">-c'</span><span class="pi">,</span> <span class="s1">'</span><span class="s">until</span><span class="nv"> </span><span class="s">nc</span><span class="nv"> </span><span class="s">-z</span><span class="nv"> </span><span class="s">ebike-microservice</span><span class="nv"> </span><span class="s">8080;</span><span class="nv"> </span><span class="s">do</span><span class="nv"> </span><span class="s">echo</span><span class="nv"> </span><span class="s">waiting</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">ebike-microservice;</span><span class="nv"> </span><span class="s">sleep</span><span class="nv"> </span><span class="s">2;</span><span class="nv"> </span><span class="s">done;'</span><span class="pi">]</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">wait-for-user</span>
+      <span class="na">image</span><span class="pi">:</span> <span class="s">busybox</span>
+      <span class="na">command</span><span class="pi">:</span> <span class="pi">[</span><span class="s1">'</span><span class="s">sh'</span><span class="pi">,</span> <span class="s1">'</span><span class="s">-c'</span><span class="pi">,</span> <span class="s1">'</span><span class="s">until</span><span class="nv"> </span><span class="s">nc</span><span class="nv"> </span><span class="s">-z</span><span class="nv"> </span><span class="s">user-microservice</span><span class="nv"> </span><span class="s">8080;</span><span class="nv"> </span><span class="s">do</span><span class="nv"> </span><span class="s">echo</span><span class="nv"> </span><span class="s">waiting</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">user-microservice;</span><span class="nv"> </span><span class="s">sleep</span><span class="nv"> </span><span class="s">2;</span><span class="nv"> </span><span class="s">done;'</span><span class="pi">]</span>
+  <span class="na">containers</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">ride-microservice</span>
+      <span class="c1"># ...main container configuration...</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_kafka_infrastructure_transformation">2.5. Kafka Infrastructure Transformation</h3>
+<div class="sect3">
+<h4 id="_zookeeper_and_kafka_broker_deployment">2.5.1. Zookeeper and Kafka Broker Deployment</h4>
+<div class="paragraph">
+<p>The Docker Compose Kafka setup was split into separate Kubernetes deployments for better resource management:</p>
+</div>
+<div class="listingblock">
+<div class="title">Kubernetes Zookeeper Deployment</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">zookeeper-1</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">ebikes</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">zookeeper</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">zookeeper</span>
+        <span class="na">image</span><span class="pi">:</span> <span class="s">confluentinc/cp-zookeeper:7.3.2</span>
+        <span class="na">env</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">ZOOKEEPER_CLIENT_PORT</span>
+          <span class="na">value</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2181"</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">ZOOKEEPER_SERVER_ID</span>
+          <span class="na">value</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Kubernetes Kafka Broker with ConfigMap Integration</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">containers</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">kafka</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">confluentinc/cp-kafka:7.3.2</span>
+    <span class="na">env</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">KAFKA_BROKER_HOSTNAME</span>
+        <span class="na">valueFrom</span><span class="pi">:</span>
+          <span class="na">configMapKeyRef</span><span class="pi">:</span>
+            <span class="na">name</span><span class="pi">:</span> <span class="s">ebikes-config</span>
+            <span class="na">key</span><span class="pi">:</span> <span class="s">KAFKA_BROKER_HOSTNAME</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">KAFKA_ADVERTISED_LISTENERS</span>
+        <span class="na">value</span><span class="pi">:</span> <span class="s2">"</span><span class="s">PLAINTEXT://$(KAFKA_BROKER_HOSTNAME):29092,PLAINTEXT_HOST://$(KAFKA_BROKER_HOSTNAME):9092"</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_storage_management">2.6. Storage Management</h3>
+<div class="sect3">
+<h4 id="_persistent_volume_claims">2.6.1. Persistent Volume Claims</h4>
+<div class="paragraph">
+<p>MongoDB&#8217;s data persistence was transformed from Docker volumes to Kubernetes PersistentVolumeClaims:</p>
+</div>
+<div class="listingblock">
+<div class="title">Docker Compose Volume</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">mongodb</span><span class="pi">:</span>
+  <span class="c1"># ...</span>
+  <span class="na">volumes</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">mongodb_data:/data/db</span>
+
+<span class="na">volumes</span><span class="pi">:</span>
+  <span class="na">mongodb_data</span><span class="pi">:</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Kubernetes Persistent Storage</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">PersistentVolumeClaim</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">mongodb-pvc</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">ebikes</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">accessModes</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">ReadWriteOnce</span>
+  <span class="na">resources</span><span class="pi">:</span>
+    <span class="na">requests</span><span class="pi">:</span>
+      <span class="na">storage</span><span class="pi">:</span> <span class="s">1Gi</span>
+<span class="nn">---</span>
+<span class="c1"># In the MongoDB deployment:</span>
+<span class="na">volumeMounts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">mongodb-data</span>
+    <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/data/db</span>
+<span class="na">volumes</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">mongodb-data</span>
+    <span class="na">persistentVolumeClaim</span><span class="pi">:</span>
+      <span class="na">claimName</span><span class="pi">:</span> <span class="s">mongodb-pvc</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_load_balancing_and_external_access">2.7. Load Balancing and External Access</h3>
+<div class="sect3">
+<h4 id="_service_types_for_external_access">2.7.1. Service Types for External Access</h4>
+<div class="paragraph">
+<p>Services requiring external access use LoadBalancer type:</p>
+</div>
+<div class="listingblock">
+<div class="title">External Service Access</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">api-gateway</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">ebikes</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">api-gateway</span>
+  <span class="na">ports</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+      <span class="na">targetPort</span><span class="pi">:</span> <span class="m">8080</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">LoadBalancer</span>  <span class="c1"># Enables external access</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deployment_orchestration">2.8. Deployment Orchestration</h3>
+<div class="sect3">
+<h4 id="_namespace_organization">2.8.1. Namespace Organization</h4>
+<div class="paragraph">
+<p>All resources are organized within a dedicated namespace:</p>
+</div>
+<div class="listingblock">
+<div class="title">Namespace Definition</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Namespace</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">ebikes</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_deployment_script">2.8.2. Deployment Script</h4>
+<div class="paragraph">
+<p>The deployment process is automated through a script that applies all manifests:</p>
+</div>
+<div class="listingblock">
+<div class="title">Kubernetes Deployment Script</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="c">#!/bin/bash</span>
+<span class="nb">set</span> <span class="nt">-e</span>  <span class="c"># Exit on error</span>
+
+<span class="nb">echo</span> <span class="s2">"Applying namespace..."</span>
+kubectl apply <span class="nt">-f</span> namespace.yml
+
+<span class="nb">echo</span> <span class="s2">"Applying Kubernetes manifests to 'ebikes' namespace..."</span>
+kubectl apply <span class="nt">-f</span> <span class="nb">.</span> <span class="nt">--namespace</span><span class="o">=</span>ebikes
+
+<span class="nb">echo</span> <span class="s2">"✅ Deployment complete."</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_key_benefits_of_kubernetes_transformation">2.9. Key Benefits of Kubernetes Transformation</h3>
+<div class="paragraph">
+<p>Kubernetes transformation brings significant benefits. By leveraging replica sets, each microservice can be scaled independently to meet varying load patterns, ensuring reliable performance under heavy traffic.</p>
+</div>
+<div class="paragraph">
+<p>Configuration management is also greatly simplified: all environment-specific settings and sensitive data can be centralized in ConfigMaps and Secrets.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_event_driven_architecture_preservation">2.10. Event Driven Architecture Preservation</h3>
+<div class="paragraph">
+<p>The event-driven architecture using Kafka topics remained unchanged during the transformation.</p>
+</div>
+<div class="paragraph">
+<p>The transformation focused purely on the deployment and orchestration layer while preserving the application&#8217;s core event driven architecture functionality and inter-service communication patterns.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_autonomous_a_bike_case_study">3. Autonomous A-Bike Case Study</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_new_features">3.1. New Features</h3>
+<div class="paragraph">
+<p>The following new features have been introduced in the extension of the EBike case study, featuring the autonomous e-bike ("a-bike") for smart city environments:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The a-bike can autonomously reach the nearest station after being used.</p>
+</li>
+<li>
+<p>The a-bike can autonomously reach a user who requests the service.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Also, it was needed that the a-bike and the elements of the smart city (e.g., stations) would be available as Digital Twins.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_requirements">3.2. Requirements</h3>
+<div class="paragraph">
+<p>We report here only the Domain-Driven-Design parts that are new compared to the original EBike case study.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The system must allow users to request an autonomous a-bike to reach their location.</p>
+</li>
+<li>
+<p>The system must allow users to view the real-time position and status of a-bikes.</p>
+</li>
+<li>
+<p>The system must allow a-bikes to autonomously return to the nearest station after use.</p>
+</li>
+<li>
+<p>The system must allow operators to monitor all a-bikes and stations in real time via Digital Twin.</p>
+</li>
+<li>
+<p>The system must allow operators to view the operational status and real-time position of a-bikes on a map.</p>
+</li>
+</ol>
+</div>
+<div class="sect3">
+<h4 id="_user_stories">3.2.1. User Stories</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">As a&#8230;&#8203;</th>
+<th class="tableblock halign-left valign-top">I want to&#8230;&#8203;</th>
+<th class="tableblock halign-left valign-top">So that&#8230;&#8203;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Request an a-bike to come to my location</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">I can conveniently access a bike without searching for one</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">City Operator</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Have the a-bike autonomously return to the nearest station after use</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">I can ensure bikes are available for other users and reduce operational costs</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">City Operator</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Track the real-time location and status of each a-bike via digital twin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">I can ensure efficient operation and maintenance of the bike fleet</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_use_cases">3.2.2. Use Cases</h4>
+<div class="imageblock">
+<div class="content">
+<img src="resources/svg/abike-usecases.svg" alt="abike usecases" width="50%" height="337">
+</div>
+<div class="title">Figure 2. ABike Application Use Cases</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_use_case_descriptions">3.2.3. Use Case Descriptions</h4>
+<div class="paragraph">
+<p><strong>Request a-bike to user location</strong></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 40%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Actors</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User, A-Bike, System</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Scope</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A-Bike System</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Preconditions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The user must be authenticated and have credits available.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Postconditions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">An autonomous a-bike is sent to the user&#8217;s location.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trigger</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The user requests an a-bike via the application.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1. The user selects the option to request an a-bike.<br>
+2. The system sends the command to the a-bike to reach the user&#8217;s location.<br>
+3. The user can see the approaching a-bike&#8217;s arriving on the map.<br></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>A-bike returns autonomously to nearest station</strong></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 40%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Actors</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A-Bike, System, City Operator</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Scope</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A-Bike System</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Preconditions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The ride has ended and the a-bike is not at a station.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Postconditions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The a-bike autonomously reaches the nearest station and becomes available.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trigger</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system detects that the ride ended outside a station.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1. The system identifies the nearest station to the current a-bike position.<br>
+2. The system sends the command to the a-bike to reach the station.<br>
+3. The a-bike autonomously moves towards the station.<br>
+4. The system updates the a-bike&#8217;s position in real time.<br>
+5. Upon arrival at the station, the a-bike is marked as available.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>Monitor a-bike and stations via Digital Twin</strong></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 40%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Actors</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">City Operator</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Scope</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A-Bike System</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Preconditions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The operator must be authenticated.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Postconditions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The operator views the real-time status and position of all a-bikes and stations.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trigger</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The operator accesses the Digital Twin dashboard.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1. The operator accesses the Digital Twin dashboard.<br>
+2. The system displays the dashboard with all a-bikes and stations, updated in real time.<br>
+3. The operator can select an a-bike or station to view details and operational status.<br></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_bounded_contexts">3.2.4. Bounded Contexts</h4>
+<div class="paragraph">
+<p>In addition to the original EBike case study, a new bounded context is introduced for the autonomous a-bike:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Autonomous A-Bike Context: This context handles the management of A-Bikes and Stations.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Initially, it was considered to extend the original EBike context to include the autonomous a-bike. However, it was decided to create a new bounded context to better encapsulate the new features and requirements. This separation is also expected to be beneficial for the future development of a more complex smart city system.</p>
+</div>
+<div class="paragraph">
+<p>Stations are also included in this new context, as they are essential and closely related to the operations of the autonomous a-bikes.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementation">3.3. Implementation</h3>
+<div class="paragraph">
+<p>Only non-trivial implementation details are reported here.</p>
+</div>
+<div class="sect3">
+<h4 id="_new_microservices">3.3.1. New Microservices</h4>
+<div class="paragraph">
+<p>It was decided to create a new microservice for the autonomous a-bike, that manages the autonomous a-bike and the stations. The new microservice is called <code>abike-microservice</code>.</p>
+</div>
+<div class="paragraph">
+<p>It follows the same architecture of the other microservices, using hexagonal architecture and an Event-Driven approach.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_detailed_microservice_structure">3.3.2. Detailed Microservice Structure</h4>
+<div class="paragraph">
+<p>For explaining the structure of microservices, i&#8217;ll detail the <code>abike-microservice</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>abike-microservice</code> follows the <strong>Hexagonal Architecture</strong> pattern, which provides a clean separation between the business logic and external concerns. This architecture ensures that the domain logic remains independent of frameworks, databases, and external services.</p>
+</div>
+<div class="sect4">
+<h5 id="_architecture_overview">Architecture Overview</h5>
+<div class="paragraph">
+<p>The hexagonal architecture organizes the codebase into three main layers:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Domain Layer (Core)</strong>: Contains the pure business logic and domain models</p>
+</li>
+<li>
+<p><strong>Application Layer</strong>: Orchestrates use cases and coordinates between domain and infrastructure</p>
+</li>
+<li>
+<p><strong>Infrastructure Layer</strong>: Handles external concerns like databases, message brokers, and external APIs</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_domain_layer">Domain Layer</h5>
+<div class="imageblock">
+<div class="content">
+<img src="resources/svg/abike-domain-uml.svg" alt="abike domain uml" width="90%" height="763">
+</div>
+<div class="title">Figure 3. Domain Layer UML of ABike Microservice</div>
+</div>
+<div class="paragraph">
+<p>The <strong>Domain Layer</strong> represents the core business logic and is completely independent of external frameworks or technologies. It contains:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Domain Models</strong>: Pure business entities like <code>ABike</code> and <code>Station</code> with their business rules</p>
+</li>
+<li>
+<p><strong>Value Objects</strong>: Immutable objects like <code>P2d</code> for coordinates and enums like <code>ABikeState</code>, <code>BikeType</code></p>
+</li>
+<li>
+<p><strong>Factories</strong>: <code>ABikeFactory</code> and <code>StationFactory</code> for creating domain entities with proper validation</p>
+</li>
+<li>
+<p><strong>Mappers</strong>: <code>ABikeMapper</code> and <code>StationMapper</code> for converting between domain models and external representations</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="c1">// Domain model example</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ABike</span> <span class="kd">implements</span> <span class="nc">Aggregate</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ABikeState</span> <span class="n">state</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">P2d</span> <span class="n">location</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">batteryLevel</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BikeType</span> <span class="n">type</span><span class="o">;</span>
+    <span class="c1">// Pure business logic methods</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The domain models are <strong>immutable</strong> and contain only business logic. They don&#8217;t know about databases, JSON, or external systems.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_application_layer">Application Layer</h5>
+<div class="imageblock">
+<div class="content">
+<img src="resources/svg/abike-application-uml.svg" alt="abike application uml" width="120%" height="564">
+</div>
+<div class="title">Figure 4. Application Layer UML of ABike Microservice</div>
+</div>
+<div class="paragraph">
+<p>The <strong>Application Layer</strong> orchestrates the business use cases and acts as a bridge between the domain and infrastructure layers. It contains:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Service Implementations</strong>: <code>ABikeServiceImpl</code> coordinates domain operations and external communications</p>
+</li>
+<li>
+<p><strong>Port Interfaces</strong>: Define contracts for external dependencies</p>
+</li>
+<li>
+<p><strong>Inbound Ports</strong>: <code>ABikeServiceAPI</code> - interfaces that the application exposes</p>
+</li>
+<li>
+<p><strong>Outbound Ports</strong>: <code>ABikeRepository</code>, <code>BikeCommunicationPort</code>, <code>StationServiceAPI</code> - interfaces for external dependencies</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="c1">// Application service coordinating domain and infrastructure</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ABikeServiceImpl</span> <span class="kd">implements</span> <span class="nc">ABikeServiceAPI</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ABikeRepository</span> <span class="n">repository</span><span class="o">;</span>           <span class="c1">// Outbound port</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BikeCommunicationPort</span> <span class="n">communicationPort</span><span class="o">;</span> <span class="c1">// Outbound port</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">StationServiceAPI</span> <span class="n">stationService</span><span class="o">;</span>     <span class="c1">// Outbound port</span>
+
+    <span class="kd">public</span> <span class="nc">CompletableFuture</span><span class="o">&lt;</span><span class="nc">ABike</span><span class="o">&gt;</span> <span class="nf">createABike</span><span class="o">(</span><span class="nc">String</span> <span class="n">bikeId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Orchestrates domain creation and persistence</span>
+        <span class="nc">ABike</span> <span class="n">abike</span> <span class="o">=</span> <span class="nc">ABikeFactory</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">create</span><span class="o">(...);</span>
+        <span class="n">communicationPort</span><span class="o">.</span><span class="na">sendUpdate</span><span class="o">(</span><span class="n">abike</span><span class="o">);</span>  <span class="c1">// Uses domain model</span>
+        <span class="k">return</span> <span class="n">repository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">abike</span><span class="o">);</span>        <span class="c1">// Uses domain model</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The application layer works exclusively with <strong>domain models</strong> internally, using mappers only at the boundaries when communicating with external systems.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_infrastructure_layer">Infrastructure Layer</h5>
+<div class="imageblock">
+<div class="content">
+<img src="resources/svg/abike-infrastructure-uml.svg" alt="abike infrastructure uml" width="70%" height="363">
+</div>
+<div class="title">Figure 5. Infrastructure Layer UML of ABike Microservice</div>
+</div>
+<div class="paragraph">
+<p>The <strong>Infrastructure Layer</strong> contains all the technical implementations and external integrations. It&#8217;s divided into:</p>
+</div>
+<div class="paragraph">
+<p><strong>Inbound Adapters</strong> (receive data from external sources):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>REST Controllers</strong>: Handle HTTP requests and convert them to domain operations</p>
+</li>
+<li>
+<p><strong>Message Consumers</strong>: <code>RideCommunicationAdapter</code> consumes Kafka messages and converts JSON to domain models before calling application services</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="c1">// Inbound adapter handling external messages</span>
+<span class="kd">private</span> <span class="kt">void</span> <span class="nf">processABikeRideUpdate</span><span class="o">(</span><span class="nc">JsonObject</span> <span class="n">updateJson</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">ABike</span> <span class="n">aBike</span> <span class="o">=</span> <span class="nc">ABikeMapper</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">updateJson</span><span class="o">);</span>  <span class="c1">// Convert to domain</span>
+    <span class="n">aBikeService</span><span class="o">.</span><span class="na">updateABike</span><span class="o">(</span><span class="n">aBike</span><span class="o">);</span>                 <span class="c1">// Use domain model</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Outbound Adapters</strong> (send data to external systems):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Repository Implementations</strong>: Handle persistence using the database technology</p>
+</li>
+<li>
+<p><strong>Message Producers</strong>: <code>BikeCommunicationAdapter</code> converts domain models to JSON before sending to Kafka</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="c1">// Outbound adapter sending data externally</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">sendUpdate</span><span class="o">(</span><span class="nc">ABike</span> <span class="n">abike</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">JsonObject</span> <span class="n">json</span> <span class="o">=</span> <span class="nc">ABikeMapper</span><span class="o">.</span><span class="na">toJson</span><span class="o">(</span><span class="n">abike</span><span class="o">);</span>     <span class="c1">// Convert from domain</span>
+    <span class="n">producer</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="k">new</span> <span class="nc">ProducerRecord</span><span class="o">&lt;&gt;(</span><span class="n">topic</span><span class="o">,</span> <span class="n">json</span><span class="o">.</span><span class="na">encode</span><span class="o">()));</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_data_flow_and_mapping_strategy">Data Flow and Mapping Strategy</h5>
+<div class="paragraph">
+<p>The architecture ensures a clear <strong>data transformation flow</strong>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>External → Domain</strong>: Inbound adapters convert external formats (JSON, HTTP requests) to domain models using mappers</p>
+</li>
+<li>
+<p><strong>Domain Processing</strong>: Application services work exclusively with domain models</p>
+</li>
+<li>
+<p><strong>Domain → External</strong>: Outbound adapters convert domain models back to external formats</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This mapping strategy provides several benefits:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Domain Purity</strong>: Business logic is not polluted with external format concerns</p>
+</li>
+<li>
+<p><strong>Flexibility</strong>: External formats can change without affecting domain logic</p>
+</li>
+<li>
+<p><strong>Testability</strong>: Domain logic can be tested independently of external systems</p>
+</li>
+<li>
+<p><strong>Maintainability</strong>: Clear separation of concerns makes the codebase easier to understand and modify</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The hexagonal architecture ensures that the domain remains the stable core while external technologies can be easily replaced or modified without affecting the business logic.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_event_data_definition">3.3.3. Event Data Definition</h4>
+<div class="paragraph">
+<p>In this project, we use Avro to define the data structure of the events exchanged between microservices.</p>
+</div>
+<div class="paragraph">
+<p>For example, the following Avro schema defines the structure of a bike action update event:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="avro">{
+  "type": "record",
+  "name": "BikeActionUpdate",
+  "namespace": "domain.events",
+  "fields": [
+    {"name": "username", "type": ["null", "string"], "default": null},
+    {"name": "bikeName", "type": "string"},
+    {"name": "bikeType", "type": "string"},
+    {"name": "action", "type": "string"}
+  ]
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All the topics uses Avro schemas to ensure a consistent data structure across the system, made exception for the topics related to the Digital Twin, which uses JSON payloads, to allow easier communication with the Eclipse Ditto platform.</p>
+</div>
+<div class="paragraph">
+<p>Avro also enforces type safety in the code. For example, in the Kafka consumer adapter, the type of the consumed message is statically checked:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="c1">// Only BikeRideUpdate Avro records can be consumed here</span>
+<span class="nc">KafkaConsumer</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">BikeRideUpdate</span><span class="o">&gt;</span> <span class="n">avroConsumer</span> <span class="o">=</span>
+    <span class="k">new</span> <span class="nc">KafkaConsumer</span><span class="o">&lt;&gt;(</span><span class="n">kafkaProperties</span><span class="o">.</span><span class="na">getAvroConsumerProperties</span><span class="o">());</span>
+<span class="n">avroConsumer</span><span class="o">.</span><span class="na">subscribe</span><span class="o">(</span><span class="nc">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="s">"abike-ride-update"</span><span class="o">));</span>
+
+<span class="k">while</span> <span class="o">(</span><span class="n">running</span><span class="o">.</span><span class="na">get</span><span class="o">())</span> <span class="o">{</span>
+    <span class="nc">ConsumerRecords</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">BikeRideUpdate</span><span class="o">&gt;</span> <span class="n">records</span> <span class="o">=</span> <span class="n">avroConsumer</span><span class="o">.</span><span class="na">poll</span><span class="o">(</span><span class="nc">Duration</span><span class="o">.</span><span class="na">ofMillis</span><span class="o">(</span><span class="mi">100</span><span class="o">));</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">ConsumerRecord</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">BikeRideUpdate</span><span class="o">&gt;</span> <span class="n">record</span> <span class="o">:</span> <span class="n">records</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">BikeRideUpdate</span> <span class="n">update</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="na">value</span><span class="o">();</span> <span class="c1">// update is type-safe, matches Avro schema</span>
+        <span class="c1">// ...process update...</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This ensures that only messages conforming to the Avro schema are processed, reducing runtime errors due to unexpected data types.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, Avro enforces type safety on the producer side. For example, when sending an update, only objects matching the Avro schema can be sent:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="c1">// Only EBikeUpdate Avro records can be sent here</span>
+<span class="nc">Producer</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">EBikeUpdate</span><span class="o">&gt;</span> <span class="n">producer</span> <span class="o">=</span>
+    <span class="k">new</span> <span class="nc">KafkaProducer</span><span class="o">&lt;&gt;(</span><span class="n">kafkaProperties</span><span class="o">.</span><span class="na">getProducerProperties</span><span class="o">());</span>
+<span class="nc">EBikeUpdate</span> <span class="n">avroUpdate</span> <span class="o">=</span> <span class="nc">EBikeMapper</span><span class="o">.</span><span class="na">toAvro</span><span class="o">(</span><span class="n">ebike</span><span class="o">);</span> <span class="c1">// type-safe conversion</span>
+<span class="n">producer</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="k">new</span> <span class="nc">ProducerRecord</span><span class="o">&lt;&gt;(</span><span class="n">topicName</span><span class="o">,</span> <span class="n">ebike</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">avroUpdate</span><span class="o">));</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This guarantees that only Avro-encoded messages matching the schema are produced, preventing accidental schema mismatches at compile time.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_new_communication_flow_and_topics">3.3.4. New Communication Flow and Topics</h4>
+<div class="paragraph">
+<p>Here we describe the new topics and communication flows introduced in the autonomous a-bike case study.
+It was decided to duplicate some topics, even though it would have been possible to use the same topics as those used for E-Bikes. However, having separate topics for the autonomous a-bike was considered more appropriate to avoid confusion and to better support future extensions of the smart city system.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="resources/svg/kafka-comm-abike.svg" alt="kafka comm abike" width="50%" height="468">
+</div>
+<div class="title">Figure 6. Microservices communications of ABike System using Kafka</div>
+</div>
+<div class="sect4">
+<h5 id="_detailed_communication_patterns_2">Detailed Communication Patterns</h5>
+
+</div>
+<div class="sect4">
+<h5 id="_1_abike_state_update">1. ABike State Update</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> abike-microservice (<em>BikeCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> abike-updates</p>
+</li>
+<li>
+<p><strong>Consumers:</strong> map-microservice (<em>BikeUpdateAdapter</em>), ride-microservice (<em>BikeConsumerAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When an ABike&#8217;s state or position changes, the abike-microservice publishes this update to the abike-updates topic. The map service consumes this message to update the bike&#8217;s position on the map via websocket, while the ride service updates its local repository of available ABikes.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_station_state_update">2. Station State Update</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> abike-microservice (<em>StationCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> station-updates</p>
+</li>
+<li>
+<p><strong>Consumers:</strong> map-microservice (<em>StationUpdateAdapter</em>), ride-microservice (<em>StationConsumerAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When a station&#8217;s data changes, the abike-microservice publishes an update to the station-updates topic. The map service consumes this to update the station&#8217;s view via websocket, and the ride service consumes it to keep its local station repository synchronized.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_3_ride_events_affecting_abike">3. Ride Events Affecting ABike</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> ride-microservice (<em>BikeCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> abike-ride-update</p>
+</li>
+<li>
+<p><strong>Consumer:</strong> abike-microservice (<em>RideCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When the ride-microservice processes a ride event involving an ABike (e.g., start/end ride), it publishes an update to the abike-ride-update topic. The abike-microservice consumes this message to update the ABike&#8217;s state accordingly (e.g., from AVAILABLE to IN_USE).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_4_bike_dispatch_notifications">4. Bike Dispatch Notifications</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Producer:</strong> ride-microservice (<em>UserCommunicationAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Topic:</strong> ride-bike-dispatch</p>
+</li>
+<li>
+<p><strong>Consumer:</strong> user-microservice (<em>RideConsumerAdapter</em>)</p>
+</li>
+<li>
+<p><strong>Flow:</strong> When the ride-microservice processes a dispatch request (e.g., sending an autonomous bike to a user), it publishes a message to the ride-bike-dispatch topic. The user-microservice consumes this message and forwards it to the specific user&#8217;s client via a real-time websocket.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_digital_twin">3.4. Digital Twin</h3>
+<div class="paragraph">
+<p>For the Digital Twin, it was decided to use Eclipse Ditto, which is a powerful platform for managing Digital Twins.</p>
+</div>
+<div class="paragraph">
+<p>The platform is setupped to listen to the Kafka topics related to the a-bike and stations, and it automatically updates the Digital Twin representation of the a-bike and stations in real time, using a JavaScript payload mapper.</p>
+</div>
+<div class="sect3">
+<h4 id="_connection_setup_and_docker_integration">3.4.1. Connection Setup and Docker Integration</h4>
+<div class="paragraph">
+<p>The digital twin implementation uses Eclipse Ditto connected to the Kafka message broker to synchronize real-time data from the microservices. The connection is established through Ditto&#8217;s connectivity service, which is deployed via Docker and shares the same network (<code>kafka-ditto-net</code>) as the Kafka broker to enable communication.</p>
+</div>
+<div class="paragraph">
+<p>The Kafka broker is configured to be accessible from both the microservices network and the Ditto network:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">kafka-broker</span><span class="pi">:</span>
+  <span class="na">networks</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">eureka-network</span>
+    <span class="pi">-</span> <span class="s">kafka-ditto-net</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_kafka_topics_consumption">3.4.2. Kafka Topics Consumption</h4>
+<div class="paragraph">
+<p>The Ditto connection listens to two main Kafka topics that provide real-time updates about the autonomous bike-sharing system:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><code>abike-update</code></strong>: Receives updates about individual autonomous a-bikes</p>
+</li>
+<li>
+<p><strong><code>station-update</code></strong>: Receives updates about stations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The connection configuration specifies these topics as source addresses:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="json"><span class="nl">"sources"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"addresses"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="s2">"abike-update"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"station-update"</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"consumerCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payloadMapping"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"JavaScript"</span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data_transformation_with_javascript_mapper">3.4.3. Data Transformation with JavaScript Mapper</h4>
+<div class="paragraph">
+<p>The connection uses a JavaScript mapper to transform incoming Kafka messages into Ditto protocol messages. The mapper handles both bike and station updates by creating appropriate thing IDs and feature structures:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="javascript"><span class="kd">function</span> <span class="nf">mapToDittoProtocolMsg</span><span class="p">(</span><span class="nx">headers</span><span class="p">,</span> <span class="nx">textPayload</span><span class="p">,</span> <span class="nx">bytePayload</span><span class="p">,</span> <span class="nx">contentType</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">topic</span> <span class="o">=</span> <span class="nx">headers</span><span class="p">[</span><span class="dl">"</span><span class="s2">kafka.topic</span><span class="dl">"</span><span class="p">]</span> <span class="o">||</span> <span class="dl">""</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">thingId</span><span class="p">;</span>
+    <span class="k">if </span><span class="p">(</span><span class="nx">topic</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">abike-update</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">thingId</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">abike:</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">jsonData</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="nx">topic</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">station-update</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">thingId</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">station:</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">jsonData</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Transform properties into Ditto features</span>
+    <span class="kd">var</span> <span class="nx">features</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="k">for </span><span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">jsonData</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if </span><span class="p">(</span><span class="nx">jsonData</span><span class="p">.</span><span class="nf">hasOwnProperty</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">key</span> <span class="o">!==</span> <span class="dl">'</span><span class="s1">id</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">features</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="na">properties</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="na">value</span><span class="p">:</span> <span class="nx">jsonData</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">};</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// Create Ditto protocol message...</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This mapper creates digital twin representations where each bike becomes a "thing" with the ID format <code>abike:{bikeId}</code> and each station becomes <code>station:{stationId}</code>. All properties from the Kafka message (except the ID) are transformed into Ditto features with nested property structures.</p>
+</div>
+<div class="paragraph">
+<p>The real-time synchronization ensures that the digital twin always reflects the current state of the physical bike-sharing system, enabling operators to monitor fleet status, track bike locations, and manage station capacity through the digital twin interface.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="resources/png/ditto-explorer.png" alt="Ditto Explorer with Things" width="85%">
+</div>
+<div class="title">Figure 7. Ditto Explorer with Things</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusions">4. Conclusions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This assignment was a great opportunity to apply the knowledge and skills acquired throughout the course. It introduced me to Event Driven Architecture and the use of Apache Kafka for building scalable and resilient systems. It enhanced my understanding of microservices and message brokers, making also my knowledge of Docker more advanced.</p>
+</div>
+<div class="paragraph">
+<p>Also the transformation of the deployment made in Kubernetes was significant, as it allowed me to get an insight into how to manage containerized applications in a production-like environment.</p>
+</div>
+<div class="paragraph">
+<p>More-over it was also an opportunity to work with Digital Twins, topic I already knew because of my previous bachelor thesis. It was nice though to see how Eclipse Ditto evolved and how it can be used in a microservices-broker context.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2025-06-15 16:49:41 +0200
+</div>
+</div>
+</body>
+</html>

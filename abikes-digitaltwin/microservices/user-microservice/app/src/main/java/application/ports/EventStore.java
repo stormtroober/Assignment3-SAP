@@ -10,12 +10,11 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface EventStore {
   /**
-   * Appends an event to the event store for the specified aggregate. Uses optimistic locking
-   * through the expectedVersion parameter.
+   * Appends an event to the event store for the specified aggregate.
    *
    * @param aggregateId The unique identifier for the aggregate
    * @param event The user event to append
-   * @param expectedVersion The expected current version of the aggregate (for optimistic locking)
+   * @param expectedVersion The expected current version of the aggregate
    * @return A CompletableFuture that completes when the event has been appended
    */
   CompletableFuture<Void> appendEvent(String aggregateId, UserEvent event, long expectedVersion);

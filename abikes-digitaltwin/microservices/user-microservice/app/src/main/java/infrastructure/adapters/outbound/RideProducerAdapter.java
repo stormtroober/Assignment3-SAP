@@ -1,5 +1,6 @@
 package infrastructure.adapters.outbound;
 
+import domain.events.UserUpdate;
 import infrastructure.adapters.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
 import io.vertx.core.Vertx;
@@ -9,7 +10,6 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import domain.events.UserUpdate;
 
 public class RideProducerAdapter {
   private static final Logger logger = LoggerFactory.getLogger(RideProducerAdapter.class);
@@ -33,7 +33,8 @@ public class RideProducerAdapter {
                 JsonObject json = new JsonObject(message.body().toString());
 
                 // Build the Avro record from JSON
-                UserUpdate userUpdate = UserUpdate.newBuilder()
+                UserUpdate userUpdate =
+                    UserUpdate.newBuilder()
                         .setUsername(json.getString("username"))
                         .setType(json.getString("type"))
                         .setCredit(json.getInteger("credit"))

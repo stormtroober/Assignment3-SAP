@@ -1,6 +1,6 @@
 package domain.model;
 
 public enum UserType {
-    ADMIN,
-    USER
+  ADMIN,
+  USER
 }

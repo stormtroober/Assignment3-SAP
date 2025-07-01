@@ -17,7 +17,7 @@ public class User {
 
   public void applyEvent(UserEvent evt) {
     switch (evt.getType()) {
-      case USER_CREATED:  
+      case USER_CREATED:
         UserCreated uc = (UserCreated) evt;
         this.username = uc.getAggregateId();
         this.userType = uc.getUserType();

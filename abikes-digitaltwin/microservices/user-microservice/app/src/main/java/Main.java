@@ -1,3 +1,4 @@
+import application.UserEventPublisherImpl;
 import application.UserServiceEventSourcedImpl;
 import application.ports.EventStore;
 import application.ports.UserEventPublisher;
@@ -9,7 +10,6 @@ import infrastructure.adapters.web.UserVerticle;
 import infrastructure.config.ServiceConfiguration;
 import infrastructure.persistence.MongoEventStore;
 import infrastructure.utils.KafkaProperties;
-import application.UserEventPublisherImpl;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;

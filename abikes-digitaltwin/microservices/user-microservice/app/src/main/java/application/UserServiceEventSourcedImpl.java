@@ -7,7 +7,6 @@ import domain.events.UserCreated;
 import domain.events.UserEvent;
 import domain.model.User;
 import domain.model.UserType;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -142,7 +141,7 @@ public class UserServiceEventSourcedImpl implements UserServiceAPI {
               Map<String, List<UserEvent>> eventsByUser =
                   allEvents.stream().collect(Collectors.groupingBy(UserEvent::getAggregateId));
 
-              //JsonArray users = new JsonArray();
+              // JsonArray users = new JsonArray();
               List<User> users = new ArrayList<>();
 
               // Rebuild each user aggregate from their events

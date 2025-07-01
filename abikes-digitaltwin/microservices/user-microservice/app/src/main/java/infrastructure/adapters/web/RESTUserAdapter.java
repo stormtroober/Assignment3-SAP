@@ -1,8 +1,8 @@
 package infrastructure.adapters.web;
 
 import application.ports.UserServiceAPI;
-import domain.model.UserType;
 import domain.model.User;
+import domain.model.UserType;
 import infrastructure.utils.MetricsManager;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;

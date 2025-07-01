@@ -34,7 +34,7 @@ public class Main {
                   new BikeUpdateAdapter(bikeService, kafkaProperties);
               StationUpdateAdapter stationUpdateAdapter =
                   new StationUpdateAdapter(stationMapService, kafkaProperties);
-                stationUpdateAdapter.init();
+              stationUpdateAdapter.init();
               RideUpdateAdapter rideUpdateAdapter =
                   new RideUpdateAdapter(bikeService, kafkaProperties);
               mapServiceVerticle.init();

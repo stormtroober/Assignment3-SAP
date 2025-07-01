@@ -5,19 +5,17 @@ import domain.events.EBikeUpdate;
 import domain.model.*;
 import infrastructure.adapter.kafkatopic.Topics;
 import infrastructure.utils.KafkaProperties;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.vertx.core.json.JsonObject;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BikeUpdateAdapter {
 
@@ -41,61 +39,59 @@ public class BikeUpdateAdapter {
   private void runKafkaConsumer() {
     // EBike consumer (Avro)
     KafkaConsumer<String, EBikeUpdate> ebikeConsumer =
-            new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
+        new KafkaConsumer<>(kafkaProperties.getAvroConsumerProperties());
     ebikeConsumer.subscribe(List.of(Topics.EBIKE_UPDATES.getTopicName()));
 
     // ABike consumer (JSON)
     KafkaConsumer<String, String> abikeConsumer =
-            new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
+        new KafkaConsumer<>(kafkaProperties.getConsumerProperties());
     abikeConsumer.subscribe(List.of(Topics.ABIKE_UPDATES.getTopicName()));
 
-    try (ebikeConsumer; abikeConsumer) {
+    try (ebikeConsumer;
+        abikeConsumer) {
       while (running.get()) {
         // EBike updates
         ConsumerRecords<String, EBikeUpdate> ebikeRecords =
-                ebikeConsumer.poll(Duration.ofMillis(100));
+            ebikeConsumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, EBikeUpdate> record : ebikeRecords) {
           EBikeUpdate avroUpdate = record.value();
           EBike bike = EBikeMapper.fromAvro(avroUpdate);
           bikeMapServiceAPI
-                  .updateEBike(bike)
-                  .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
-                  .exceptionally(
-                          ex -> {
-                            logger.error(
-                                    "Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
-                            return null;
-                          });
+              .updateEBike(bike)
+              .thenAccept(v -> logger.info("EBike {} updated successfully", bike.getId()))
+              .exceptionally(
+                  ex -> {
+                    logger.error("Failed to update EBike {}: {}", bike.getId(), ex.getMessage());
+                    return null;
+                  });
         }
         ebikeConsumer.commitAsync(
-                (offsets, exception) -> {
-                  if (exception != null) {
-                    logger.error("Failed to commit EBike offsets: {}", exception.getMessage());
-                  }
-                });
+            (offsets, exception) -> {
+              if (exception != null) {
+                logger.error("Failed to commit EBike offsets: {}", exception.getMessage());
+              }
+            });
 
         // ABike updates
-        ConsumerRecords<String, String> abikeRecords =
-                abikeConsumer.poll(Duration.ofMillis(100));
+        ConsumerRecords<String, String> abikeRecords = abikeConsumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, String> record : abikeRecords) {
           JsonObject body = new JsonObject(record.value());
           ABike bike = createABikeFromJson(body);
           bikeMapServiceAPI
-                  .updateABike(bike)
-                  .thenAccept(v -> logger.info("ABike {} updated successfully", bike.getId()))
-                  .exceptionally(
-                          ex -> {
-                            logger.error(
-                                    "Failed to update ABike {}: {}", bike.getId(), ex.getMessage());
-                            return null;
-                          });
+              .updateABike(bike)
+              .thenAccept(v -> logger.info("ABike {} updated successfully", bike.getId()))
+              .exceptionally(
+                  ex -> {
+                    logger.error("Failed to update ABike {}: {}", bike.getId(), ex.getMessage());
+                    return null;
+                  });
         }
         abikeConsumer.commitAsync(
-                (offsets, exception) -> {
-                  if (exception != null) {
-                    logger.error("Failed to commit ABike offsets: {}", exception.getMessage());
-                  }
-                });
+            (offsets, exception) -> {
+              if (exception != null) {
+                logger.error("Failed to commit ABike offsets: {}", exception.getMessage());
+              }
+            });
       }
     } catch (Exception e) {
       logger.error("Error setting up Kafka consumers: {}", e.getMessage());

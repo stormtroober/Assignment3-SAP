@@ -5,7 +5,7 @@ on:
       branches:
         - main
       paths:
-        - 'documentation/asciidoc/**'
+        - 'asciidoc/**'
     workflow_dispatch:
 
 jobs:
@@ -32,7 +32,6 @@ jobs:
       
       - name: Build documentation and copy it into Docs folder
         run: |
-          cd documentation  
           cd asciidoc
           make html
           cd output
@@ -54,8 +53,8 @@ jobs:
         with:
           name: documentation-report
           path: |
-            documentation/asciidoc/output/index.html
-            documentation/asciidoc/output/resources/
+            asciidoc/output/index.html
+            asciidoc/output/resources/
 
   deploy:
     needs: build
